@@ -79,7 +79,7 @@ typedef uint8_t ( * type_raspr4_xp  ) [ ] [ 4 ] ;
 
 // 0x20 (пробел) ' '    ---     0x7e (тильда) '~'
 # define letters_count ((uint8_t)(0x7eU - 0x20U + 1U))
-//# define letters_count 2
+//# define letters_count 4
 //# define letters_count 3
 
 struct  s_raspr4 {
@@ -114,43 +114,27 @@ static  void  password_to_string ( uint32_t password , strp const string ) {
       if ( password < letters_count ) break ;
       password /= letters_count ; } }
   ( * stringi ) = 0 ; }
-
+  
 static  bool  isBAD_string_to_password ( strcp const string ,
-  uint32_t * const restrict password ) {
+  uint32_t * const password ) {
   char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
   if  ( ( * stringi ) == 0 ) {
     ( * password  ) = 0 ;
     return  false ; }
-  uint8_t i = letters_count ;
-  uint32_t pass = 1 ;
+  uint32_t pass = 0 ;
   uint32_t  mult  = 1 ;
-  do {
-    -- i ;
-    if ( ( * stringi ) == raspr4 . letters  [ i ] ) goto found ; 
-  } while ( i ) ;
-  return  true  ;
-found :
-  pass  +=  ((uint32_t)i) * mult ;
-  mult  *=  (uint32_t)letters_count ;
-  
-  
-  
-  
-  
-  while ( * stringi ) {
+  do  {
     uint8_t i = letters_count ;
-//printf(u8" буква='%c' ",( * stringi ));
     do {
       -- i ;
       if ( ( * stringi ) == raspr4 . letters  [ i ] ) goto found ; 
     } while ( i ) ;
     return  true  ;
 found :
-//printf(u8" код=%d ",(int)i);
-    // индексы = 0..94 , а нужно добавлять 1..95
     pass  +=  ((uint32_t)(i+1)) * mult ;
     mult  *=  (uint32_t)letters_count ;
-    ++  stringi ; }
+    ++  stringi ;
+  } while ( * stringi ) ;
   ( * password ) = pass ;
   return false ; }
   
@@ -162,7 +146,9 @@ static  void  raspr4_init ( void  ) {
     raspr4 . letters [ 0 ] = '0' ;
     raspr4 . letters [ 1 ] = '1' ;
     raspr4 . letters [ 2 ] = '2' ;
-  } */ 
+    raspr4 . letters [ 3 ] = '3' ;
+    //raspr4 . letters [ 4 ] = '2' ;
+  }*/
     
   uint8_t raspri  = 4 ;
   do {
@@ -262,9 +248,15 @@ int main  ( int  argc , char * * argv  )  {
   raspr4_init ( ) ;
   /*
   { char s [ 10 ] ;
-    for ( int i = 0 ; i < 100 ; ++ i ) {
+    for ( uint32_t i = 0 ; i < 100 ; ++ i ) {
       password_to_string ( i , &s ) ;
-      printf(u8"i = %d , s = \"%s\"\n",i,s); }
+      printf(u8"i = %d , s = \"%s\"\n",i,s);
+      uint32_t j = 0x55555555U ;
+      if(isBAD_string_to_password(&s,&j))
+        printf(u8"isBAD_string_to_password : s = \"%s\" , j = % d\n",s,j);
+      else
+        printf(u8"s = \"%s\" , j = % d\n",s,j);
+    }
     return 0 ; }*/
 
   if  ( argc  <=  1  ) {
@@ -323,7 +315,10 @@ int main  ( int  argc , char * * argv  )  {
   unsigned long const fact4 = fact(4) ;
   unsigned long const fact42 = fact4 * fact4 ;
   unsigned long const passmax = fact(16)/fact42/fact42 ;
-  printf(u8"максимальный пароль !16/((!4)^4) = 0x%lx\n",passmax);
+  printf(u8"максимальный пароль !16/((!4)^4)-1 = 0x%lx\n",passmax-1);
+  char s [ 10 ] ;
+  password_to_string ( passmax-1 , & s ) ;
+  printf(u8"максимальный пароль буквами = \"%s\"\n",s);
   printf(u8"максимальный рандом = 0x%x\n",(int)RAND_MAX);
 # if  RAND_MAX  !=  0x7fffffff
 # error RAND_MAX  !=  0x7fffffff
