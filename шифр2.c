@@ -26,6 +26,7 @@
 # include <time.h>
 # include <iso646.h>
 # include <stdbool.h>
+# include <string.h>
 
 static  unsigned  long  int fact  ( unsigned  long  int x ) {
   if  ( x ==  0 ) return  0 ;
@@ -183,8 +184,47 @@ void  password_load ( uint32_t  const password_const  , arrp const shifrp , arrp
 
 # define  alldata_size  12
   
-int main(){
+int main  ( int  argc , char * * argv  )  {
   setlocale(LC_ALL,"");
+  bool flagenc = false ;
+  bool flagdec = false ;
+  bool flagpasswd = false ;
+  bool flagreadpasswd = false ;
+  if  ( argc  <=  1  ) {
+    printf  (u8"Шифр2\n©2019 Глебов А.Н.\nСинтаксис : шифр2 [параметры] [файлы]\n");
+    printf  (u8"Параметры :\n");
+    printf  (u8"--ген-пар\tгенерировать пароль\n");
+    printf  (u8"--зашифр\tзашифровать\n");
+    printf  (u8"--расшифр\tрасшифровать\n");
+    printf  (u8"--пароль \"строка_пароля\"\tиспользовать заданный пароль\n");
+    printf  (u8"--вход \"имя_файла\"\tчитать данные из файла\n");
+    printf  (u8"--выход \"имя_файла\"\tзаписывать данные в файл\n");
+    }
+  else  {
+    for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
+      if ( strcmp ( argv[argj] , u8"--ген-пар" ) ==  0 ) {
+        unsigned long const fact4 = fact(4) ;
+        unsigned long const fact42 = fact4 * fact4 ;
+        unsigned long const passmax = fact(16)/fact42/fact42 ;
+        srand ( time  ( 0 ) ) ;
+        uint32_t const password_const  = (  ( long double ) rand  ( ) ) /
+          ( ( long double ) RAND_MAX  ) * ( ( long double ) passmax ) ;
+        flagpasswd  = true  ;
+        printf(u8"пароль = %x\n",password_const); }
+      else  {
+        if ( strcmp ( argv[argj] , u8"--зашифр" ) ==  0 ) {
+          flagenc = true ;
+          flagdec = false ; }
+        else
+        if ( strcmp ( argv[argj] , u8"--расшифр" ) ==  0 ) { 
+          flagdec = true ;
+          flagenc = false ; }
+        else
+        if ( strcmp ( argv[argj] , u8"--пароль" ) ==  0 ) { 
+          flagreadpasswd  = true  ; }
+    }
+    }
+  }
   unsigned long const fact4 = fact(4) ;
   unsigned long const fact42 = fact4 * fact4 ;
   unsigned long const passmax = fact(16)/fact42/fact42 ;
@@ -197,6 +237,7 @@ int main(){
   srand ( time  ( 0 ) ) ;
   uint32_t const password_const  = (  ( long double ) rand  ( ) ) /
     ( ( long double ) RAND_MAX  ) * ( ( long double ) passmax ) ;
+  flagpasswd  = true  ;
   printf(u8"пароль = 0x%x\n",password_const);
   
   raspr4_init ( ) ;
