@@ -16,8 +16,8 @@
 //  = 16! / ((4!)^4) = 63063000 = 0x3c243d8
 // минимум можно записать с помощью log(2,63063000) = 25.91 бит < 4 байт
 // пароль будет 26 бит
-// английские буквы 2 * 26 + 10 цифр = 62 знака
-// длина буквенного пароля : log ( 62 , 63063000 ) = 4.352 буквы
+// ascii буквы 126-32+1 = 95 шт
+// длина буквенного пароля : log ( 95 , 63063000 ) = 3.944 буквы
 
 # include <locale.h>
 # include <stdio.h>
@@ -39,7 +39,7 @@ dowhiletrue :
 
 typedef uint8_t ( * arrp ) [ ] ;
 typedef char ( * strp ) [ ] ;
-
+typedef char const ( * strcp ) [ ] ;
 
 // четыре * четыре = шестнадцать
 # define  shifr_deshi_size  ((size_t)0x10)
@@ -77,6 +77,11 @@ typedef uint8_t ( * type_raspr4_xp  ) [ ] [ 4 ] ;
 # define  raspr4_12_size  ((uint16_t)495U)
 # define  raspr4_8_size ((uint8_t)70U)
 
+// 0x20 (пробел) ' '    ---     0x7e (тильда) '~'
+# define letters_count ((uint8_t)(0x7eU - 0x20U + 1U))
+//# define letters_count 2
+//# define letters_count 3
+
 struct  s_raspr4 {
   
 uint8_t x8 [ raspr4_8_size ] [ 4 ] ;
@@ -88,14 +93,77 @@ uint16_t  s [ 4 ] ;
   
 // массив указателей на разные распределения
 type_raspr4_xp  xp  [ 4 ] ;
-  
+ 
+// буквы разрешённые в пароле :
+char  letters [ letters_count ] ;
+ 
 } ;
 
 static  struct  s_raspr4 raspr4  = { .s = { [ 3 ] = raspr4_16_size , [ 2 ] = raspr4_12_size ,
   [ 1 ] = raspr4_8_size , [ 0 ] = 0 } , .xp = { [ 3 ] = & raspr4.x16 , [ 2 ] = & raspr4.x12 ,
   [ 1 ] = & raspr4.x8 , [ 0 ] = (void*)0  } } ;
+
+static  void  password_to_string ( uint32_t password , strp const string ) {
+  char * stringi = & ( ( * string )  [ 0 ] ) ;
+  if ( password ) {
+    while ( true ) {
+      // здесь предыдущие размеры заняли место паролей
+      --  password  ;
+      ( * stringi ) = raspr4 . letters [ password % letters_count ] ;
+      ++  stringi ;
+      if ( password < letters_count ) break ;
+      password /= letters_count ; } }
+  ( * stringi ) = 0 ; }
+
+static  bool  isBAD_string_to_password ( strcp const string ,
+  uint32_t * const restrict password ) {
+  char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
+  if  ( ( * stringi ) == 0 ) {
+    ( * password  ) = 0 ;
+    return  false ; }
+  uint8_t i = letters_count ;
+  uint32_t pass = 1 ;
+  uint32_t  mult  = 1 ;
+  do {
+    -- i ;
+    if ( ( * stringi ) == raspr4 . letters  [ i ] ) goto found ; 
+  } while ( i ) ;
+  return  true  ;
+found :
+  pass  +=  ((uint32_t)i) * mult ;
+  mult  *=  (uint32_t)letters_count ;
   
-void  raspr4_init ( void  ) {
+  
+  
+  
+  
+  while ( * stringi ) {
+    uint8_t i = letters_count ;
+//printf(u8" буква='%c' ",( * stringi ));
+    do {
+      -- i ;
+      if ( ( * stringi ) == raspr4 . letters  [ i ] ) goto found ; 
+    } while ( i ) ;
+    return  true  ;
+found :
+//printf(u8" код=%d ",(int)i);
+    // индексы = 0..94 , а нужно добавлять 1..95
+    pass  +=  ((uint32_t)(i+1)) * mult ;
+    mult  *=  (uint32_t)letters_count ;
+    ++  stringi ; }
+  ( * password ) = pass ;
+  return false ; }
+  
+static  void  raspr4_init ( void  ) {
+  {  char * j = & ( raspr4 . letters [ 0 ] ) ;
+    for ( uint8_t i = 0x20 ; i <= 0x7e ; ++ i , ++ j ) ( * j ) = i ; }
+    
+  /*{
+    raspr4 . letters [ 0 ] = '0' ;
+    raspr4 . letters [ 1 ] = '1' ;
+    raspr4 . letters [ 2 ] = '2' ;
+  } */ 
+    
   uint8_t raspri  = 4 ;
   do {
     uint8_t raspri4 = raspri * 4 ;
@@ -190,27 +258,54 @@ int main  ( int  argc , char * * argv  )  {
   bool flagdec = false ;
   bool flagpasswd = false ;
   bool flagreadpasswd = false ;
+  uint32_t password_const ;
+  raspr4_init ( ) ;
+  /*
+  { char s [ 10 ] ;
+    for ( int i = 0 ; i < 100 ; ++ i ) {
+      password_to_string ( i , &s ) ;
+      printf(u8"i = %d , s = \"%s\"\n",i,s); }
+    return 0 ; }*/
+
   if  ( argc  <=  1  ) {
-    printf  (u8"Шифр2\n©2019 Глебов А.Н.\nСинтаксис : шифр2 [параметры] [файлы]\n");
-    printf  (u8"Параметры :\n");
-    printf  (u8"--ген-пар\tгенерировать пароль\n");
-    printf  (u8"--зашифр\tзашифровать\n");
-    printf  (u8"--расшифр\tрасшифровать\n");
-    printf  (u8"--пароль \"строка_пароля\"\tиспользовать заданный пароль\n");
-    printf  (u8"--вход \"имя_файла\"\tчитать данные из файла\n");
-    printf  (u8"--выход \"имя_файла\"\tзаписывать данные в файл\n");
-    }
+    puts (u8"Шифр2\n©2019 Глебов А.Н.\nСинтаксис : шифр2 [параметры] [файлы]");
+    puts  (u8"Параметры :");
+    puts  (u8"--ген-пар\tгенерировать пароль");
+    puts  (u8"--зашифр\tзашифровать");
+    puts  (u8"--расшифр\tрасшифровать");
+    puts  (u8"--пароль \"строка_пароля\"\tиспользовать заданный пароль");
+    puts  (u8"--вход \"имя_файла\"\tчитать данные из файла");
+    puts  (u8"--выход \"имя_файла\"\tзаписывать данные в файл"); }
   else  {
     for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
+      if  ( flagreadpasswd  ) {
+        if  ( flagpasswd  ) {
+          fputs  (u8"пароль уже задан",stderr);
+          return  1 ; }         
+        if ( isBAD_string_to_password ( (char(*)[])(argv[argj]) , & password_const ) ) {
+          fprintf(stderr,u8"неправильный пароль = \"%s\"",argv[argj]);
+          return 1 ; }
+        printf  ( u8"из строки во внутренний пароль = %x\n"  , password_const ) ;  
+        flagpasswd  = true  ;
+        flagreadpasswd = false; }
+      else
       if ( strcmp ( argv[argj] , u8"--ген-пар" ) ==  0 ) {
         unsigned long const fact4 = fact(4) ;
         unsigned long const fact42 = fact4 * fact4 ;
         unsigned long const passmax = fact(16)/fact42/fact42 ;
         srand ( time  ( 0 ) ) ;
-        uint32_t const password_const  = (  ( long double ) rand  ( ) ) /
+        password_const = (  ( long double ) rand  ( ) ) /
           ( ( long double ) RAND_MAX  ) * ( ( long double ) passmax ) ;
         flagpasswd  = true  ;
-        printf(u8"пароль = %x\n",password_const); }
+        printf(u8"внутренний пароль = %x\n",password_const);
+        char  password_letters [ 5 ] ;
+        password_to_string ( password_const , & password_letters ) ;
+        printf(u8"пароль буквами = \"%s\"\n",&(password_letters[0]));
+        { uint32_t password2 ;
+          if ( isBAD_string_to_password ( & password_letters , & password2 ) ) {
+            printf(u8"неправильный пароль = \"%s\"",& ( password_letters  [ 0 ] ));
+            return 1 ; }
+          printf  ( u8"из строки во внутренний пароль = %x\n"  , password2 ) ; } }
       else  {
         if ( strcmp ( argv[argj] , u8"--зашифр" ) ==  0 ) {
           flagenc = true ;
@@ -235,12 +330,27 @@ int main  ( int  argc , char * * argv  )  {
 # endif
   // 31 бит
   srand ( time  ( 0 ) ) ;
-  uint32_t const password_const  = (  ( long double ) rand  ( ) ) /
-    ( ( long double ) RAND_MAX  ) * ( ( long double ) passmax ) ;
-  flagpasswd  = true  ;
-  printf(u8"пароль = 0x%x\n",password_const);
-  
-  raspr4_init ( ) ;
+  if ( not flagpasswd ) {
+    password_const  = (  ( long double ) rand  ( ) ) /
+      ( ( long double ) RAND_MAX  ) * ( ( long double ) passmax ) ;
+    flagpasswd  = true  ; }
+  printf  ( u8"внутренний пароль = %x\n"  , password_const  ) ;
+  char  password_letters [ 5 ] ;
+  password_to_string ( password_const , & password_letters ) ;
+  printf  ( u8"пароль буквами = \"%s\"\n" , & ( password_letters  [ 0 ] ) ) ;
+  { uint32_t password2 ;
+    if ( isBAD_string_to_password ( & password_letters , & password2 ) ) {
+      printf(u8"неправильный пароль = \"%s\"",& ( password_letters  [ 0 ] ));
+      return 1 ; }
+    printf  ( u8"из строки во внутренний пароль = %x\n"  , password2 ) ; }
+
+  fputs ( u8"разрешённые буквы = \""  , stdout  ) ;
+  { char const * j = & ( raspr4 . letters [ letters_count ] ) ;
+    do {
+      -- j ;
+      fputc  ( * j , stdout  ) ;
+    } while ( j not_eq & ( raspr4 . letters [ 0 ] ) ) ; }
+  fputs  ( u8"\"\n" ,stdout ) ;
   
   uint8_t shifr [ shifr_deshi_size ] ;
   // 0 .. 3 - варианты секретных кодов для буквы 0
