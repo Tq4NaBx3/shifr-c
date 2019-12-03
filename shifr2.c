@@ -30,17 +30,18 @@
 # include <string.h>
 # include <errno.h>
 # include <termios.h>
+# include <setjmp.h>
 
 //# define  SHIFR_DEBUG
 
 static  unsigned  long  int fact  ( unsigned  long  int x ) {
   if  ( x ==  0 ) return  0 ;
   unsigned  long  int res = x ;
-dowhiletrue :
-  --  x ;
-  if ( x <= 1UL ) return res ;
-  res *=  x ;
-  goto dowhiletrue ; }
+  do {
+    --  x ;
+    if ( x <= 1UL ) return res ;
+    res *=  x ;
+  } while ( true ) ; }
 
 typedef uint8_t ( * arrp ) [ ] ;
 typedef uint8_t const ( * arrcp ) [ ] ;
@@ -114,6 +115,10 @@ unsigned char const header [ 10 ] ;
 
 unsigned char const headertxt [ 11 ] ;
 
+// исключения
+jmp_buf jump ;
+char const (  * string_exception  ) [ ] ;
+
 } ;
 
 static  struct  s_raspr4 raspr4  = { .s = { [ 3 ] = raspr4_16_size , [ 2 ] = raspr4_12_size ,
@@ -137,12 +142,12 @@ static  void  password_to_string ( uint32_t password , strp const string ) {
       password /= (uint32_t)letters_count ; } }
   ( * stringi ) = 0 ; }
   
-static  bool  isBAD_string_to_password ( strcp const string ,
+static  void  string_to_password ( strcp const string ,
   uint32_t * const password ) {
   char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
   if  ( ( * stringi ) == 0 ) {
     ( * password  ) = 0 ;
-    return  false ; }
+    return ; }
   uint32_t pass = 0 ;
   uint32_t  mult  = 1 ;
   do  {
@@ -151,14 +156,14 @@ static  bool  isBAD_string_to_password ( strcp const string ,
       -- i ;
       if ( ( * stringi ) == raspr4 . letters  [ i ] ) goto found ; 
     } while ( i ) ;
-    return  true  ;
+    raspr4  . string_exception  = & u8"неправильная буква в пароле";
+    longjmp(raspr4  . jump,1);
 found :
     pass  +=  ((uint32_t)(i+1)) * mult ;
     mult  *=  (uint32_t)letters_count ;
     ++  stringi ;
   } while ( * stringi ) ;
-  ( * password ) = pass ;
-  return false ; }
+  ( * password ) = pass ; }
   
 static  void  raspr4_init ( void  ) {
   {  char * j = & ( raspr4 . letters [ 0 ] ) ;
@@ -259,44 +264,52 @@ static  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
   if ( c >= 0 and c <= 9 ) (*buf2)[1] = '0' + c ;
   else  (*buf2)[1] = 'a' + (c - 10) ; }
 
-static  bool  isBAD_hex_to_char ( char const ( * restrict buf2 ) [ 2 ] , char * const restrict buf ) {
+static  void  hex_to_char ( char const ( * restrict buf2 ) [ 2 ] , char * const restrict buf ) {
   if  ((*buf2)[0] >= '0' and (*buf2)[0] <= '9') (* buf) = (*buf2)[0] - '0';
   else  if((*buf2)[0] >= 'a' and (*buf2)[0] <= 'f') (* buf) = 10 + ((*buf2)[0] - 'a');
-  else  return  true  ;
+  else  {
+    raspr4  . string_exception  = & u8"плохие hex буквы";
+    longjmp(raspr4  . jump,1); }
   if  ((*buf2)[1] >= '0' and (*buf2)[1] <= '9') (* buf) or_eq (((*buf2)[1] - '0')<<4);
   else  if((*buf2)[1] >= 'a' and (*buf2)[1] <= 'f') (* buf) or_eq ((10 + ((*buf2)[1] - 'a'))<<4);
-  else  return  true  ;
-  return  false ; }
+  else  {
+    raspr4  . string_exception  = & u8"плохие hex буквы";
+    longjmp(raspr4  . jump,1); } }
 
 // Отключить эхо-вывод и буферизацию ввода
-static  bool set_keypress (void) {
-    if(tcgetattr(0, & raspr4.stored_termios)) {
-      int e = errno ;
-      fprintf(stderr,u8"ошибка чтения tcgetattr : %s",strerror(e));
-      return 1 ; }
+static  void set_keypress (void) {
+  if(tcgetattr(0, & raspr4.stored_termios)) {
+    int e = errno ;
+    fprintf(stderr,u8"ошибка чтения tcgetattr : %s\n",strerror(e));
+    raspr4  . string_exception  = (char const (*)[])strerror(e) ;
+    longjmp(raspr4  . jump,1); }
 
-    struct termios new_termios = raspr4.stored_termios;
-        new_termios.c_lflag &= ~(ECHO | ICANON);
-        new_termios.c_cc[VMIN] = 1;  
-        new_termios.c_cc[VTIME] = 0; 
+  struct termios new_termios = raspr4.stored_termios;
+  new_termios.c_lflag &= ~(ECHO | ICANON);
+  new_termios.c_cc[VMIN] = 1;  
+  new_termios.c_cc[VTIME] = 0; 
  
-    if(tcsetattr(0, TCSANOW, & new_termios)){
-      int e = errno ;
-      fprintf(stderr,u8"ошибка записи tcsetattr : %s",strerror(e));
-      return 1 ; }
-  return 0 ; }
+  if(tcsetattr(0, TCSANOW, & new_termios)){
+    int e = errno ;
+    fprintf(stderr,u8"ошибка записи tcsetattr : %s\n",strerror(e));
+    raspr4  . string_exception  = (char const (*)[])strerror(e) ;
+    longjmp(raspr4  . jump,1); } }
  
 // Восстановление дефолтного состояния
-static  bool reset_keypress (void) {
-    if(tcsetattr(0, TCSANOW, & raspr4.stored_termios)){
-      int e = errno ;
-      fprintf(stderr,u8"ошибка записи tcsetattr : %s",strerror(e));
-      return 1 ; }
-  return 0 ; }  
+static  void reset_keypress (void) {
+  if(tcsetattr(0, TCSANOW, & raspr4.stored_termios)){
+    int e = errno ;
+    fprintf(stderr,u8"ошибка записи tcsetattr : %s\n",strerror(e));
+    raspr4  . string_exception  = (char const (*)[])strerror(e) ;
+    longjmp(raspr4  . jump,1); } }  
   
 int main  ( int  argc , char * * argv  )  {
   char const * const locale = setlocale(LC_ALL,"") ;
   raspr4  . localerus = ( strcmp  ( locale  , "ru_RU.UTF-8" ) ==  0 ) ;
+  int exc = setjmp  ( raspr4  . jump  ) ;
+  if ( exc ) {
+    fprintf ( stderr  , u8"Исключение : %s\n" , &((*raspr4  . string_exception)[0]) ) ;
+    return  1 ; }
   bool  flagenc = false ;
   bool  flagdec = false ;
   bool  flagpasswd  = false ;
@@ -342,11 +355,9 @@ int main  ( int  argc , char * * argv  )  {
     for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
       if  ( flagreadpasswd  ) {
         if  ( flagpasswd  ) {
-          fputs  (u8"пароль уже задан",stderr);
-          return  1 ; }         
-        if ( isBAD_string_to_password ( (char(*)[])(argv[argj]) , & password_const ) ) {
-          fprintf(stderr,u8"неправильный пароль = \"%s\"",argv[argj]);
-          return 1 ; }
+          raspr4  . string_exception  = & u8"пароль уже задан" ;
+          longjmp(raspr4  . jump,1); }         
+        string_to_password ( (char(*)[])(argv[argj]) , & password_const ) ; 
         
         char  password_letters [ 6 ] ;
         
@@ -386,9 +397,7 @@ int main  ( int  argc , char * * argv  )  {
         password_to_string ( password_const , & password_letters ) ;
         printf(u8"пароль буквами = \"%s\"\n",&(password_letters[0]));
         { uint32_t password2 ;
-          if ( isBAD_string_to_password ( & password_letters , & password2 ) ) {
-            fprintf(stderr,u8"неправильный пароль = \"%s\"",& ( password_letters  [ 0 ] ));
-            return 1 ; }
+          string_to_password ( & password_letters , & password2 ) ; 
           printf  ( u8"из строки во внутренний пароль = %x\n"  , password2 ) ; } }
       else  {
         if (( strcmp ( argv[argj] , u8"--зашифр" ) ==  0 ) or
@@ -419,8 +428,9 @@ int main  ( int  argc , char * * argv  )  {
     }
   
   if(not( flagenc xor flagdec)){
-     fputs(u8"не определено : зашифровывать или расшифровывать ?\n",stderr);
-     return 1 ; }
+    //fputs(u8"не определено : зашифровывать или расшифровывать ?\n",stderr);
+    raspr4  . string_exception  = & u8"не определено : зашифровывать или расшифровывать ?" ;
+    longjmp(raspr4  . jump,1); }
      
   if ( not flagpasswd )    {
     char p [ 8 ] ;
@@ -429,16 +439,13 @@ int main  ( int  argc , char * * argv  )  {
     char ( * res ) [ 8 ] = ( char ( * ) [ 8 ] ) fgets ( & ( p [ 0 ] ) , 8 , stdin ) ;
     reset_keypress ( ) ;
     char * j = &((*res)[0]) ;
-    while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq 0 ) and ( j < ( & ( * res ) [ 8 ] ) ) ) ++ j ;
+    while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq 0 ) and
+      ( j < ( & ( * res ) [ 8 ] ) ) ) ++ j ;
     if ( j < ( & ( ( * res ) [ 8 ] ) ) ) ( * j ) = 0 ;
     else  {
-      fputs(u8"в пароле нет конца строки\n",stderr);
-      return 1 ; }
-    if ( res ) {
-      //printf ( u8"пароль = \"%s\"\n" , &((*res)[0]) ) ;
-      if ( isBAD_string_to_password ( res , & password_const ) ) {
-        fprintf ( stderr , u8"неправильный пароль = \"%s\"" , &((*res)[0]) ) ;
-        return 1 ; } } }
+      raspr4  . string_exception  = & u8"в пароле нет конца строки" ;
+      longjmp(raspr4  . jump,1); }
+    /*if ( res )*/ string_to_password ( res , & password_const ) ; }
         
   FILE  * filefrom  = stdin ;
   FILE  * fileto  = stdout  ;
@@ -447,7 +454,8 @@ int main  ( int  argc , char * * argv  )  {
     if(f == NULL) {
       int e = errno ; 
       fprintf(stderr,u8"Ошибка чтения файла \"%s\" : %s\n",&((*inputfilename)[0]),strerror(e));
-      return 1 ;  }
+      raspr4  . string_exception  = & u8"Ошибка чтения файла" ;
+      longjmp(raspr4  . jump,1); }
     flagclosefilefrom = true ;
     filefrom = f ; }
   if ( flagoutputfromfile ) {
@@ -455,7 +463,8 @@ int main  ( int  argc , char * * argv  )  {
     if(f == NULL) {
       int e = errno ; 
       fprintf(stderr,u8"Ошибка записи файла \"%s\" : %s\n",&((*outputfilename)[0]),strerror(e));
-      return 1 ;  }
+      raspr4  . string_exception  = & u8"Ошибка записи файла" ;
+      longjmp(raspr4  . jump,1); }
     flagclosefileto = true ;
     fileto  = f ; }
       
@@ -593,19 +602,13 @@ int main  ( int  argc , char * * argv  )  {
             clearerr ( filefrom ) ; }
           fputs(u8"ошибка hex данных\n",stderr); 
           break ; }
-        for ( char const * i = &(buf4[1]); i <= &(buf4[3]) ; ++ i )
+        for ( char const * i = &(buf4[1]); i <= &(buf4[3]) ; ++ i ) {
           if (not(( (*i) >= '0' and (*i) <= '9') or ((*i) >= 'a' and (*i) <= 'f'))) {
             fputs(u8"ошибка hex данных\n",stderr); 
-            goto out ; }
+            goto out ; } }
         
-        if  ( isBAD_hex_to_char ( ( char const ( * ) [ 2 ] ) ( & buf4 ), & (buf[0])  ) ) {
-          fputs(u8"ошибка hex данных\n",stderr);
-          break ; }
-        if  ( isBAD_hex_to_char ( ( char const ( * ) [ 2 ] ) ( & ( buf4 [ 2 ] ) ) , & (buf[1])  ) ) {
-          fputs(u8"ошибка hex данных\n",stderr);
-          break ; }  
-        //printf(u8"[%x %x]",(unsigned char )(buf[0]),(unsigned char )(buf[1]));
-        }
+        hex_to_char ( ( char const ( * ) [ 2 ] ) ( & buf4 ), & (buf[0])  ) ;
+        hex_to_char ( ( char const ( * ) [ 2 ] ) ( & ( buf4 [ 2 ] ) ) , & (buf[1])  ) ;        }
       else readcount = fread ( & (buf[0]) , 1 , 2 , filefrom ) ;
       if ( readcount < 2 ) {
         if ( ferror ( filefrom ) ) {
