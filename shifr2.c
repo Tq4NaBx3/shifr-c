@@ -109,11 +109,21 @@ bool  localerus ;
 // хранилище дефолтного состояния
 struct termios stored_termios  ;
 
+// заголовок архива "шифр" + 0x00 + 0x02
+unsigned char const header [ 10 ] ;
+
+unsigned char const headertxt [ 11 ] ;
+
 } ;
 
 static  struct  s_raspr4 raspr4  = { .s = { [ 3 ] = raspr4_16_size , [ 2 ] = raspr4_12_size ,
   [ 1 ] = raspr4_8_size , [ 0 ] = 0 } , .xp = { [ 3 ] = & raspr4.x16 , [ 2 ] = & raspr4.x12 ,
-  [ 1 ] = & raspr4.x8 , [ 0 ] = (void*)0  } } ;
+  [ 1 ] = & raspr4.x8 , [ 0 ] = (void*)0  } ,
+  .header = { [ 0 ] = 0xd1 , [ 1 ] = 0x88 ,
+  [ 2 ] = 0xd0 , [ 3 ] = 0xb8 , [ 4 ] = 0xd1 , [ 5 ] = 0x84 , [ 6 ] = 0xd1 ,
+  [ 7 ] = 0x80 , [ 8 ] = 0x00 , [ 9 ] = 0x02 } ,
+  .headertxt = u8"шифр2\n"
+  } ;
 
 static  void  password_to_string ( uint32_t password , strp const string ) {
   char * stringi = & ( ( * string )  [ 0 ] ) ;
@@ -259,19 +269,30 @@ static  bool  isBAD_hex_to_char ( char const ( * restrict buf2 ) [ 2 ] , char * 
   return  false ; }
 
 // Отключить эхо-вывод и буферизацию ввода
-static  void set_keypress (void) {
-    tcgetattr(0, & raspr4.stored_termios);
+static  bool set_keypress (void) {
+    if(tcgetattr(0, & raspr4.stored_termios)) {
+      int e = errno ;
+      fprintf(stderr,u8"ошибка чтения tcgetattr : %s",strerror(e));
+      return 1 ; }
 
     struct termios new_termios = raspr4.stored_termios;
         new_termios.c_lflag &= ~(ECHO | ICANON);
         new_termios.c_cc[VMIN] = 1;  
         new_termios.c_cc[VTIME] = 0; 
  
-    tcsetattr(0, TCSANOW, & new_termios); }
+    if(tcsetattr(0, TCSANOW, & new_termios)){
+      int e = errno ;
+      fprintf(stderr,u8"ошибка записи tcsetattr : %s",strerror(e));
+      return 1 ; }
+  return 0 ; }
  
 // Восстановление дефолтного состояния
-static  void reset_keypress (void) {
-    tcsetattr(0, TCSANOW, & raspr4.stored_termios); }  
+static  bool reset_keypress (void) {
+    if(tcsetattr(0, TCSANOW, & raspr4.stored_termios)){
+      int e = errno ;
+      fprintf(stderr,u8"ошибка записи tcsetattr : %s",strerror(e));
+      return 1 ; }
+  return 0 ; }  
   
 int main  ( int  argc , char * * argv  )  {
   char const * const locale = setlocale(LC_ALL,"") ;
@@ -299,21 +320,21 @@ int main  ( int  argc , char * * argv  )  {
   srand ( time  ( 0 ) ) ;
   
   if  ( argc  <=  1  ) {
-    printf  ( raspr4  . localerus ? u8"Локаль = \"%s\"\n" : "Locale = \"%s\"\n" ,
-      locale  ) ;
+    /*printf  ( raspr4  . localerus ? u8"Локаль = \"%s\"\n" : "Locale = \"%s\"\n" ,
+      locale  ) ;*/
     puts ( raspr4  . localerus ?
-      u8"Шифр2\n©2019 Глебов А.Н.\nСинтаксис : shifr2 [параметры]" :
-      "Shifr2\n©2019 Glebe A.N.\nSyntax : shifr2 [parameters]" ) ;
+      u8"Шифр2 ©2019 Глебов А.Н.\nСинтаксис : shifr2 [параметры]" :
+      "Shifr2 ©2019 Glebe A.N.\nSyntax : shifr2 [parameters]" ) ;
     puts  ( raspr4  . localerus ? u8"Параметры :" : "Parameters :"  ) ;
     puts  (raspr4  . localerus ? u8"--ген-пар или\n--gen-psw\tгенерировать пароль" :
       "--gen-psw\tpassword generate" );
-    puts  (raspr4  . localerus ? u8"--зашифр или\nencode\tзашифровать" :
+    puts  (raspr4  . localerus ? u8"--зашифр или\n--encode\tзашифровать" :
       "--encode" );
-    puts  (raspr4  . localerus ? u8"--расшифр или\ndecode\tрасшифровать" :
+    puts  (raspr4  . localerus ? u8"--расшифр или\n--decode\tрасшифровать" :
       "--decode" );
     puts  (raspr4  . localerus ? u8"--пароль или\n--passwd \"строка_пароля\"\tиспользовать заданный пароль" :
       "--passwd \"password_string\"\tgiven password using" );
-    puts  (u8"--вход \"имя_файла\"\tчитать данные из файла");
+    puts  (raspr4  . localerus ? u8"--вход или\n--input \"имя_файла\"\tчитать данные из файла" : "--input \"file_name\"\tread data from file");
     puts  (u8"--выход \"имя_файла\"\tзаписывать данные в файл");
     puts  ( u8"--текст\tшифрованный файл записан текстом ascii");
     return 0 ; }
@@ -384,7 +405,8 @@ int main  ( int  argc , char * * argv  )  {
           ( strcmp ( argv[argj] , "--passwd" ) ==  0 )) { 
           flagreadpasswd  = true  ; }
         else
-        if ( strcmp ( argv[argj] , u8"--вход" ) ==  0 ) { 
+        if (( strcmp ( argv[argj] , u8"--вход" ) ==  0 )or
+          ( strcmp ( argv[argj] , u8"--input" ) ==  0 )) { 
           flagreadinput  = true  ; }
         else
         if ( strcmp ( argv[argj] , u8"--выход" ) ==  0 ) { 
@@ -436,6 +458,7 @@ int main  ( int  argc , char * * argv  )  {
       return 1 ;  }
     flagclosefileto = true ;
     fileto  = f ; }
+      
   {uint8_t shifr [ shifr_deshi_size ] ;
   // 0 .. 3 - варианты секретных кодов для буквы 0
   // 4 .. 7 - варианты секретных кодов для буквы 1
@@ -447,6 +470,21 @@ int main  ( int  argc , char * * argv  )  {
   password_load ( password_const  , & shifr , & deshi ) ;
   
   if ( flagenc ) {
+    if ( flagtext ) { // заголовок : "шифр2\n" 
+      size_t writecount = fwrite ( & raspr4 . headertxt  , 1 ,
+        sizeof ( raspr4 . headertxt ) , fileto ) ;
+      if ( writecount < sizeof ( raspr4 . headertxt ) ) {
+        fputs ( u8"ошибка записи заголовка\n" , stderr  ) ; 
+        clearerr ( fileto ) ; 
+        goto out ; } }
+    else { // заголовок : "шифр" + 00 + 02 
+      size_t writecount = fwrite ( & raspr4 . header , 1 ,
+        sizeof ( raspr4 . header ) , fileto ) ;
+      if ( writecount < sizeof ( raspr4 . header ) ) {
+        fputs ( u8"ошибка записи заголовка\n" , stderr  ) ; 
+        clearerr ( fileto ) ; 
+        goto out ; } }    
+    
     int bytecount = 0 ;
     do {
       char buf ;
@@ -483,7 +521,7 @@ int main  ( int  argc , char * * argv  )  {
         char_to_hex(buf,&buf2);
         writecount = fwrite ( & buf2 , 2 , 1 , fileto ) ;
         bytecount +=  2 ;
-        if ( bytecount == 0x10 )  {
+        if ( bytecount == 24 )  {
           bytecount = 0 ;
           buf2[0] = '\n' ;
           fwrite ( & (buf2[0]) , 1 , 1 , fileto ) ; }  }
@@ -501,6 +539,38 @@ int main  ( int  argc , char * * argv  )  {
       fwrite ( & buf , 1 , 1 , fileto ) ; }
   }
   else  { // декодируем
+    
+    if(flagtext) { // заголовок : "шифр2\n"
+      unsigned char buf [ sizeof ( raspr4 . headertxt ) ] ;
+      size_t readcount = fread ( & buf , 1 ,
+        sizeof ( raspr4 . headertxt ) , filefrom ) ;
+      if ( readcount < sizeof ( raspr4 . headertxt ) ) {
+        if ( ferror ( filefrom ) ) {
+          fputs ( u8"ошибка чтения заголовка\n" , stderr  ) ; 
+          clearerr ( filefrom ) ; }
+        goto out ; }
+      unsigned char const * headi = & ( raspr4 . headertxt [ 0 ] ) ;  
+      for ( unsigned char * bufi = & ( buf [ 0 ] ) ;
+        bufi not_eq & ( buf [ sizeof ( raspr4 . headertxt ) ] ) ; ++ bufi , ++ headi ) {
+        if ( (* bufi) not_eq (* headi)){
+          fputs ( u8"плохой заголовок\n" , stderr  ) ; 
+          goto out ; } } }
+    else { // заголовок : "шифр" + 00 + 02 
+      unsigned char buf [ sizeof ( raspr4 . header ) ] ;
+      size_t readcount = fread ( & buf , 1 ,
+        sizeof ( raspr4 . header ) , filefrom ) ;
+      if ( readcount < sizeof ( raspr4 . header ) ) {
+        if ( ferror ( filefrom ) ) {
+          fputs ( u8"ошибка чтения заголовка\n" , stderr  ) ; 
+          clearerr ( filefrom ) ; }
+        goto out ; }
+      unsigned char const * headi = & ( raspr4 . header [ 0 ] ) ;  
+      for ( unsigned char * bufi = & ( buf [ 0 ] ) ;
+        bufi not_eq & ( buf [ sizeof ( raspr4 . header ) ] ) ; ++ bufi , ++ headi ) {
+        if ( (* bufi) not_eq (* headi)){
+          fputs ( u8"плохой заголовок\n" , stderr  ) ; 
+          goto out ; } } }      
+    
     do {
       char buf [ 2 ] ;
       size_t readcount ;
