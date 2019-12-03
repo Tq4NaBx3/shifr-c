@@ -29,6 +29,9 @@
 # include <stdbool.h>
 # include <string.h>
 # include <errno.h>
+# include <termios.h>
+
+//# define  SHIFR_DEBUG
 
 static  unsigned  long  int fact  ( unsigned  long  int x ) {
   if  ( x ==  0 ) return  0 ;
@@ -54,6 +57,7 @@ static  void  initarr ( arrp  const p , uint8_t const codefree ) {
     ( * i ) = codefree ;
   } while ( i not_eq  & ((*p)[0]) ) ; }
 
+# ifdef SHIFR_DEBUG
 static  void  printarr  ( strp const  name , arrp const p , size_t const arrsize ) {
   printf(u8"%s = [ ",*name);
   uint8_t * i = & ((*p)[0]) ;
@@ -62,6 +66,7 @@ static  void  printarr  ( strp const  name , arrp const p , size_t const arrsize
     ++  i ;
   } while ( i not_eq  & ((*p)[arrsize]) ) ;
   fputs(u8"]\n",stdout); }
+# endif
   
 static  void  crypt_decrypt ( arrp const datap , arrp const tablep ,
   arrp const encrp , size_t const data_size ) {
@@ -100,6 +105,9 @@ type_raspr4_xp  xp  [ 4 ] ;
 char  letters [ letters_count ] ;
 
 bool  localerus ; 
+
+// хранилище дефолтного состояния
+struct termios stored_termios  ;
 
 } ;
 
@@ -233,11 +241,41 @@ void datasole ( arrcp const secretdata , arrp const secretdatasole , size_t  dat
     ran >>= 2 ;
   } while ( id not_eq &((*secretdata)[0]) ) ; }  
   
+static  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
+  unsigned  char c = buf & 0xf ;
+  if ( c >= 0 and c <= 9 ) (*buf2)[0] = '0' + c ;
+  else  (*buf2)[0] = 'a' + (c - 10) ;
+  c = (buf >> 4) & 0xf ;
+  if ( c >= 0 and c <= 9 ) (*buf2)[1] = '0' + c ;
+  else  (*buf2)[1] = 'a' + (c - 10) ; }
+
+static  bool  isBAD_hex_to_char ( char const ( * restrict buf2 ) [ 2 ] , char * const restrict buf ) {
+  if  ((*buf2)[0] >= '0' and (*buf2)[0] <= '9') (* buf) = (*buf2)[0] - '0';
+  else  if((*buf2)[0] >= 'a' and (*buf2)[0] <= 'f') (* buf) = 10 + ((*buf2)[0] - 'a');
+  else  return  true  ;
+  if  ((*buf2)[1] >= '0' and (*buf2)[1] <= '9') (* buf) or_eq (((*buf2)[1] - '0')<<4);
+  else  if((*buf2)[1] >= 'a' and (*buf2)[1] <= 'f') (* buf) or_eq ((10 + ((*buf2)[1] - 'a'))<<4);
+  else  return  true  ;
+  return  false ; }
+
+// Отключить эхо-вывод и буферизацию ввода
+static  void set_keypress (void) {
+    tcgetattr(0, & raspr4.stored_termios);
+
+    struct termios new_termios = raspr4.stored_termios;
+        new_termios.c_lflag &= ~(ECHO | ICANON);
+        new_termios.c_cc[VMIN] = 1;  
+        new_termios.c_cc[VTIME] = 0; 
+ 
+    tcsetattr(0, TCSANOW, & new_termios); }
+ 
+// Восстановление дефолтного состояния
+static  void reset_keypress (void) {
+    tcsetattr(0, TCSANOW, & raspr4.stored_termios); }  
+  
 int main  ( int  argc , char * * argv  )  {
   char const * const locale = setlocale(LC_ALL,"") ;
   raspr4  . localerus = ( strcmp  ( locale  , "ru_RU.UTF-8" ) ==  0 ) ;
-  printf  ( raspr4  . localerus ? u8"Локаль = \"%s\"\n" : "Locale = \"%s\"\n" ,
-    locale  ) ;
   bool  flagenc = false ;
   bool  flagdec = false ;
   bool  flagpasswd  = false ;
@@ -250,6 +288,7 @@ int main  ( int  argc , char * * argv  )  {
   bool  flagoutputfromfile  = false ;
   bool  flagclosefilefrom = false ;
   bool  flagclosefileto = false ;
+  bool  flagtext  = false ;
   uint32_t  password_const  ;
   raspr4_init ( ) ;
 
@@ -260,17 +299,25 @@ int main  ( int  argc , char * * argv  )  {
   srand ( time  ( 0 ) ) ;
   
   if  ( argc  <=  1  ) {
+    printf  ( raspr4  . localerus ? u8"Локаль = \"%s\"\n" : "Locale = \"%s\"\n" ,
+      locale  ) ;
     puts ( raspr4  . localerus ?
       u8"Шифр2\n©2019 Глебов А.Н.\nСинтаксис : shifr2 [параметры]" :
       "Shifr2\n©2019 Glebe A.N.\nSyntax : shifr2 [parameters]" ) ;
-    puts  (u8"Параметры :");
-    puts  (u8"--ген-пар\tгенерировать пароль");
-    puts  (u8"--зашифр\tзашифровать");
-    puts  (u8"--расшифр\tрасшифровать");
-    puts  (u8"--пароль \"строка_пароля\"\tиспользовать заданный пароль");
+    puts  ( raspr4  . localerus ? u8"Параметры :" : "Parameters :"  ) ;
+    puts  (raspr4  . localerus ? u8"--ген-пар или\n--gen-psw\tгенерировать пароль" :
+      "--gen-psw\tpassword generate" );
+    puts  (raspr4  . localerus ? u8"--зашифр или\nencode\tзашифровать" :
+      "--encode" );
+    puts  (raspr4  . localerus ? u8"--расшифр или\ndecode\tрасшифровать" :
+      "--decode" );
+    puts  (raspr4  . localerus ? u8"--пароль или\n--passwd \"строка_пароля\"\tиспользовать заданный пароль" :
+      "--passwd \"password_string\"\tgiven password using" );
     puts  (u8"--вход \"имя_файла\"\tчитать данные из файла");
-    puts  (u8"--выход \"имя_файла\"\tзаписывать данные в файл"); }
-  else  {
+    puts  (u8"--выход \"имя_файла\"\tзаписывать данные в файл");
+    puts  ( u8"--текст\tшифрованный файл записан текстом ascii");
+    return 0 ; }
+  
     for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
       if  ( flagreadpasswd  ) {
         if  ( flagpasswd  ) {
@@ -279,7 +326,6 @@ int main  ( int  argc , char * * argv  )  {
         if ( isBAD_string_to_password ( (char(*)[])(argv[argj]) , & password_const ) ) {
           fprintf(stderr,u8"неправильный пароль = \"%s\"",argv[argj]);
           return 1 ; }
-        printf  ( u8"из строки во внутренний пароль = %x\n"  , password_const ) ;  
         
         char  password_letters [ 6 ] ;
         
@@ -305,7 +351,8 @@ int main  ( int  argc , char * * argv  )  {
           flagoutputfromfile = true ;
           flagreadoutput = false ; }
         else 
-      if ( strcmp ( argv[argj] , u8"--ген-пар" ) ==  0 ) {
+      if (( strcmp ( argv[argj] , u8"--ген-пар" ) ==  0 ) or
+        (strcmp ( argv[argj] , "--gen-psw" ) ==  0)){
         unsigned long const fact4 = fact(4) ;
         unsigned long const fact42 = fact4 * fact4 ;
         unsigned long const passmax = fact(16)/fact42/fact42 ;
@@ -323,15 +370,18 @@ int main  ( int  argc , char * * argv  )  {
             return 1 ; }
           printf  ( u8"из строки во внутренний пароль = %x\n"  , password2 ) ; } }
       else  {
-        if ( strcmp ( argv[argj] , u8"--зашифр" ) ==  0 ) {
+        if (( strcmp ( argv[argj] , u8"--зашифр" ) ==  0 ) or
+          ( strcmp ( argv[argj] , "--encode" ) ==  0 ) ) {
           flagenc = true ;
           flagdec = false ; }
         else
-        if ( strcmp ( argv[argj] , u8"--расшифр" ) ==  0 ) { 
+        if (( strcmp ( argv[argj] , u8"--расшифр" ) ==  0 )or
+          ( strcmp ( argv[argj] , "--decode" ) ==  0 )) { 
           flagdec = true ;
           flagenc = false ; }
         else
-        if ( strcmp ( argv[argj] , u8"--пароль" ) ==  0 ) { 
+        if (( strcmp ( argv[argj] , u8"--пароль" ) ==  0 )or
+          ( strcmp ( argv[argj] , "--passwd" ) ==  0 )) { 
           flagreadpasswd  = true  ; }
         else
         if ( strcmp ( argv[argj] , u8"--вход" ) ==  0 ) { 
@@ -339,13 +389,35 @@ int main  ( int  argc , char * * argv  )  {
         else
         if ( strcmp ( argv[argj] , u8"--выход" ) ==  0 ) { 
           flagreadoutput  = true  ; }  
+        else
+        if ( strcmp ( argv[argj] , u8"--текст" ) ==  0 ) { 
+          flagtext = true  ; }  
+
     }
     }
-  }
-  if((not flagenc) and (not flagdec)){
-     fputs(u8"нет задачи: зашифровывать или расшифровывать\n",stderr);
-     return 1 ;
-  }
+  
+  if(not( flagenc xor flagdec)){
+     fputs(u8"не определено : зашифровывать или расшифровывать ?\n",stderr);
+     return 1 ; }
+     
+  if ( not flagpasswd )    {
+    char p [ 8 ] ;
+    fputs(u8"введите пароль = ",stdout);
+    set_keypress  ( ) ;
+    char ( * res ) [ 8 ] = ( char ( * ) [ 8 ] ) fgets ( & ( p [ 0 ] ) , 8 , stdin ) ;
+    reset_keypress ( ) ;
+    char * j = &((*res)[0]) ;
+    while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq 0 ) and ( j < ( & ( * res ) [ 8 ] ) ) ) ++ j ;
+    if ( j < ( & ( ( * res ) [ 8 ] ) ) ) ( * j ) = 0 ;
+    else  {
+      fputs(u8"в пароле нет конца строки\n",stderr);
+      return 1 ; }
+    if ( res ) {
+      //printf ( u8"пароль = \"%s\"\n" , &((*res)[0]) ) ;
+      if ( isBAD_string_to_password ( res , & password_const ) ) {
+        fprintf ( stderr , u8"неправильный пароль = \"%s\"" , &((*res)[0]) ) ;
+        return 1 ; } } }
+        
   FILE  * filefrom  = stdin ;
   FILE  * fileto  = stdout  ;
   if ( flaginputfromfile ) {
@@ -373,10 +445,9 @@ int main  ( int  argc , char * * argv  )  {
   uint8_t deshi [ shifr_deshi_size ] ;
   
   password_load ( password_const  , & shifr , & deshi ) ;
-  printarr(&u8"таблица шифровать",&shifr,shifr_deshi_size);
-  printarr(&u8"расшифровывать   ",&deshi,shifr_deshi_size);
-   
+  
   if ( flagenc ) {
+    int bytecount = 0 ;
     do {
       char buf ;
       size_t readcount = fread ( & buf , 1 , 1 , filefrom ) ;
@@ -390,33 +461,107 @@ int main  ( int  argc , char * * argv  )  {
       uint8_t secretdatasole  [ 4 ] ;
       datasole ( & secretdata , & secretdatasole , 4 )  ;
       
-      printarr(&u8"секретные данные",&secretdata,4);  
-      printarr(&u8"с солью         ",&secretdatasole,4);
-      
       uint8_t encrypteddata [ 4 ] ;
       crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata , 4 ) ;
-      printarr(&u8"зашифрованные данные ",&encrypteddata,4);
       
       buf = (encrypteddata [ 0 ] & 0xf) bitor ((encrypteddata [ 1 ] & 0xf) << 4) ;
-      size_t writecount = fwrite ( & buf , 1 , 1 , fileto ) ;
+      size_t writecount ;
+      if(flagtext) {
+        char buf2[2];
+        char_to_hex(buf,&buf2);
+        writecount = fwrite ( & buf2 , 2 , 1 , fileto ) ; }
+      else
+        writecount = fwrite ( & buf , 1 , 1 , fileto ) ;
       if ( writecount == 0 ) {
         if ( ferror ( fileto ) ) {
           fputs(u8"ошибка записи файла\n",stderr ); 
           clearerr ( fileto ) ; }
         break ; }
       buf = (encrypteddata [ 2 ] & 0xf) bitor ((encrypteddata [ 3 ] & 0xf) << 4) ;
-      writecount = fwrite ( & buf , 1 , 1 , fileto ) ;
+      if(flagtext) {
+        char buf2[2];
+        char_to_hex(buf,&buf2);
+        writecount = fwrite ( & buf2 , 2 , 1 , fileto ) ;
+        bytecount +=  2 ;
+        if ( bytecount == 0x10 )  {
+          bytecount = 0 ;
+          buf2[0] = '\n' ;
+          fwrite ( & (buf2[0]) , 1 , 1 , fileto ) ; }  }
+      else
+        writecount = fwrite ( & buf , 1 , 1 , fileto ) ;
       if ( writecount == 0 ) {
         if ( ferror ( fileto ) ) {
           fputs(u8"ошибка записи файла\n",stderr ); 
           clearerr ( fileto ) ; }
         break ; }  
         
-    } while ( true ) ; }
-   else
-   if ( flagdec )  {}
-   
+    } while ( true ) ; 
+    if ( flagtext and bytecount ) {
+      char buf = '\n' ;
+      fwrite ( & buf , 1 , 1 , fileto ) ; }
   }
+  else  { // декодируем
+    do {
+      char buf [ 2 ] ;
+      size_t readcount ;
+      if  ( flagtext  ) {
+        char buf4 [ 4 ] ;
+        // читаем четыре буквы '0a1b' -> декодируем в два байта "XY"
+        do  {
+          readcount = fread ( & (buf4[0]) , 1 , 1 , filefrom ) ;
+          if ( readcount == 0 ) {
+            if ( ferror ( filefrom ) ) {
+              fputs(u8"ошибка чтения файла\n",stderr); 
+              clearerr ( filefrom ) ; }
+            goto out ; }
+        } while (not(( buf4[0] >= '0' and buf4[0] <= '9') or (buf4[0] >= 'a' and buf4[0] <= 'f'))) ;
+        
+        readcount = fread ( & (buf4[1]) , 1 , 3 , filefrom ) ;
+        if ( readcount < 3 ) {
+          if ( ferror ( filefrom ) ) {
+            fputs(u8"ошибка чтения файла\n",stderr); 
+            clearerr ( filefrom ) ; }
+          fputs(u8"ошибка hex данных\n",stderr); 
+          break ; }
+        for ( char const * i = &(buf4[1]); i <= &(buf4[3]) ; ++ i )
+          if (not(( (*i) >= '0' and (*i) <= '9') or ((*i) >= 'a' and (*i) <= 'f'))) {
+            fputs(u8"ошибка hex данных\n",stderr); 
+            goto out ; }
+        
+        if  ( isBAD_hex_to_char ( ( char const ( * ) [ 2 ] ) ( & buf4 ), & (buf[0])  ) ) {
+          fputs(u8"ошибка hex данных\n",stderr);
+          break ; }
+        if  ( isBAD_hex_to_char ( ( char const ( * ) [ 2 ] ) ( & ( buf4 [ 2 ] ) ) , & (buf[1])  ) ) {
+          fputs(u8"ошибка hex данных\n",stderr);
+          break ; }  
+        //printf(u8"[%x %x]",(unsigned char )(buf[0]),(unsigned char )(buf[1]));
+        }
+      else readcount = fread ( & (buf[0]) , 1 , 2 , filefrom ) ;
+      if ( readcount < 2 ) {
+        if ( ferror ( filefrom ) ) {
+          fputs(u8"ошибка чтения файла\n",stderr); 
+          clearerr ( filefrom ) ; }
+        break ; }
+      uint8_t secretdata [ 4 ] = { [0]  = buf[0]&0xf ,[1]=(buf[0]>>4)&0xf ,
+        [2]  = buf[1]&0xf ,[3]=(buf[1]>>4)&0xf      } ;
+      uint8_t decrypteddata [ 4 ] ;
+      crypt_decrypt ( & secretdata , & deshi , & decrypteddata , 4 ) ;
+      
+      buf[0] = (decrypteddata [ 0 ] & 0x3) bitor ((decrypteddata [ 1 ] & 0x3) << 2)
+        bitor ((decrypteddata [ 2 ] & 0x3)<<4) bitor ((decrypteddata [ 3 ] & 0x3) << 6);
+      size_t writecount = fwrite ( & (buf[0]) , 1 , 1 , fileto ) ;
+      if ( writecount == 0 ) {
+        if ( ferror ( fileto ) ) {
+          fputs(u8"ошибка записи файла\n",stderr ); 
+          clearerr ( fileto ) ; }
+        break ; }
+        
+    } while ( true ) ;
+    
+  }
+   
+  } // shifr deshi
+out : ;  
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
     if  ( fclose  ( fileto  ) ) {
@@ -430,98 +575,4 @@ int main  ( int  argc , char * * argv  )  {
       resulterror = 2 ; } }
   return  resulterror ; 
   
-  unsigned long const fact4 = fact(4) ;
-  unsigned long const fact42 = fact4 * fact4 ;
-  unsigned long const passmax = fact(16)/fact42/fact42 ;
-  printf(u8"максимальный пароль !16/((!4)^4)-1 = 0x%lx\n",passmax-1);
-  char s [ 6 ] ;
-  password_to_string ( passmax-1 , & s ) ;
-  printf(u8"максимальный пароль буквами = \"%s\"\n",s);
-  printf(u8"максимальный рандом = 0x%x\n",(int)RAND_MAX);
-  if ( not flagpasswd ) {
-    password_const  = (  ( long double ) rand  ( ) ) /
-      ( ( long double ) RAND_MAX  ) * ( ( long double ) passmax ) ;
-    flagpasswd  = true  ; }
-  printf  ( u8"внутренний пароль = %x\n"  , password_const  ) ;
-  char  password_letters [ 6 ] ;
-  password_to_string ( password_const , & password_letters ) ;
-  printf  ( u8"пароль буквами = \"%s\"\n" , & ( password_letters  [ 0 ] ) ) ;
-  { uint32_t password2 ;
-    if ( isBAD_string_to_password ( & password_letters , & password2 ) ) {
-      printf(u8"неправильный пароль = \"%s\"",& ( password_letters  [ 0 ] ));
-      return 1 ; }
-    printf  ( u8"из строки во внутренний пароль = %x\n"  , password2 ) ; }
-
-  fputs ( u8"разрешённые буквы = \""  , stdout  ) ;
-  { char const * j = & ( raspr4 . letters [ letters_count ] ) ;
-    do {
-      -- j ;
-      fputc  ( * j , stdout  ) ;
-    } while ( j not_eq & ( raspr4 . letters [ 0 ] ) ) ; }
-  fputs  ( u8"\"\n" ,stdout ) ;
-  
-  uint8_t shifr [ shifr_deshi_size ] ;
-  // 0 .. 3 - варианты секретных кодов для буквы 0
-  // 4 .. 7 - варианты секретных кодов для буквы 1
-  // 8 .. b - варианты секретных кодов для буквы 2
-  // c .. f - варианты секретных кодов для буквы 3
-  
-  uint8_t deshi [ shifr_deshi_size ] ;
-  
-  password_load ( password_const  , & shifr , & deshi ) ;
-     
-  printarr(&u8"таблица шифровать",&shifr,shifr_deshi_size);
-  printarr(&u8"расшифровывать   ",&deshi,shifr_deshi_size);
-  uint8_t secretdata [ alldata_size ] = { 0 , 1 , 2 , 3 , 3 , 2 , 1 , 0 , 3 , 0 , 2 , 1 } ;
-  uint8_t secretdatasole  [ alldata_size ] ;
-  datasole ( & secretdata , & secretdatasole , alldata_size )  ;
-  printarr(&u8"секретные данные",&secretdata,alldata_size);  
-  printarr(&u8"с солью         ",&secretdatasole,alldata_size);
-  uint8_t encrypteddata [ alldata_size ] ;
-  crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata , alldata_size ) ;
-  printarr(&u8"зашифрованные данные ",&encrypteddata,alldata_size);
-  uint8_t decrypteddata [ alldata_size ] ;
-  crypt_decrypt ( & encrypteddata , & deshi , & decrypteddata , alldata_size ) ;
-  printarr(&u8"расшифрованные данные",&decrypteddata,alldata_size);
-  size_t  decode_count = 0 ;
-  uint32_t password_try ;
-  uint8_t decrypteddata_try [ alldata_size ] ;
-  uint8_t shifr_try [ shifr_deshi_size ] ;
-  uint8_t deshi_try [ shifr_deshi_size ] ;
-  puts(u8"Попытаюсь подобрать...");
-  bool  flag_equal  ;
-  do {
-  
-  password_try = (  ( long double ) rand  ( ) ) /
-    ( ( long double ) RAND_MAX  ) * ( ( long double ) passmax ) ;
-  
-  // 0 .. 3 - варианты секретных кодов для буквы 0
-  // 4 .. 7 - варианты секретных кодов для буквы 1
-  // 8 .. b - варианты секретных кодов для буквы 2
-  // c .. f - варианты секретных кодов для буквы 3
-  
-  password_load ( password_try  , & shifr_try , & deshi_try ) ;
-     
-  crypt_decrypt ( & encrypteddata , & deshi_try , & decrypteddata_try , alldata_size ) ;
-  flag_equal  = true ;
-  for(int i = alldata_size ; i ; ) {
-    --  i ;
-    if  ( decrypteddata_try [ i ] not_eq secretdata [ i ] ) {
-      flag_equal = false ;
-      break ; } }
-  ++  decode_count  ;
- } while ( not flag_equal ) ;
- printf(u8"количество попыток угадать данные = %ld\n",decode_count);
- printf(u8"попытка , пароль = 0x%x\n",password_try);
- printarr(&u8"попытка таблица расшифровки",&deshi_try,shifr_deshi_size); 
-  // на четыре числа сложность угадать :
-  // 355 3 832 206 111 262 138 180 74 45
-  // = 220.6 раз 
-  // на восемь чисел сложность угадать :
-  // 3328 6383 64310 604 9 23976 16087 5167 6162 7161
-  // = 13320 раз
-  // на двенадцать чисел сложность угадать :
-  // 142174 219214 166462 946553 6386 27140 71806 444053 621050 2295
-  // = 
-  // теоретическая сложность = 16! / ((4!)^4) / 2 = 31 531 500
 }
