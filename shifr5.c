@@ -298,36 +298,43 @@ static  void  password_to_string ( uint32_t password , strp const string ) {
       password /= (uint32_t)letters_count ; } }
   ( * stringi ) = 0 ; }
   
+typedef struct  s_number128 {
+  uint64_t  a [ 2 ] ;
+} t_number128 ;
+  
 // number /= div , number := floor [ деление ] , return := остаток
-uint8_t  number128_div8mod  ( uint64_t  ( * restrict number ) [ 2 ] ,  uint8_t const div ) {
-  uint8_t ost = (*number)  [ 1 ] % ( uint64_t  ) div ;
-  (*number)  [ 1 ] /=  ( uint64_t  ) div ;
-  uint64_t number05 = ( ( ( ( uint64_t  ) ost ) ) <<  56 ) bitor ( (*number)  [ 0 ] >>  8 ) ;
+uint8_t  number128_div8mod  ( t_number128 * restrict const number ,
+  uint8_t const div ) {
+  uint8_t ost = number->a  [ 1 ] % ( uint64_t  ) div ;
+  number->a [ 1 ] /=  ( uint64_t  ) div ;
+  uint64_t number05 = ( ( ( ( uint64_t  ) ost ) ) <<  56 ) bitor
+    ( number->a [ 0 ] >>  8 ) ;
   ost = number05 % ( uint64_t  ) div ;
   number05 /= ( uint64_t  ) div ;
-  (*number)  [ 1 ] +=  ( number05  >> 56 ) ;
+  number->a [ 1 ] +=  ( number05  >> 56 ) ;
   number05  <<= 8 ;
-  uint16_t number00 = ( ( ost << 8 ) bitor ( (*number)  [ 0 ] bitand 0xff ) ) ;
+  uint16_t number00 = ( ( ost << 8 ) bitor ( number->a [ 0 ] bitand 0xff ) ) ;
   ost = number00 % ( uint16_t ) div ;
-  (*number) [ 0 ] = number05 bitor ( number00 / ( uint16_t ) div ) ; 
+  number->a [ 0 ] = number05 bitor ( number00 / ( uint16_t ) div ) ; 
   return  ost ; }
   
 // --
-void  number128dec  ( uint64_t  ( * const restrict number ) [ 2 ] ) {
-  if ( (*number) [ 0 ] ) {
-    -- (  (*number) [ 0 ] )  ;
+static  inline  void  number128dec  ( t_number128 * const restrict number ) {
+  if ( number->a [ 0 ] ) {
+    -- (  number->a [ 0 ] )  ;
     return  ; }
-  -- (  (*number) [ 0 ] )  ;
-  -- (  (*number) [ 1 ] )  ; }
+  -- (  number->a [ 0 ] )  ;
+  -- (  number->a [ 1 ] )  ; }
   
-static  inline  bool  number128_not0  ( uint64_t const ( * const restrict np ) [ 2 ] ) {
-  return  ( ( ( * np ) [ 0 ] ) or  ( ( * np ) [ 1 ] ) ) ; }
+static  inline  bool  number128_not0  (
+  t_number128 const * const restrict np ) {
+  return  ( ( np->a [ 0 ] ) or  ( np->a [ 1 ] ) ) ; }
   
 static  void  password_to_string5 (
-  uint64_t const ( * const restrict password  ) [ 2 ] , strp const string ) {
+  t_number128 const * const restrict password , strp const string ) {
   char * stringi = & ( ( * string )  [ 0 ] ) ;
   if ( number128_not0 ( password ) ) {
-    uint64_t  password2 [ 2 ] = {[0]=( * password ) [0],[1]=( * password ) [1]};
+    t_number128 password2 = * password  ;
     do {
       // здесь предыдущие размеры заняли место паролей
       number128dec  ( & password2  ) ;
@@ -361,6 +368,50 @@ found :
     ++  stringi ;
   } while ( * stringi ) ;
   ( * password ) = pass ; }
+  
+static  inline  void number128_set0  (
+  t_number128 * const restrict np ) {
+  ( * np  ) = ( t_number128 ) { { [ 0 ] = 0 , [ 1 ] = 0 } } ; }
+  
+void  number128_mul8  ( t_number128 * const restrict np , uint8_t const m ) {
+  uint64_t r0 = ( ( ( np->a [ 0 ] ) bitand
+      ( UINT64_C  ( 0x00ffffffffffffff  ) ) ) * ( ( uint64_t  ) m ) ) ;
+  uint64_t r1 = ( ( ( ( np->a [ 0 ]  ) >> 56 ) bitor
+      ( ( ( np->a [ 1 ]  ) <<  16 ) >> 8 ) ) * ( ( uint64_t  ) m ) ) ;
+  uint64_t r2 = ( ( ( np->a [ 1 ]  ) >>  48  ) * ( ( uint64_t  ) m ) ) ;
+  np->a [ 0 ] = r0 ;
+  //...
+  np->a [ 1 ] = ( r1 >>  8 ) ;
+  //...
+  }  
+  
+static  void  string_to_password5 ( strcp const string ,
+  t_number128 * const restrict password ) {
+  char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
+  if  ( ( * stringi ) == 0 ) {
+    number128_set0 ( password  ) ;
+    return ; }
+  t_number128  pass ;
+  number128_set0  ( & pass  ) ;
+  t_number128  mult = {{ [ 0 ] = 1 , [ 1 ] = 0 }} ;
+  do  {
+    uint8_t i = letters_count ;
+    do {
+      -- i ;
+      if ( ( * stringi ) == ns_shifr . letters  [ i ] ) goto found ; 
+    } while ( i ) ;
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+      ( char const ( * ) [ ] ) & u8"неправильная буква в пароле" :
+      ( char const ( * ) [ ] ) & "wrong letter in password" ) ;
+    longjmp(ns_shifr  . jump,1);
+found : ;
+    { t_number128  tmp = mult ;
+      number128_mul8  ( & tmp , i + 1 ) ;
+      number128_add ( &  pass  , & tmp )  ; }
+    number128_mul8  ( & mult , letters_count ) ;
+    ++  stringi ;
+  } while ( * stringi ) ;
+  ( * password  ) = pass ; }
   
 static  void  shifr_init ( void  ) {
   char * j = & ( ns_shifr . letters [ 0 ] ) ;
