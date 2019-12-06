@@ -47,7 +47,7 @@
 // длина буквенного пароля : log ( 95 , 2.39*(10^24) ) ≈ 12.33 букв < 13 букв
 // память = 74291 = 72.55KB
 
-// Version 4 ?
+// Version 6 ?
 
 // 3 бита соль
 // 3 бита инфа
@@ -72,9 +72,9 @@
 // длина буквенного пароля : log ( 95 , 1.817*(10^52) ) ≈ 26.42 букв < 27 букв
 // память = 5.879 GB
 
-// в четвёртой версии бит будет 976 бит 148.6 букв ? память ?
-// в пятой версии 5004 бит 761.6 букв ? память ?
-// в шестой 24307 бит 3700 букв ? память ?
+// в 8 версии бит будет 976 бит 148.6 букв ? память ?
+// в 10 версии 5004 бит 761.6 букв ? память ?
+// в 12 24307 бит 3700 букв ? память ?
 
 # include <locale.h>
 # include <stdio.h>
@@ -159,6 +159,7 @@ t_type_raspr_xp ( 4 )
 # define  raspr4_16_size (UINT16_C(1820))
 # define  raspr4_12_size (UINT16_C(495))
 # define  raspr4_8_size (UINT8_C(70))
+# define  raspr4_4_size (UINT8_C(1))
 /*
 # define  raspr8_8_size (UINT64_C(4426165368))
 # define  raspr8_7_size (UINT32_C(1420494075))
@@ -182,10 +183,10 @@ uint16_t  s [ 4 ] ;
 // массив указателей на разные распределения
 type_raspr_xp ( 4 )  xp  [ 4 ] ;
  
-// тип архива бинарного 0x02 + 0x00
+// тип архива бинарного 0x04 + 0x00
 unsigned char const headerbyn [ header_type_size ] ;
 
-// "2\n"
+// "4\n"
 unsigned char const headertxt [ header_type_size ] ;
 
 bool  live  ;
@@ -202,10 +203,10 @@ uint16_t  s [ 8 ] ;
 // 8 указателей на  массивы разных распределений ( 4х штучных )
 type_raspr_xp ( 4 )  xp  [ 8 ] ;
  
-// тип архива бинарного 0x03 + 0x00
+// тип архива бинарного 0x05 + 0x00
 unsigned char const headerbyn [ header_type_size ] ;
 
-// "3\n"
+// "5\n"
 unsigned char const headertxt [ header_type_size ] ;
 
 bool  live  ;
@@ -260,18 +261,18 @@ static  struct  s_ns_shifr  ns_shifr = {
     [ 2 ] = 'i' , [ 3 ] = 'f' , [ 4 ] = 'r' } ,
   .raspr4 = {
     .s = { [ 3 ] = raspr4_16_size , [ 2 ] = raspr4_12_size ,
-      [ 1 ] = raspr4_8_size , [ 0 ] = 0 } ,
-    .headerbyn = { [ 0 ] = 0x02 , [ 1 ] = 0x00 } ,
-    .headertxt = { [ 0 ] = '2' , [ 1 ] = '\n' } ,
+      [ 1 ] = raspr4_8_size , [ 0 ] = raspr4_4_size } ,
+    .headerbyn = { [ 0 ] = 0x04 , [ 1 ] = 0x00 } ,
+    .headertxt = { [ 0 ] = '4' , [ 1 ] = '\n' } ,
     .live = false ,
     } ,
   .raspr5 = {
     .s = { [ 7 ] = raspr4_32_size , [ 6 ] = raspr4_28_size ,
       [ 5 ] = raspr4_24_size , [ 4 ] = raspr4_20_size ,
       [ 3 ] = raspr4_16_size , [ 2 ] = raspr4_12_size ,
-      [ 1 ] = raspr4_8_size , [ 0 ] = 0 } ,
-    .headerbyn = { [ 0 ] = 0x03 , [ 1 ] = 0x00 } ,
-    .headertxt = { [ 0 ] = '3' , [ 1 ] = '\n' } ,
+      [ 1 ] = raspr4_8_size , [ 0 ] = raspr4_4_size } ,
+    .headerbyn = { [ 0 ] = 0x05 , [ 1 ] = 0x00 } ,
+    .headertxt = { [ 0 ] = '5' , [ 1 ] = '\n' } ,
     .live = false ,
     } ,
   /*.raspr6 = {
@@ -295,6 +296,45 @@ static  void  password_to_string ( uint32_t password , strp const string ) {
       ++  stringi ;
       if ( password < (uint32_t)letters_count ) break ;
       password /= (uint32_t)letters_count ; } }
+  ( * stringi ) = 0 ; }
+  
+// number /= div , number := floor [ деление ] , return := остаток
+uint8_t  number128_div8mod  ( uint64_t  ( * restrict number ) [ 2 ] ,  uint8_t const div ) {
+  uint8_t ost = (*number)  [ 1 ] % ( uint64_t  ) div ;
+  (*number)  [ 1 ] /=  ( uint64_t  ) div ;
+  uint64_t number05 = ( ( ( ( uint64_t  ) ost ) ) <<  56 ) bitor ( (*number)  [ 0 ] >>  8 ) ;
+  ost = number05 % ( uint64_t  ) div ;
+  number05 /= ( uint64_t  ) div ;
+  (*number)  [ 1 ] +=  ( number05  >> 56 ) ;
+  number05  <<= 8 ;
+  uint16_t number00 = ( ( ost << 8 ) bitor ( (*number)  [ 0 ] bitand 0xff ) ) ;
+  ost = number00 % ( uint16_t ) div ;
+  (*number) [ 0 ] = number05 bitor ( number00 / ( uint16_t ) div ) ; 
+  return  ost ; }
+  
+// --
+void  number128dec  ( uint64_t  ( * const restrict number ) [ 2 ] ) {
+  if ( (*number) [ 0 ] ) {
+    -- (  (*number) [ 0 ] )  ;
+    return  ; }
+  -- (  (*number) [ 0 ] )  ;
+  -- (  (*number) [ 1 ] )  ; }
+  
+static  inline  bool  number128_not0  ( uint64_t const ( * const restrict np ) [ 2 ] ) {
+  return  ( ( ( * np ) [ 0 ] ) or  ( ( * np ) [ 1 ] ) ) ; }
+  
+static  void  password_to_string5 (
+  uint64_t const ( * const restrict password  ) [ 2 ] , strp const string ) {
+  char * stringi = & ( ( * string )  [ 0 ] ) ;
+  if ( number128_not0 ( password ) ) {
+    uint64_t  password2 [ 2 ] = {[0]=( * password ) [0],[1]=( * password ) [1]};
+    do {
+      // здесь предыдущие размеры заняли место паролей
+      number128dec  ( & password2  ) ;
+      ( * stringi ) = ns_shifr . letters [ number128_div8mod  ( & password2 ,
+        letters_count ) ] ;
+      ++  stringi ;
+    } while ( number128_not0 ( password ) ) ; }
   ( * stringi ) = 0 ; }
   
 static  void  string_to_password ( strcp const string ,
