@@ -22,6 +22,19 @@
 // длина буквенного пароля : log ( 95 , 63063000 ) ≈ 3.944 буквы < 4 буквы
 // память = 2385 байт = 2.329 KB
 
+/*
+Связь паролей с идентификацией какой код какому набору биту принадлежит.
+Пароль % 1820 даёт код битовых наборов для буквы b00.
+C(4,16)=1820=C(3,15)+C(3,14)+...+C(3,3)=455+364+286+220+165+120+84+56+35+20+10+4+1
+x<455 первый код 0000 , 455<=x<455+364 первый код 0001 , ...
+x=1819 первый код 1101 , второй 1110 , третий 1111
+Дальше [пароль/1820] % 495 даёт код для буквы b01.
+C(4,12)=495=C(3,11)+C(3,10)+...+C(3,3)=165+120+84+56+35+20+10+4+1
+нумерация кодов уже не по порядку, а с исключением занятых кодов буквой b00.
+?
+Как без огромного массива C(8,64) занятых номеров всё следить ?
+ */
+
 // Version 5
 
 // 2 бита соль
@@ -195,6 +208,10 @@ uint32_t  password_const  ;
 
 } ;
 
+typedef struct  s_number128 {
+  uint64_t a [ 2 ] ;
+} t_number128 ;
+
 struct  s_raspr5 {
 
 // массив размеров разных распределений
@@ -211,7 +228,7 @@ unsigned char const headertxt [ header_type_size ] ;
 
 bool  live  ;
 
-uint64_t  password_const  [ 2 ] ;
+t_number128 password_const  ;
 
 } ;
 /*
@@ -254,6 +271,8 @@ struct  s_raspr4 raspr4 ;
 struct  s_raspr5 raspr5 ;
 //struct  s_raspr6 raspr6 ;
 
+int use_version ; //  4 или 5
+
 } ;
 
 static  struct  s_ns_shifr  ns_shifr = {
@@ -275,6 +294,7 @@ static  struct  s_ns_shifr  ns_shifr = {
     .headertxt = { [ 0 ] = '5' , [ 1 ] = '\n' } ,
     .live = false ,
     } ,
+  . use_version  = 4 ,
   /*.raspr6 = {
     .s = { [ 7 ] = raspr8_8_size , [ 6 ] = raspr8_7_size ,
       [ 5 ] = raspr8_6_size , [ 4 ] = raspr8_5_size ,
@@ -297,25 +317,21 @@ static  void  password_to_string ( uint32_t password , strp const string ) {
       if ( password < (uint32_t)letters_count ) break ;
       password /= (uint32_t)letters_count ; } }
   ( * stringi ) = 0 ; }
-  
-typedef struct  s_number128 {
-  uint64_t  a [ 2 ] ;
-} t_number128 ;
-  
+    
 // number /= div , number := floor [ деление ] , return := остаток
 uint8_t  number128_div8mod  ( t_number128 * restrict const number ,
   uint8_t const div ) {
-  uint8_t ost = number->a  [ 1 ] % ( uint64_t  ) div ;
-  number->a [ 1 ] /=  ( uint64_t  ) div ;
+  uint8_t ost = number  ->  a  [ 1 ] % ( uint64_t  ) div ;
+  number  ->  a [ 1 ] /=  ( uint64_t  ) div ;
   uint64_t number05 = ( ( ( ( uint64_t  ) ost ) ) <<  56 ) bitor
-    ( number->a [ 0 ] >>  8 ) ;
+    ( number  ->  a [ 0 ] >>  8 ) ;
   ost = number05 % ( uint64_t  ) div ;
   number05 /= ( uint64_t  ) div ;
-  number->a [ 1 ] +=  ( number05  >> 56 ) ;
+  number  ->  a [ 1 ] +=  ( number05  >> 56 ) ;
   number05  <<= 8 ;
-  uint16_t number00 = ( ( ost << 8 ) bitor ( number->a [ 0 ] bitand 0xff ) ) ;
+  uint16_t number00 = ( ( ost << 8 ) bitor ( number ->  a [ 0 ] bitand 0xff ) ) ;
   ost = number00 % ( uint16_t ) div ;
-  number->a [ 0 ] = number05 bitor ( number00 / ( uint16_t ) div ) ; 
+  number  ->  a [ 0 ] = number05 bitor ( number00 / ( uint16_t ) div ) ; 
   return  ost ; }
   
 // --
@@ -372,18 +388,29 @@ found :
 static  inline  void number128_set0  (
   t_number128 * const restrict np ) {
   ( * np  ) = ( t_number128 ) { { [ 0 ] = 0 , [ 1 ] = 0 } } ; }
+
+static  inline  void number128_add  (
+  t_number128 * const restrict np , t_number128 const * const restrict xp ) {
+  uint64_t const old = np  ->  a [ 0 ] ;
+  if ( np == xp ) {
+    ( np  ->  a [ 1 ] ) <<= 1 ;
+    ( np  ->  a [ 0 ] ) <<= 1 ; }
+  else  {
+    ( np  ->  a [ 1 ] ) +=  ( xp  ->  a [ 1 ] ) ;
+    ( np  ->  a [ 0 ] ) +=  ( xp  ->  a [ 0 ] ) ; }
+  if (  np  ->  a [ 0 ] < old ) ++  ( np  ->  a [ 1 ] ) ; }
   
 void  number128_mul8  ( t_number128 * const restrict np , uint8_t const m ) {
-  uint64_t r0 = ( ( ( np->a [ 0 ] ) bitand
-      ( UINT64_C  ( 0x00ffffffffffffff  ) ) ) * ( ( uint64_t  ) m ) ) ;
-  uint64_t r1 = ( ( ( ( np->a [ 0 ]  ) >> 56 ) bitor
-      ( ( ( np->a [ 1 ]  ) <<  16 ) >> 8 ) ) * ( ( uint64_t  ) m ) ) ;
-  uint64_t r2 = ( ( ( np->a [ 1 ]  ) >>  48  ) * ( ( uint64_t  ) m ) ) ;
-  np->a [ 0 ] = r0 ;
-  //...
-  np->a [ 1 ] = ( r1 >>  8 ) ;
-  //...
-  }  
+  // [0]
+  uint64_t r0 = ( ( ( ( np  ->  a [ 0 ] ) << 8 ) >> 8 ) * ( ( uint64_t  ) m ) ) ;
+  // верхние 8 бит [0] + [1] малые 56 бит
+  uint64_t r1 = ( ( ( ( np  ->  a [ 0 ]  ) >> 56 ) bitor
+      ( ( ( np  ->  a [ 1 ]  ) <<  16 ) >> 8 ) ) * ( ( uint64_t  ) m ) ) ;
+  // верхние 16 бит [1]
+  uint64_t r2 = ( ( ( np  ->  a [ 1 ]  ) >>  48  ) * ( ( uint64_t  ) m ) ) ;
+  np->a [ 1 ] = ( r1 >>  8 ) + ( r2 << 48 ) ;
+  np->a [ 0 ] = r0 + ( r1 >> 56 ) ;
+  if ( np ->  a [ 0 ] < r0  ) ++  ( np  ->  a [ 1 ] ) ; }  
   
 static  void  string_to_password5 ( strcp const string ,
   t_number128 * const restrict password ) {
@@ -414,8 +441,8 @@ found : ;
   ( * password  ) = pass ; }
   
 static  void  shifr_init ( void  ) {
-  char * j = & ( ns_shifr . letters [ 0 ] ) ;
-  for ( uint8_t i = 0x20 ; i <= 0x7e ; ++ i , ++ j ) ( * j ) = i ; }
+  { char * j = & ( ns_shifr . letters [ 0 ] ) ;
+    for ( uint8_t i = 0x20 ; i <= 0x7e ; ++ i , ++ j ) ( * j ) = i ;  } }
     
 static  void  raspr4_init ( void  ) {
 # ifdef SHIFR_DEBUG
@@ -427,7 +454,7 @@ static  void  raspr4_init ( void  ) {
 # endif
   uint8_t raspri  = 4 ;
   do {
-    uint8_t raspri4 = raspri * 4 ;
+    uint8_t const raspri4 = raspri * 4 ;
     --  raspri  ;
     // raspri = 3 , 2 , 1
     // raspri4 = 16 , 12 , 8
@@ -435,10 +462,10 @@ static  void  raspr4_init ( void  ) {
       type_raspr_xp ( 4 ) ap = malloc  ( ns_shifr .  raspr4  . s [ raspri ] ) ;
       ns_shifr  . raspr4  . xp [ raspri ] = ap ;
       // ap - указатели на разные массивы
-      for(uint8_t i0 = 0 ; i0 < (raspri4 - 3)  ; ++  i0 )
-        for(uint8_t i1 = i0 + 1 ; i1 < (raspri4 - 2)  ; ++  i1 )
-          for(uint8_t i2 = i1 + 1 ; i2 < (raspri4 - 1 ) ; ++  i2 )
-            for(uint8_t i3 = i2 + 1 ; i3 < raspri4  ; ++  i3 ) {
+      for ( uint8_t i0 = 0 ; i0 < ( raspri4 - 3 )  ; ++  i0 )
+        for ( uint8_t i1 = i0 + 1 ; i1 < (  raspri4 - 2 )  ; ++  i1 )
+          for ( uint8_t i2 = i1 + 1 ; i2 < (  raspri4 - 1 ) ; ++  i2 )
+            for ( uint8_t i3 = i2 + 1 ; i3 < raspri4  ; ++  i3 ) {
               ( * ap ) [ j ] [ 0 ] = i0  ;
               ( * ap ) [ j ] [ 1 ] = i1  ;
               ( * ap ) [ j ] [ 2 ] = i2  ;
@@ -446,13 +473,45 @@ static  void  raspr4_init ( void  ) {
               ++  j ; } }
   } while ( raspri > 1 ) ; 
   ns_shifr .  raspr4 . live = true  ; }
+
+static  void  raspr5_init ( void  ) {
+# ifdef SHIFR_DEBUG
+  if ( ns_shifr .  raspr5 . live ) {
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+      ( char const ( * ) [ ] ) & u8"raspr5_init: двойной вызов конструктора" :
+      ( char const ( * ) [ ] ) & "raspr5_init: double constructor call" ) ;
+    longjmp ( ns_shifr  . jump  , 1 ) ; }
+# endif
+  uint8_t raspri  = 8 ;
+  do {
+    uint8_t const raspri4 = raspri * 4 ;
+    --  raspri  ;
+    // raspri = 7 , 6 , 5 , 4 , 3 , 2 , 1
+    // raspri4 = 32 , 28 , 24 , 20 , 16 , 12 , 8
+    { uint16_t  j = 0 ;
+      type_raspr_xp ( 4 ) ap = malloc  ( ns_shifr .  raspr5  . s [ raspri ] ) ;
+      ns_shifr  . raspr5  . xp [ raspri ] = ap ;
+      // ap - указатели на разные массивы
+      for ( uint8_t i0 = 0 ; i0 < ( raspri4 - 3 )  ; ++  i0 )
+        for ( uint8_t i1 = i0 + 1 ; i1 < (  raspri4 - 2 )  ; ++  i1 )
+          for ( uint8_t i2 = i1 + 1 ; i2 < (  raspri4 - 1 ) ; ++  i2 )
+            for ( uint8_t i3 = i2 + 1 ; i3 < raspri4 ; ++  i3 ){
+              ( * ap ) [ j ] [ 0 ] = i0  ;
+              ( * ap ) [ j ] [ 1 ] = i1  ;
+              ( * ap ) [ j ] [ 2 ] = i2  ;
+              ( * ap ) [ j ] [ 3 ] = i3  ; 
+              ++  j ; } }
+  } while ( raspri > 1 ) ; 
+  ns_shifr .  raspr5 . live = true  ; }  
   
 static  void  raspr4_destr ( void  ) {
   if ( not  ns_shifr .  raspr4 . live ) return  ;
   uint8_t raspri  = 4 ;
   do {
     --  raspri  ;
+//puts(u8"-");    
     free ( ns_shifr  . raspr4  . xp [ raspri ] ) ;
+//puts(u8"+");    
   } while ( raspri > 1 ) ; }
 
 static  void  raspr5_destr ( void  ) {
@@ -460,12 +519,19 @@ static  void  raspr5_destr ( void  ) {
   uint8_t raspri  = 8 ;
   do {
     --  raspri  ;
+//puts(u8"-");        
     free ( ns_shifr  . raspr5  . xp [ raspri ] ) ;
+//puts(u8"+");        
   } while ( raspri > 1 ) ; }
   
 static  void  shifr_destr ( void  ) {
   raspr4_destr  ( ) ;
-  raspr5_destr  ( ) ; }  
+  raspr5_destr  ( ) ;
+  /*switch  ( ns_shifr  . use_version ) {
+  case  4 : raspr4_destr  ( ) ; break ;
+  case  5 : raspr5_destr  ( ) ; break ;
+  default : printf  ( ( ns_shifr . localerus ?  u8"Неизвестная версия %d\n" : "Unknown version %d\n"  ) ,
+    ns_shifr  . use_version ) ; }*/ }
   
 // пароль раскладываем в таблицу шифровки , дешифровки
   // пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
@@ -482,9 +548,9 @@ void  password_load ( uint32_t  const password_const  , arrp const shifrp ,
   password  /=  raspr4_16_size  ;
   for ( uint8_t j = 0 ; j < 4 ; ++  j ) {
     (*shifrp) [ j ] = ( * ( ns_shifr.raspr4.xp [ 3 ] ) )
-      /*ns_shifr.raspr4.x44*/ [ cindex4_16 ] [ j ] ;
+       [ cindex4_16 ] [ j ] ;
     (*deship) [ ( * ( ns_shifr.raspr4.xp [ 3 ] ) )
-      /*ns_shifr.raspr4.x44*/ [ cindex4_16 ] [ j ] ] = 0 ; }
+       [ cindex4_16 ] [ j ] ] = 0 ; }
     
       for ( uint8_t arr_ind = 1 ; arr_ind <= 2 ; ++ arr_ind ) {
         uint8_t index = 0 ;
@@ -520,7 +586,7 @@ void  password_load ( uint32_t  const password_const  , arrp const shifrp ,
           ++  index3 ; } }
   }
 
-# define  alldata_size  12
+//# define  alldata_size  12
   
 void datasole ( arrcp const secretdata , arrp const secretdatasole , size_t  data_size ) {
   uint8_t const * id = &((*secretdata)[data_size]) ;
@@ -610,8 +676,9 @@ int main  ( int  argc , char * * argv  )  {
   bool  flagclosefilefrom = false ;
   bool  flagclosefileto = false ;
   bool  flagtext  = false ;
+//puts(u8"-2.");  
   shifr_init  ( ) ;
-  
+//puts(u8"-1.");  
   if  ( argc  <=  1  ) {
     puts ( ns_shifr . localerus ?
       u8"Шифр2 ©2019 Глебов А.Н.\nСинтаксис : shifr2 [параметры]" :
@@ -631,6 +698,10 @@ int main  ( int  argc , char * * argv  )  {
       "--output \"file_name\"\twrite to file"    );
     puts  (ns_shifr . localerus ?  u8"--текст или\n--text\tшифрованный файл записан текстом ascii" :
       "--text\tencrypted file written in ascii text"    );
+    puts  ( ns_shifr . localerus ?  u8"--4\tиспользовать четырёх битное шифрование ( четыре буквы ) ( по-умолчанию )" :
+      "--4\tusing four bit encryption ( four letters ) ( by default )" ) ;
+    puts  ( ns_shifr . localerus ?  u8"--5\tиспользовать пяти битное шифрование ( ? буквы )" :
+      "--5\tusing five bit encryption ( ? letters )" ) ;
     puts  (ns_shifr . localerus ?  u8"Длина пароля, дающая разное шифрование = 4 буквы. Бо\u0301льшая длина будет действовать, как другой пароль с меньшей длиной." :
       "Password length giving different encryption = 4 letters. A longer length will act like another password with a shorter length." ) ;
     fputs  ( ns_shifr . localerus ?  u8"Буквы в пароле : \"" : "Letters in password : \"" , stdout ) ;
@@ -644,8 +715,9 @@ int main  ( int  argc , char * * argv  )  {
 # if  RAND_MAX  !=  0x7fffffff
 # error RAND_MAX  !=  0x7fffffff
 # endif
+//puts(u8"-0.5.");
   // 31 бит
-  srand ( time  ( 0 ) ) ;    
+  srand ( time  ( 0 ) ) ;
   raspr4_init ( ) ;
   for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
     if  ( flagreadpasswd  ) {
@@ -653,14 +725,22 @@ int main  ( int  argc , char * * argv  )  {
         ns_shifr  . string_exception  = ( ns_shifr . localerus ?
           (char const (*)[]) & u8"пароль уже задан" :
           (char const (*)[]) & "password already set" );
-        longjmp(ns_shifr  . jump,1); }         
-      string_to_password ( (char(*)[])(argv[argj]) ,
+        longjmp(ns_shifr  . jump,1); }
+      if ( ns_shifr . use_version == 4 )
+        string_to_password ( (char(*)[])(argv[argj]) ,
                            & ns_shifr . raspr4  . password_const ) ; 
+      else
+        string_to_password5 ( (char(*)[])(argv[argj]) ,
+                           & ns_shifr . raspr5  . password_const ) ; 
         
-      char  password_letters [ 6 ] ;
+      char  password_letters [ 20 ] ;
         
-      password_to_string ( ns_shifr . raspr4  . password_const ,
-        & password_letters ) ;
+      if ( ns_shifr . use_version == 4 )
+        password_to_string ( ns_shifr . raspr4  . password_const ,
+          & password_letters ) ;
+      else
+        password_to_string5 ( & ns_shifr . raspr5  . password_const ,
+          & password_letters ) ;
    
 // Сделать предупреждение, что пароли равны :
 // "$WSh" == "" : 63063000 == 0
@@ -712,9 +792,22 @@ int main  ( int  argc , char * * argv  )  {
         else
         if (( strcmp ( argv[argj] , u8"--текст" ) ==  0 ) or
           ( strcmp ( argv[argj] , u8"--text" ) ==  0 )){ 
-          flagtext = true  ; } 
+          flagtext = true  ; }
+        else
+        if (( strcmp ( argv[argj] , u8"--4" ) ==  0 ) or
+          ( strcmp ( argv[argj] , u8"--4" ) ==  0 )){ 
+          //raspr4_init ( ) ;
+          ns_shifr . use_version = 4 ; }
+        else
+        if (( strcmp ( argv[argj] , u8"--5" ) ==  0 ) or
+          ( strcmp ( argv[argj] , u8"--5" ) ==  0 )){ 
+puts(u8"-0.25.");          
+          raspr5_init ( ) ;
+puts(u8"0.");
+          ns_shifr . use_version = 5 ; }  
         else {
-          fprintf ( stderr , ( ns_shifr . localerus ? u8"неопознанная опция : \"%s\"\n" :
+          fprintf ( stderr , ( ns_shifr . localerus ?
+            u8"неопознанная опция : \"%s\"\n" :
             "unrecognized option : \"%s\"\n" ) , argv [ argj ] ) ;
           ns_shifr  . string_exception  = ( ns_shifr . localerus ?
             (char const (*)[])& u8"неопознанная опция" :
@@ -722,18 +815,33 @@ int main  ( int  argc , char * * argv  )  {
           longjmp(ns_shifr  . jump,1); } } }
   
   if ( flaggenpasswd ) {
-    unsigned long const fact4 = fact(4) ;
-    unsigned long const fact42 = fact4 * fact4 ;
-    unsigned long const passmax = fact(16)/fact42/fact42 ;
     srand ( time  ( 0 ) ) ;
-    ns_shifr . raspr4  . password_const = (  ( long double ) rand  ( ) ) /
-      ( ( long double ) RAND_MAX  ) * ( ( long double ) passmax ) ;
+    if ( ns_shifr . use_version == 4 ) {
+      unsigned long const fact4 = fact(4) ;
+      unsigned long const fact42 = fact4 * fact4 ;
+      unsigned long const passmax = fact(16)/fact42/fact42 ;
+      ns_shifr . raspr4  . password_const = (  ( long double ) rand  ( ) ) /
+        ( ( long double ) RAND_MAX  ) * ( ( long double ) passmax ) ; }
+    else {
+      int ro [ 3 ] = { rand  ( ) , rand  ( ) , rand  ( ) } ;
+        //= (4*8)! / ((4!)^8) ≈ 2.39*(10^24)
+      // sqrt ((4*8)! / ((4!)^8) ≈ 2.39*(10^24) ) ≈ 1.546 * 10^12
+      unsigned long const fact4 = fact(4) ;
+      unsigned long const fact42 = fact4 * fact4 ;
+      unsigned long const fact44 = fact42 * fact42 ;
+      unsigned long const fact48 = fact44 * fact44 ;
+      unsigned long const passmax = fact(32)/fact48 ;
+      /*ns_shifr . raspr5  . password_const =
+        ( (  ( long double ) ro[0] ) / ( ( long double ) RAND_MAX  ) ) *
+        ( (  ( long double ) ro[1] ) / ( ( long double ) RAND_MAX  ) ) *
+        ( (  ( long double ) ro[2] ) / ( ( long double ) RAND_MAX  ) ) *
+        ( ( long double ) passmax ) ;*/ }
     flagpasswd  = true  ;
 # ifdef SHIFR_DEBUG    
     printf((ns_shifr . localerus ? u8"внутренний пароль = %x\n" :
       "internal password = %x\n") ,ns_shifr . raspr4  . password_const  ) ;
 # endif    
-    char  password_letters [ 6 ] ;
+    char  password_letters [ 20 ] ;
     password_to_string ( ns_shifr . raspr4  . password_const , & password_letters ) ;
     printf((ns_shifr . localerus ? u8"пароль буквами = \"%s\"\n" : 
       "password by letters = \"%s\"\n"),&(password_letters[0]));
@@ -744,6 +852,7 @@ int main  ( int  argc , char * * argv  )  {
         "from string to internal password = %x\n" ) , password2 ) ;
 # endif
     }
+//puts(u8"0.5.");         
     if ( not flagoutputtofile ) {
       puts  ( ns_shifr . localerus ?
         u8"Шифрование не произведено. Используйте опцию заданием выходного файла или с опцией --пароль предлагаемого пароля." :
@@ -755,15 +864,17 @@ int main  ( int  argc , char * * argv  )  {
       (char const (*)[])& u8"так зашифровывать или расшифровывать ?" :
       (char const (*)[])& u8"so encrypt or decrypt ?" ) ;
     longjmp(ns_shifr  . jump,1); }
-  
+//puts(u8"0.6.");  
   //  по-умолчанию шифруем
   if ( not flagdec  ) flagenc = true  ;
-     
+//puts(u8"1.");     
   if ( not flagpasswd )    {
     char p [ 8 ] ;
-    fputs ( ( ns_shifr . localerus ? u8"введите пароль = " : "enter the password = " ) , stdout  ) ;
+    fputs ( ( ns_shifr . localerus ? u8"введите пароль = " :
+      "enter the password = " ) , stdout  ) ;
     set_keypress  ( ) ;
-    char ( * res ) [ 8 ] = ( char ( * ) [ 8 ] ) fgets ( & ( p [ 0 ] ) , 8 , stdin ) ;
+    char ( * res ) [ 8 ] = ( char ( * ) [ 8 ] )
+      fgets ( & ( p [ 0 ] ) , 8 , stdin ) ;
     reset_keypress ( ) ;
     char * j = &((*res)[0]) ;
     while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq 0 ) and
@@ -775,7 +886,7 @@ int main  ( int  argc , char * * argv  )  {
         (char const (*)[]) & "there is no end of line in the password" ) ;
       longjmp(ns_shifr  . jump,1); }
     string_to_password ( res , & ns_shifr . raspr4  . password_const ) ; }
-        
+//puts(u8"2.");        
   FILE  * filefrom  = stdin ;
   FILE  * fileto  = stdout  ;
   if ( flaginputfromfile ) {
@@ -800,7 +911,7 @@ int main  ( int  argc , char * * argv  )  {
       longjmp(ns_shifr  . jump,1); }
     flagclosefileto = true ;
     fileto  = f ; }
-      
+//puts(u8"3.");      
   {uint8_t shifr [ shifr_deshi_size2 ] ;
   // 0 .. 3 - варианты секретных кодов для буквы 0
   // 4 .. 7 - варианты секретных кодов для буквы 1
@@ -810,14 +921,15 @@ int main  ( int  argc , char * * argv  )  {
   uint8_t deshi [ shifr_deshi_size2 ] ;
   
   password_load ( ns_shifr . raspr4  . password_const  , & shifr , & deshi ) ;
-  
+//puts(u8"4.");  
   if ( flagenc ) {
     // главный заголовок "шифр" без конца строки
     size_t writecount = fwrite ( & ns_shifr . mainheader  , 1 ,
       sizeof ( ns_shifr . mainheader ) , fileto ) ;
     if ( writecount < sizeof ( ns_shifr . mainheader ) ) {
       clearerr ( fileto ) ; 
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ? (char const (*)[]) & u8"ошибка записи заголовка" :
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+        (char const (*)[]) & u8"ошибка записи заголовка" :
         (char const (*)[]) & "header write error" ) ;
       longjmp(ns_shifr  . jump,1); }
     
@@ -837,7 +949,7 @@ int main  ( int  argc , char * * argv  )  {
         ns_shifr  . string_exception  = ( ns_shifr . localerus ? (char const (*)[]) & u8"ошибка записи заголовка" :
         (char const (*)[]) & "header write error" ) ;
         longjmp(ns_shifr  . jump,1); } }   
-    
+//puts(u8"5.");    
     int bytecount = 0 ;
     do {
       char buf ;
@@ -845,11 +957,13 @@ int main  ( int  argc , char * * argv  )  {
       if ( readcount == 0 ) {
         if ( ferror ( filefrom ) ) {
           clearerr ( filefrom ) ;
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ? (char const (*)[]) & u8"ошибка чтения файла" :
+          ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+            (char const (*)[]) & u8"ошибка чтения файла" :
             (char const (*)[]) & "error reading file" ) ;
           longjmp(ns_shifr  . jump,1); }
         break ; }
-      uint8_t secretdata [ 4 ] = { [0]  = buf&3 ,[1]=(buf>>2)&3,[2]=(buf>>4)&3,[3]=(buf>>6)&3} ;
+      uint8_t secretdata [ 4 ] = { [0]  = buf&3 ,[1]=(buf>>2)&3,[2]=(buf>>4)&3,
+        [3]=(buf>>6)&3} ;
       
       uint8_t secretdatasole  [ 4 ] ;
       datasole ( & secretdata , & secretdatasole , 4 )  ;
@@ -868,7 +982,8 @@ int main  ( int  argc , char * * argv  )  {
       if ( writecount == 0 ) {
         if ( ferror ( fileto ) ) {
           clearerr ( fileto ) ;
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ? (char const (*)[]) & u8"ошибка записи в файл" :
+          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+            (char const (*)[]) & u8"ошибка записи в файл" :
             (char const (*)[]) & "error writing to file" ) ;
           longjmp(ns_shifr  . jump,1); }
         break ; }
@@ -887,12 +1002,14 @@ int main  ( int  argc , char * * argv  )  {
       if ( writecount == 0 ) {
         if ( ferror ( fileto ) ) {
           clearerr ( fileto ) ;
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ? (char const (*)[]) & u8"ошибка записи в файл" :
+          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+            (char const (*)[]) & u8"ошибка записи в файл" :
             (char const (*)[]) & "error writing to file" ) ;
           longjmp(ns_shifr  . jump,1); }
         break ; }  
         
     } while ( true ) ; 
+//puts(u8"6.");    
     if ( flagtext and bytecount ) {
       char buf = '\n' ;
       fwrite ( & buf , 1 , 1 , fileto ) ; }
@@ -996,22 +1113,33 @@ int main  ( int  argc , char * * argv  )  {
     } while ( true ) ;
     
   }
-   
+//puts(u8"6,5.");   
   } // shifr deshi
 out : ;  
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
+//puts(u8"6,6.");    
     if  ( fclose  ( fileto  ) ) {
       int e = errno ; 
-      fprintf  (stderr, ( ns_shifr . localerus ? u8"Ошибка закрытия файла записи \"%s\" : %s\n" :
-        "Error closing file to writing \"%s\" : %s\n" ) , &((*inputfilename)[0]),strerror(e));
+      fprintf  (  stderr, ( ns_shifr . localerus ?
+        u8"Ошибка закрытия файла записи \"%s\" : %s\n" :
+        "Error closing file to writing \"%s\" : %s\n" ) ,
+        & ( ( * inputfilename ) [ 0 ] ) , strerror  ( e ) ) ;
       resulterror = 1 ; } }
   if ( flagclosefilefrom ) {
+puts(u8"6,7.");    
+printf(u8"filefrom = %p\n",filefrom);
     if  ( fclose  ( filefrom ) ) {
+puts(u8"6,8.");      
       int e = errno ; 
-      fprintf(stderr,( ns_shifr . localerus ? u8"Ошибка закрытия файла чтения \"%s\" : %s\n" :
-        "Error closing file of reading \"%s\" : %s\n"),&((*inputfilename)[0]),strerror(e));
-      resulterror = 2 ; } }
+      fprintf ( stderr  , ( ns_shifr . localerus ?
+        u8"Ошибка закрытия файла чтения \"%s\" : %s\n" :
+        "Error closing file of reading \"%s\" : %s\n"),
+        &((*inputfilename)[0]),strerror(e));
+      resulterror = 2 ; }
+puts(u8"6,9.");    
+  }
+puts(u8"7.");      
   shifr_destr ( ) ;
   return  resulterror ; 
   
