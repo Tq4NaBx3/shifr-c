@@ -941,7 +941,7 @@ puts("");*/
       longjmp(ns_shifr  . jump,1); }
     flagclosefilefrom = true ;
     filefrom = f ;    }
-printf("filefrom = %p\n",filefrom);        
+//printf("filefrom = %p\n",filefrom);        
   if ( flagoutputtofile ) {
     FILE * f = fopen(&((*outputfilename)[0]),&("w"[0]));
     if(f == NULL) {
@@ -972,8 +972,8 @@ puts("]");            */
   uint8_t deshi [ shifr_deshi_size2 ] ;
   password_load ( ns_shifr . raspr4  . password_const  , & shifr , & deshi ) ;
   
-  printarr  ( & "shifr" , & shifr , shifr_deshi_size2 ) ;
-  printarr  ( & "deshi" , & deshi , shifr_deshi_size2 ) ;
+  //printarr  ( & "shifr" , & shifr , shifr_deshi_size2 ) ;
+  //printarr  ( & "deshi" , & deshi , shifr_deshi_size2 ) ;
 
   if ( flagenc ) {
     // главный заголовок "шифр" без конца строки
@@ -1195,7 +1195,7 @@ puts("]");                  */
     } while ( true ) ; } } // shifr deshi
 out : ;  
   int resulterror  = 0 ;
-printf(u8"закрываю выход\n");
+//printf(u8"закрываю выход\n");
   if ( flagclosefileto  ) {
 /*printf("flagclosefileto:fileto = %p\n",fileto);            
 printf("fileto = %p = [ ",fileto);            
@@ -1210,9 +1210,9 @@ puts("]");                  */
         "Error closing file to writing \"%s\" : %s\n" ) ,
         & ( ( * outputfilename ) [ 0 ] ) , strerror  ( e ) ) ;
       resulterror = 1 ; } }
-printf(u8"закрываю вход\n");
+//printf(u8"закрываю вход\n");
   if ( flagclosefilefrom ) {
-printf("flagclosefilefrom:filefrom = %p\n",filefrom);            
+//printf("flagclosefilefrom:filefrom = %p\n",filefrom);            
     if  ( ( not feof ( filefrom ) ) and fclose  ( filefrom ) ) {
       int e = errno ; 
       fprintf ( stderr  , ( ns_shifr . localerus ?
@@ -1220,7 +1220,7 @@ printf("flagclosefilefrom:filefrom = %p\n",filefrom);
         "Error closing file of reading \"%s\" : %s\n"),
         &((*inputfilename)[0]),strerror(e));
       resulterror = 2 ; } }
-puts("shifr_destr");      
+//puts("shifr_destr");      
   shifr_destr ( ) ;
   return  resulterror ; 
   
