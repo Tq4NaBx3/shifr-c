@@ -241,11 +241,21 @@ unsigned char const headerbyn [ header_type_size ] ;
 // "5\n"
 unsigned char const headertxt [ header_type_size ] ;
 
-bool  live  ;
+// live
+bool  gTNb  ;
 
 t_number128  password_const  ;
 
 } ;
+
+# define  isLive5namepub gTNb
+# define  isLive5namepri "live is private"
+# define  isLive5name isLive5namepri
+# define  isLive5pub(  R ) ((R)->gTNb)
+# define  isLive5pro(  R ) ((bool const)((R)->gTNb))
+# define  isLive5pri(  R ) "live is private"
+# define  isLive5 isLive5pro
+
 /*
 struct  s_raspr6 {
   
@@ -290,6 +300,9 @@ int use_version ; //  4 или 5
 
 } ;
 
+# undef isLive5name
+# define  isLive5name isLive5namepub
+
 static  struct  s_ns_shifr  ns_shifr = {
   .mainheader = { [ 0 ] = 's' , [ 1 ] = 'h' ,
     [ 2 ] = 'i' , [ 3 ] = 'f' , [ 4 ] = 'r' } ,
@@ -307,7 +320,7 @@ static  struct  s_ns_shifr  ns_shifr = {
       [ 1 ] = raspr4_8_size , [ 0 ] = raspr4_4_size } ,
     .headerbyn = { [ 0 ] = 0x05 , [ 1 ] = 0x00 } ,
     .headertxt = { [ 0 ] = '5' , [ 1 ] = '\n' } ,
-    .live = false ,
+    . isLive5name = false ,
     } ,
   . use_version  = 4 ,
   /*.raspr6 = {
@@ -320,6 +333,9 @@ static  struct  s_ns_shifr  ns_shifr = {
     .live = false ,
     } ,*/
 } ;
+
+# undef isLive5name
+# define  isLive5name isLive5namepri
 
 static  void  password_to_string ( uint32_t password , strp const string ) {
   char * stringi = & ( ( * string )  [ 0 ] ) ;
@@ -550,14 +566,11 @@ printf("[%x,%x,%x,%x]",( * ap ) [ j ] [ 0 ],( * ap ) [ j ] [ 1 ],
 puts("\n");
   } while ( raspri > 1 ) ; }  
   
+# undef isLive5
+# define  isLive5 isLive5pub
+  
 static  void  raspr5_init ( void  ) {
-# ifdef SHIFR_DEBUG
-  if ( ns_shifr .  raspr5 . live ) {
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-      ( char const ( * ) [ ] ) & u8"raspr5_init: двойной вызов конструктора" :
-      ( char const ( * ) [ ] ) & "raspr5_init: double constructor call" ) ;
-    longjmp ( ns_shifr  . jump  , 1 ) ; }
-# endif
+  if ( isLive5  ( & ns_shifr .  raspr5  ) ) return  ;
   uint8_t raspri  = 8 ;
   do {
     uint8_t const raspri4 = raspri * 4 ;
@@ -565,7 +578,6 @@ static  void  raspr5_init ( void  ) {
     // raspri = 7 , 6 , 5 , 4 , 3 , 2 , 1
     // raspri4 = 32 , 28 , 24 , 20 , 16 , 12 , 8
     { uint16_t  j = 0 ;
-      //type_raspr_xp ( 4 ) ap = malloc  ( ns_shifr .  raspr5  . s [ raspri ] ) ;
       type_raspr_xp ( 4 ) ap = malloc  ( sizeof (
           uint8_t [ ns_shifr .  raspr5  . s [ raspri ] ] [ 4 ] ) ) ;
       ns_shifr  . raspr5  . xp [ raspri ] = ap ;
@@ -580,7 +592,10 @@ static  void  raspr5_init ( void  ) {
               ( * ap ) [ j ] [ 3 ] = i3  ; 
               ++  j ; } }
   } while ( raspri > 1 ) ; 
-  ns_shifr .  raspr5 . live = true  ; }  
+  isLive5 ( & ns_shifr .  raspr5  ) = true  ; }
+  
+# undef isLive5
+# define  isLive5 isLive5pri
   
 static  void  raspr4_destr ( void  ) {
   if ( not  ns_shifr .  raspr4 . live ) return  ;
@@ -591,7 +606,7 @@ static  void  raspr4_destr ( void  ) {
   } while ( raspri > 1 ) ; }
 
 static  void  raspr5_destr ( void  ) {
-  if ( not  ns_shifr .  raspr5 . live ) return  ;
+  if ( not  isLive5 ( & ns_shifr .  raspr5  ) ) return  ;
   uint8_t raspri  = 8 ;
   do {
     --  raspri  ;
@@ -756,20 +771,6 @@ static  void  hex_to_char ( char const ( * restrict buf2 ) [ 2 ] , char * const 
     ns_shifr  . string_exception  = ( ns_shifr . localerus ? (char const (*)[]) & u8"плохая hex буква" :
       (char const (*)[]) & "bad hex letter" ) ;
     longjmp(ns_shifr  . jump,1); } }
-/*
-// разрешать читать, например, символы перевода строки. '\n'
-static  bool  isBADhex_to_char ( char const ( * restrict buf2 ) [ 2 ] ,
-  char * const restrict buf ) {
-  if  ((*buf2)[0] >= '0' and (*buf2)[0] <= '9') (* buf) = (*buf2)[0] - '0';
-  else  if((*buf2)[0] >= 'a' and (*buf2)[0] <= 'f')
-    (* buf) = 10 + ((*buf2)[0] - 'a');
-  else  return  true  ;
-  if  ((*buf2)[1] >= '0' and (*buf2)[1] <= '9')
-    (* buf) or_eq (((*buf2)[1] - '0')<<4);
-  else  if((*buf2)[1] >= 'a' and (*buf2)[1] <= 'f')
-    (* buf) or_eq ((10 + ((*buf2)[1] - 'a'))<<4);
-  else return true  ; 
-  return  false ; }*/
     
 // Отключить эхо-вывод и буферизацию ввода
 static  void set_keypress (void) {
@@ -832,32 +833,41 @@ int main  ( int  argc , char * * argv  )  {
       u8"Шифр2 ©2019 Глебов А.Н.\nСинтаксис : shifr2 [параметры]" :
       "Shifr2 ©2019 Glebe A.N.\nSyntax : shifr2 [options]" ) ;
     puts  ( ns_shifr . localerus ? u8"Параметры :" : "Options :"  ) ;
-    puts  (ns_shifr . localerus ? u8"--ген-пар или\n--gen-pas\tгенерировать пароль" :
+    puts  (ns_shifr . localerus ?
+      u8"--ген-пар или\n--gen-pas\tгенерировать пароль" :
       "--gen-pas\tpassword generate" );
-    puts  (ns_shifr . localerus ? u8"--зашифр или\n--encrypt\tзашифровать (по-умолчанию)" :
+    puts  (ns_shifr . localerus ?
+      u8"--зашифр или\n--encrypt\tзашифровать (по-умолчанию)" :
       "--encrypt\t(by default)" );
     puts  (ns_shifr . localerus ? u8"--расшифр или\n--decrypt\tрасшифровать" :
       "--decrypt" );
-    puts  (ns_shifr . localerus ? u8"--пароль или\n--pass \"строка_пароля\"\tиспользовать данный пароль" :
+    puts  (ns_shifr . localerus ?
+      u8"--пароль или\n--pass \"строка_пароля\"\tиспользовать данный пароль" :
       "--pass \"password_string\"\tuse this password" );
-    puts  (ns_shifr . localerus ? u8"--вход или\n--input \"имя_файла\"\tчитать из файла" :
-    "--input \"file_name\"\tread from file");
-    puts  (ns_shifr . localerus ? u8"--выход или\n--output \"имя_файла\"\tзаписывать в файл" :
+    puts  (ns_shifr . localerus ?
+      u8"--вход или\n--input \"имя_файла\"\tчитать из файла" :
+      "--input \"file_name\"\tread from file");
+    puts  (ns_shifr . localerus ? 
+      u8"--выход или\n--output \"имя_файла\"\tзаписывать в файл" :
       "--output \"file_name\"\twrite to file"    );
-    puts  (ns_shifr . localerus ?  u8"--текст или\n--text\tшифрованный файл записан текстом ascii" :
+    puts  (ns_shifr . localerus ? 
+      u8"--текст или\n--text\tшифрованный файл записан текстом ascii" :
       "--text\tencrypted file written in ascii text"    );
-    puts  ( ns_shifr . localerus ?  u8"--4\tиспользовать четырёх битное шифрование ( четыре буквы ) ( по-умолчанию )" :
+    puts  ( ns_shifr . localerus ? 
+      u8"--4\tиспользовать четырёх битное шифрование ( четыре буквы ) ( по-умолчанию )" :
       "--4\tusing four bit encryption ( four letters ) ( by default )" ) ;
-    puts  ( ns_shifr . localerus ?  u8"--5\tиспользовать пяти битное шифрование ( ? буквы )" :
-      "--5\tusing five bit encryption ( ? letters )" ) ;
-    puts  (ns_shifr . localerus ?  u8"Длина пароля, дающая разное шифрование = 4 буквы. Бо\u0301льшая длина будет действовать, как другой пароль с меньшей длиной." :
-      "Password length giving different encryption = 4 letters. A longer length will act like another password with a shorter length." ) ;
-    fputs  ( ns_shifr . localerus ?  u8"Буквы в пароле : \"" : "Letters in password : \"" , stdout ) ;
-    
+    puts  ( ns_shifr . localerus ? 
+      u8"--5\tиспользовать пяти битное шифрование ( тринадцать букв )" :
+      "--5\tusing five bit encryption ( thirteen letters )" ) ;
+    puts  (ns_shifr . localerus ?  
+      u8"Бо\u0301льшая длина пароля будет действовать, как другой пароль с меньшей длиной." :
+      "A longer password length will act like another password with a shorter length." ) ;
+    fputs  ( ns_shifr . localerus ?  u8"Буквы в пароле : \'" :
+      "Letters in password : \'" , stdout ) ;
     for ( char const * cj = & ( ns_shifr  . letters [ 0 ] ) ;
       cj not_eq ( & ( ns_shifr  . letters [ letters_count ] ) ) ; ++ cj )
       fputc ( * cj  , stdout  ) ;
-    fputs ( "\"\n"  , stdout  ) ;
+    fputs ( "\'\n"  , stdout  ) ;
     shifr_destr ( ) ;
     return 0 ; }
 # if  RAND_MAX  !=  0x7fffffff
@@ -866,12 +876,6 @@ int main  ( int  argc , char * * argv  )  {
   // 31 бит
   srand ( time  ( 0 ) ) ;
   raspr4_init ( ) ;
-//puts("-1.");  
-  raspr5_init ( ) ;
-//puts("0.");
-/*fputs("распределение=",stdout);
-  raspr4_show ( ) ;
-puts("");*/
   for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
     if  ( flagreadpasswd  ) {
       if  ( flagpasswd  ) {
@@ -971,7 +975,7 @@ puts("");*/
         else
         if (( strcmp ( argv[argj] , u8"--5" ) ==  0 ) or
           ( strcmp ( argv[argj] , u8"--5" ) ==  0 )){ 
-          //raspr5_init ( ) ;
+          raspr5_init ( ) ;
           ns_shifr . use_version = 5 ; }  
         else {
           fprintf ( stderr , ( ns_shifr . localerus ?
@@ -1020,10 +1024,14 @@ randtry :
 # undef randompassmax0
 # undef randompassmax1
 # undef randompassmax2
-randok : ns_shifr . raspr5  . password_const = (t_number128){{[1]=ro.a[2],
-  [0]=(((uint64_t)(ro.a[1]))<<32)bitor((uint64_t)(ro.a[0]))}} ;
-printf((ns_shifr . localerus ? u8"пароль5=[%x,%x,%x]\n":"password5=[%x,%x,%x]\n"),ro.a[2],ro.a[1],ro.a[0]) ;
-//printf(u8"пароль5=[%lu,%lu]\n",ns_shifr . raspr5  . password_const.a[1],ns_shifr . raspr5  . password_const.a[0]) ;
+randok : ns_shifr . raspr5  . password_const = (  t_number128 ) { {
+  [ 1 ] = ro  . a [ 2 ] , [ 0 ] = ( ( ( uint64_t  ) ( ro  . a [ 1 ] ) ) <<  32  )
+  bitor ( ( uint64_t  ) ( ro  . a [ 0 ] ) ) } } ;
+printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
+  "password5 = [ %x , %x , %x ]\n"  ) , ro  . a [ 2 ] , ro  . a [ 1 ] ,
+  ro  . a [ 0 ] ) ;
+/*printf(u8"пароль5=[%lu,%lu]\n",ns_shifr . raspr5  . password_const.a[1],
+  ns_shifr . raspr5  . password_const.a[0]) ;*/
       }
       
     flagpasswd  = true  ;
@@ -1032,27 +1040,41 @@ printf((ns_shifr . localerus ? u8"пароль5=[%x,%x,%x]\n":"password5=[%x,%x,
       printf((ns_shifr . localerus ? u8"внутренний пароль = %x\n" :
         "internal password = %x\n") ,ns_shifr . raspr4  . password_const  ) ;
     else
-      printf((ns_shifr . localerus ? u8"внутренний пароль = [%lx,%lx]\n":"inner password = [%lx,%lx]\n"),ns_shifr . raspr5  . password_const.a[1],ns_shifr . raspr5  . password_const.a[0]) ;
-# endif    
+      printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = [ %lx , %lx ]\n"  :
+        "inner password = [ %lx , %lx ]\n"  ) ,
+        ns_shifr . raspr5  . password_const . a [ 1 ] ,
+        ns_shifr . raspr5  . password_const . a [ 0 ] ) ;
+# endif
     char  password_letters [ 20 ] ;
     if ( ns_shifr . use_version == 4 )
-      password_to_string ( ns_shifr . raspr4  . password_const , & password_letters ) ;
+      password_to_string ( ns_shifr . raspr4  . password_const ,
+        & password_letters ) ;
     else
-      password_to_string5 ( & ns_shifr . raspr5  . password_const , & password_letters ) ;
-    printf((ns_shifr . localerus ? u8"пароль буквами = \'%s\'\n" : 
-      "password by letters = \'%s\'\n"),&(password_letters[0]));
-    if ( ns_shifr . use_version == 4 )
-    { uint32_t password2 ;
+      password_to_string5 ( & ns_shifr . raspr5  . password_const ,
+        & password_letters ) ;
+    printf  ( ( ns_shifr . localerus ? u8"пароль буквами = \'%s\'\n" : 
+      "password by letters = \'%s\'\n"  ) , & ( password_letters  [ 0 ] ) ) ;
+    if ( ns_shifr . use_version == 4 ) {
+      uint32_t password2 ;
       string_to_password ( & password_letters , & password2 ) ; 
 # ifdef SHIFR_DEBUG
       printf  ( (ns_shifr . localerus ? u8"из строки во внутренний пароль = %x\n" :
         "from string to internal password = %x\n" ) , password2 ) ;
 # endif
     }
-    else  { t_number128 password5 ;
+    else  {
+      /*
+string_to_password5 ( (char(*)[])(argv[argj]) ,
+                           & ns_shifr . raspr5  . password_const ) ;       */
+//printf("password_letters = '%s'\n", & password_letters )  ;      
+      t_number128 password5 ;
       string_to_password5 ( & password_letters , & password5 ) ; 
 # ifdef SHIFR_DEBUG
-      printf((ns_shifr . localerus ? u8"из строки во внутренний пароль = [%lx,%lx]\n":"from string to internal password = [%lx,%lx]\n"),ns_shifr . raspr5  . password_const.a[1],ns_shifr . raspr5  . password_const.a[0]) ;
+      printf  ( ( ns_shifr . localerus ?
+          u8"из строки во внутренний пароль = [ %lx , %lx ]\n"  :
+          "from string to internal password = [ %lx , %lx ]\n" ) ,
+        password5 . a [ 1 ] , 
+        password5 . a [ 0 ] ) ;
       
 # endif
     }
