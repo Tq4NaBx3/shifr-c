@@ -197,7 +197,12 @@ t_type_raspr_xp ( 4 )
 
 // 0x20 (пробел) ' '    ---     0x7e (тильда) '~'
 // 95 шт
-# define letters_count (UINT8_C(0x7e - 0x20 + 1))
+# define letters_count (UINT8_C(('~' - ' ') + 1))
+
+// 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'
+// 62 шт
+# define letters_count2 (UINT8_C( \
+  ('9' - '0') + 1 + ('Z' - 'A') + 1 + ('z' - 'a') + 1 ))
 
 struct  s_raspr4 {
 
@@ -278,8 +283,10 @@ bool  live  ;
 struct  s_ns_shifr  {
 
 // буквы разрешённые в пароле :
+// ascii  
 char  letters [ letters_count ] ;  
-  
+// a..zA..Z0..9
+char  letters2 [ letters_count2 ] ;    
 bool  localerus ; 
 
 // хранилище дефолтного состояния
@@ -347,7 +354,20 @@ static  void  password_to_string ( uint32_t password , strp const string ) {
       ++  stringi ;
       if ( password < (uint32_t)letters_count ) break ;
       password /= (uint32_t)letters_count ; } }
-  ( * stringi ) = '\0' ; }
+  ( * stringi ) = '\00' ; }
+  
+// 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
+static  void  password2_to_string ( uint32_t password , strp const string ) {
+  char * stringi = & ( ( * string )  [ 0 ] ) ;
+  if ( password ) {
+    while ( true ) {
+      // здесь предыдущие размеры заняли место паролей
+      --  password  ;
+      ( * stringi ) = ns_shifr . letters2 [ password % (uint32_t)letters_count2 ] ;
+      ++  stringi ;
+      if ( password < (uint32_t)letters_count2 ) break ;
+      password /= (uint32_t)letters_count2 ; } }
+  ( * stringi ) = '\00' ; }  
     
 // number /= div , number := floor [ деление ] , return := остаток
 uint8_t  number128_div8mod  ( t_number128 * restrict const number ,
@@ -406,6 +426,21 @@ static  void  password_to_string5 (
       ++  stringi ;
     } while ( number128_not0 ( & password ) ) ;  }
   ( * stringi ) = 0 ;  }
+
+// 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
+static  void  password2_to_string5 (
+  t_number128 const * const restrict password0 , strp const string ) {
+  char * stringi = & ( ( * string )  [ 0 ] ) ;
+  if ( number128_not0 ( password0 ) ) {
+    t_number128 password = * password0  ;
+    do {
+      // здесь предыдущие размеры заняли место паролей
+      number128dec  ( & password  ) ;
+      ( * stringi ) = ns_shifr . letters2 [ number128_div8mod  ( & password ,
+        letters_count2 ) ] ;
+      ++  stringi ;
+    } while ( number128_not0 ( & password ) ) ;  }
+  ( * stringi ) = 0 ;  }
   
 static  void  string_to_password ( strcp const string ,
   uint32_t * const password ) {
@@ -428,6 +463,32 @@ static  void  string_to_password ( strcp const string ,
 found :
     pass  +=  ((uint32_t)(i+1)) * mult ;
     mult  *=  (uint32_t)letters_count ;
+    ++  stringi ;
+  } while ( * stringi ) ;
+  ( * password ) = pass ; }
+  
+// 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
+static  void  string_to_password2 ( strcp const string ,
+  uint32_t * const password ) {
+  char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
+  if  ( ( * stringi ) == 0 ) {
+    ( * password  ) = 0 ;
+    return ; }
+  uint32_t pass = 0 ;
+  uint32_t  mult  = 1 ;
+  do  {
+    uint8_t i = letters_count2 ;
+    do {
+      -- i ;
+      if ( ( * stringi ) == ns_shifr . letters2  [ i ] ) goto found ; 
+    } while ( i ) ;
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+      ( char const ( * ) [ ] ) & u8"неправильная буква в пароле" :
+      ( char const ( * ) [ ] ) & "wrong letter in password" ) ;
+    longjmp(ns_shifr  . jump,1);
+found :
+    pass  +=  ((uint32_t)(i+1)) * mult ;
+    mult  *=  (uint32_t)letters_count2 ;
     ++  stringi ;
   } while ( * stringi ) ;
   ( * password ) = pass ; }
@@ -496,10 +557,44 @@ found : ;
   } while ( * stringi ) ;
   ( * password  ) = pass ; }
   
+// 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
+static  void  string2_to_password5 ( strcp const string ,
+  t_number128 * const restrict password ) {
+  char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
+  if  ( ( * stringi ) == 0 ) {
+    number128_set0 ( password  ) ;
+    return ; }
+  t_number128  pass ;
+  number128_set0  ( & pass  ) ;
+  t_number128  mult = {{ [ 0 ] = 1 , [ 1 ] = 0 }} ;
+  do  {
+    uint8_t i = letters_count2 ;
+    do {
+      -- i ;
+      if ( ( * stringi ) == ns_shifr . letters2  [ i ] ) goto found ; 
+    } while ( i ) ;
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+      ( char const ( * ) [ ] ) & u8"неправильная буква в пароле" :
+      ( char const ( * ) [ ] ) & "wrong letter in password" ) ;
+    longjmp(ns_shifr  . jump,1);
+found : ;
+    { t_number128  tmp = mult ;
+      number128_mul8  ( & tmp , i + 1 ) ;
+      number128_add ( &  pass  , & tmp )  ; }
+    number128_mul8  ( & mult , letters_count2 ) ;
+    ++  stringi ;
+  } while ( * stringi ) ;
+  ( * password  ) = pass ; }
+  
 static  void  shifr_init ( void  ) {
   { char * j = & ( ns_shifr . letters [ 0 ] ) ;
-    for ( uint8_t i = 0x20 ; i <= 0x7e ; ++ i , ++ j ) ( * j ) = i ;  } }
-    
+    for ( uint8_t i = ' ' ; i <= '~' ; ++ i , ++ j ) ( * j ) = i ;  }
+  // 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
+  { char * j = & ( ns_shifr . letters2 [ 0 ] ) ;
+    for ( uint8_t i = '0' ; i <= '9' ; ++ i , ++ j ) ( * j ) = i ;
+    for ( uint8_t i = 'A' ; i <= 'Z' ; ++ i , ++ j ) ( * j ) = i ;
+    for ( uint8_t i = 'a' ; i <= 'z' ; ++ i , ++ j ) ( * j ) = i ; } }
+
 static  void  raspr4_init ( void  ) {
 # ifdef SHIFR_DEBUG
   if ( ns_shifr .  raspr4 . live ) {
@@ -803,7 +898,8 @@ static  void set_keypress (void) {
 static  void reset_keypress (void) {
   if  ( tcsetattr ( 0 , TCSANOW , & ns_shifr . stored_termios ) ) {
     char const * const se = strerror ( errno ) ;
-    fprintf ( stderr  , ( ns_shifr . localerus ? u8"ошибка записи tcsetattr : %s\n" :
+    fprintf ( stderr  , ( ns_shifr . localerus ?
+      u8"ошибка записи tcsetattr : %s\n" :
       "error write tcsetattr : %s\n"  ) , se  ) ;
     ns_shifr  . string_exception  = (char const (*)[]) se ;
     longjmp(ns_shifr  . jump,1); } }  
@@ -828,9 +924,6 @@ typedef struct  s_streambuf  {
 # define  streambuf_bufbitsize_pub( M ) ((M)->XUvM)
 # define  streambuf_bufbitsize_pri( M ) "streambuf::bufbitsize is private"
 # define  streambuf_bufbitsize  streambuf_bufbitsize_pub
-
-# undef streambuf_file
-# define  streambuf_file  streambuf_file_pub
 
 static  inline  void  streambuf_init  ( t_streambuf * const restrict me  ,
   FILE  * const f ) {
@@ -870,7 +963,6 @@ void  streambuf_writeflushzero ( t_streambuf * const restrict me  ) {
         (char const (*)[]) & u8"streambuf_writeflushzero: ошибка записи байта" :
         (char const (*)[]) & "streambuf_writeflushzero: byte write error" ) ;
       longjmp(ns_shifr  . jump,1); }
-    // + 5 - 8
     streambuf_bufbitsize  ( me  ) = 0 ; } }
   
 # undef streambuf_file
@@ -940,10 +1032,14 @@ int main  ( int  argc , char * * argv  )  {
     puts  (ns_shifr . localerus ?  
       u8"Бо\u0301льшая длина пароля будет действовать, как другой пароль с меньшей длиной." :
       "A longer password length will act like another password with a shorter length." ) ;
-    fputs  ( ns_shifr . localerus ?  u8"Буквы в пароле : \'" :
-      "Letters in password : \'" , stdout ) ;
+    fputs  ( ns_shifr . localerus ?  u8"Буквы в пароле :\n\'" :
+      "Letters in password :\n\'" , stdout ) ;
     for ( char const * cj = & ( ns_shifr  . letters [ 0 ] ) ;
       cj not_eq ( & ( ns_shifr  . letters [ letters_count ] ) ) ; ++ cj )
+      fputc ( * cj  , stdout  ) ;
+    fputs ( "\'\n\'"  , stdout  ) ;
+    for ( char const * cj = & ( ns_shifr  . letters2 [ 0 ] ) ;
+      cj not_eq ( & ( ns_shifr  . letters2 [ letters_count2 ] ) ) ; ++ cj )
       fputc ( * cj  , stdout  ) ;
     fputs ( "\'\n"  , stdout  ) ;
     /*
@@ -1082,6 +1178,7 @@ int main  ( int  argc , char * * argv  )  {
       // цикл для равномерного рандома
       do {
         r = rand  ( ) ;
+        // floor((2^31-1)/63063000) == 34
       } while ( r >= ( 63063000 * 34 ) ) ;
       ns_shifr . raspr4  . password_const = r / 34 ; }
     else {
