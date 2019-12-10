@@ -832,14 +832,46 @@ typedef struct  s_streambuf  {
 # undef streambuf_file
 # define  streambuf_file  streambuf_file_pub
 
-static  inline  void  streambuf_init  ( t_streambuf * const restrict me  , FILE  * const f ) {
+static  inline  void  streambuf_init  ( t_streambuf * const restrict me  ,
+  FILE  * const f ) {
   streambuf_file  ( me  ) = f ;
   streambuf_bufbitsize  ( me  ) = 0 ; }
   
-void  streambuf_write ( t_streambuf * const restrict me  , uint8_t (  * encrypteddata ) [ 3 ] ,
-  uint8_t secretdatasolesize ) {
-  
-  }
+void  streambuf_write ( t_streambuf * const restrict me  ,
+  uint8_t (  * encrypteddata ) [ 3 ] , uint8_t secretdatasolesize ) {
+  for ( uint8_t i = 0 ; i < secretdatasolesize ; ++  i ) {
+    if  ( streambuf_bufbitsize  ( me  ) < 3 ) {
+      streambuf_buf ( me  ) or_eq (  ( * encrypteddata ) [ i ] ) <<
+        streambuf_bufbitsize  ( me  ) ;
+      streambuf_bufbitsize  ( me  ) +=  5 ; }
+    else  {
+      uint8_t const to_write  = ( ( ( * encrypteddata ) [ i ] ) <<
+        streambuf_bufbitsize  ( me  ) ) bitor streambuf_buf ( me  ) ;
+      size_t  const writen_count = fwrite ( & to_write , 1 , 1 ,
+        streambuf_file  ( me  ) ) ;
+      if ( writen_count < 1 ) {
+        clearerr ( streambuf_file  ( me  ) ) ; 
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+          (char const (*)[]) & u8"streambuf_write: ошибка записи байта" :
+          (char const (*)[]) & "streambuf_write: byte write error" ) ;
+        longjmp(ns_shifr  . jump,1); }
+      // + 5 - 8
+      streambuf_bufbitsize  ( me  ) -= 3 ;
+      streambuf_buf ( me  ) = ( ( * encrypteddata ) [ i ] ) >>
+        ( 5 - streambuf_bufbitsize  ( me  ) ) ; } } }
+        
+void  streambuf_writeflushzero ( t_streambuf * const restrict me  ) {
+  if  ( streambuf_bufbitsize  ( me  ) ) {
+    size_t  const writen_count = fwrite ( & streambuf_buf ( me  ) , 1 , 1 ,
+      streambuf_file  ( me  ) ) ;
+    if ( writen_count < 1 ) {
+      clearerr ( streambuf_file  ( me  ) ) ; 
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+        (char const (*)[]) & u8"streambuf_writeflushzero: ошибка записи байта" :
+        (char const (*)[]) & "streambuf_writeflushzero: byte write error" ) ;
+      longjmp(ns_shifr  . jump,1); }
+    // + 5 - 8
+    streambuf_bufbitsize  ( me  ) = 0 ; } }
   
 # undef streambuf_file
 # define  streambuf_file  streambuf_file_pri
@@ -900,11 +932,11 @@ int main  ( int  argc , char * * argv  )  {
       u8"--текст или\n--text\tшифрованный файл записан текстом ascii" :
       "--text\tencrypted file written in ascii text"    );
     puts  ( ns_shifr . localerus ? 
-      u8"--4\tиспользовать четырёх битное шифрование ( четыре буквы ) ( по-умолчанию )" :
-      "--4\tusing four bit encryption ( four letters ) ( by default )" ) ;
+      u8"--4\tиспользовать четырёх битное шифрование, ключ = 26 бит ( четыре буквы ) ( по-умолчанию )" :
+      "--4\tusing four bit encryption, key = 26 bits ( four letters ) ( by default )" ) ;
     puts  ( ns_shifr . localerus ? 
-      u8"--5\tиспользовать пяти битное шифрование ( тринадцать букв )" :
-      "--5\tusing five bit encryption ( thirteen letters )" ) ;
+      u8"--5\tиспользовать пяти битное шифрование, ключ = 81 бит ( тринадцать букв )" :
+      "--5\tusing five bit encryption, key = 81 bits ( thirteen letters )" ) ;
     puts  (ns_shifr . localerus ?  
       u8"Бо\u0301льшая длина пароля будет действовать, как другой пароль с меньшей длиной." :
       "A longer password length will act like another password with a shorter length." ) ;
@@ -1314,16 +1346,16 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
     } while ( true ) ; 
     if ( flagtext and bytecount ) {
       char buf = '\n' ;
-      fwrite ( & buf , 1 , 1 , fileto ) ; } }
+      fwrite ( & buf , 1 , 1 , fileto ) ; } } // была 4-ая версия
     else  {
       // версия 5 шифруем ...
-      int bytecount = 0 ;
+      //int bytecount = 0 ;
       int bitscount  = 0 ;
       uint8_t secretdata  [ 4 ] ;
       uint8_t secretdatasole  [ 3 ] ;
       uint8_t secretdatasolesize  ;
-      char  bufwrite  ;
-      char  bufwritebits = 0 ;
+      //char  bufwrite  ;
+      //char  bufwritebits = 0 ;
       uint8_t encrypteddata [ 3 ] ;
     do {
       char buf ;
@@ -1339,70 +1371,43 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
       switch  ( bitscount  ) {
       case  0 :
         // <= [ [1 0] [2 1 0] [2 1 0] ]
-        secretdata = (uint8_t[3]){ [ 0 ]  = buf  & 0x7 , [ 1 ] = ( buf >>  3 ) & 0x7 ,
-          [ 2 ] = ( buf >>  6 ) & 0x7 } ;
-        bitscount  = 8 ;
+        secretdata [ 0 ]  = buf  bitand 0x7 ;
+        secretdata [ 1 ] = ( buf >>  3 ) bitand 0x7 ;
+        secretdata [ 2 ] = ( buf >>  6 ) bitand 0x7 ;
+        bitscount  = 2 ; // 0 + 8 - 6
         secretdatasolesize  = 2 ;
         break ;
       case  1 : 
         // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
-        secretdata [ 0 ] = secretdata [ 3 ] bitor (( buf  & 0x3 )<<1) ;
-        secretdata [ 1 ] = ( buf >>  2 ) & 0x7 ;
-        secretdata [ 2 ] = ( buf >>  5 ) & 0x7 ;
-        bitscount  = 9 ;  
+        secretdata [ 0 ] = secretdata [ 3 ] bitor (( buf  bitand 0x3 )<<1) ;
+        secretdata [ 1 ] = ( buf >>  2 ) bitand 0x7 ;
+        secretdata [ 2 ] = ( buf >>  5 ) bitand 0x7 ;
+        bitscount  = 0 ;   // 1 + 8 - 9
         secretdatasolesize  = 3 ;
       case  2 :
         // <= [ [0] [2 1 0] [2 1 0] [2] ] <= [ [1 0] ..
-        secretdata [ 0 ] = secretdata [ 2 ] bitor (( buf  & 0x1 )<<2) ;
-        secretdata [ 1 ] = ( buf >>  1 ) & 0x7 ;
-        secretdata [ 2 ] = ( buf >>  4 ) & 0x7 ;
-        secretdata [ 3 ] = ( buf >>  7 ) & 0x7 ;
-        bitscount  = 10 ;
+        secretdata [ 0 ] = secretdata [ 2 ] bitor (( buf  bitand 0x1 )<<2) ;
+        secretdata [ 1 ] = ( buf >>  1 ) bitand 0x7 ;
+        secretdata [ 2 ] = ( buf >>  4 ) bitand 0x7 ;
+        secretdata [ 3 ] = ( buf >>  7 ) bitand 0x7 ;
+        bitscount  = 1 ; // 2 + 8 - 9
         secretdatasolesize  = 3 ;
         break ;
       default :
-        printf(stderr,( ns_shifr . localerus ? u8"неожиданное значение bitsremain = %d\n":
-          "unexpected value bitsremain = %d\n"),bitsremain);
+        fprintf ( stderr  , ( ns_shifr . localerus ?
+          u8"неожиданное значение bitscount = %d\n":
+          "unexpected value bitscount = %d\n" ) , bitscount ) ;
         ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
-          (char const (*)[]) & u8"неожиданное значение bitsremain" :
-          (char const (*)[]) & "unexpected value bitsremain" ) ;
+          (char const (*)[]) & u8"неожиданное значение bitscount" :
+          (char const (*)[]) & "unexpected value bitscount" ) ;
         longjmp(ns_shifr  . jump,1); }
       datasole ( & secretdata , & secretdatasole , secretdatasolesize )  ;
-      crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata , secretdatasolesize ) ;
+      crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata ,
+        secretdatasolesize ) ;
       streambuf_write ( & filebufto , & encrypteddata , secretdatasolesize )  ;
-      // secretdata(буфер 0-2 бит) => secretdatasole(буфер 1) => write out
-      
-      // ! Написать класс записи в файл с буфером
-      
-      for ( int i = 0 ; i < 4 ; i +=  2 ) {
-        buf = ( encrypteddata [ i ] & 0xf ) bitor
-          ( ( encrypteddata [ i + 1 ] & 0xf ) << 4  ) ;
-        size_t writecount ;
-        if(flagtext) {
-          char buf2[2];
-          char_to_hex(buf,&buf2);
-          writecount = fwrite ( & buf2 , 2 , 1 , fileto ) ;
-          ++ bytecount ;
-          if ( bytecount == 24 )  {
-            bytecount = 0 ;
-            buf2[0] = '\n' ;
-            fwrite ( & (buf2[0]) , 1 , 1 , fileto ) ; }      }
-        else
-          writecount = fwrite ( & buf , 1 , 1 , fileto ) ;
-        if ( writecount == 0 ) {
-          if ( ferror ( fileto ) ) {
-            clearerr ( fileto ) ;
-            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-              (char const (*)[]) & u8"ошибка записи в файл" :
-              (char const (*)[]) & "error writing to file" ) ;
-            longjmp(ns_shifr  . jump,1); }
-          break ; } }
     } while ( true ) ; 
-    if ( flagtext and bytecount ) {
-      char buf = '\n' ;
-      fwrite ( & buf , 1 , 1 , fileto ) ; }
-    }
-    }
+    streambuf_writeflushzero ( & filebufto ) ; }  // была 5-ая версия 
+    } // кодировали
   else  { // декодируем
     // главный заголовок должен быть "шифр" без конца строки
     unsigned char buf [ sizeof ( ns_shifr . mainheader ) ] ;
@@ -1511,11 +1516,6 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
         bitor ((decrypteddata [ 2 ] & 0x3)<<4) bitor
         ((decrypteddata [ 3 ] & 0x3) << 6);
       size_t writecount = fwrite ( & (buf[0]) , 1 , 1 , fileto ) ;
-/*printf("fileto = %p = [ ",fileto);            
-for ( uint8_t const * i = ( uint8_t const * ) fileto ;
-  i < ( uint8_t const * const ) ( fileto + 1 ) ; ++  i )
-  printf("%x , ",(unsigned int)(*i));
-puts("]");                  */
       if ( writecount == 0 ) {
         if ( ferror ( fileto ) ) {
           clearerr ( fileto ) ;
@@ -1529,12 +1529,6 @@ out : ;
   int resulterror  = 0 ;
 //printf(u8"закрываю выход\n");
   if ( flagclosefileto  ) {
-/*printf("flagclosefileto:fileto = %p\n",fileto);            
-printf("fileto = %p = [ ",fileto);            
-for ( uint8_t const * i = ( uint8_t const * ) fileto ;
-  i < ( uint8_t const * const ) ( fileto + 1 ) ; ++  i )
-  printf("%x , ",(unsigned int)(*i));
-puts("]");                  */
     if  ( fclose  ( fileto  ) ) {
       int e = errno ;
       fprintf  (  stderr, ( ns_shifr . localerus ?
