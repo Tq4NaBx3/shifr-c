@@ -742,7 +742,20 @@ void datasole ( arrcp const secretdata , arrp const secretdatasole , size_t  dat
     (* ids) = ((* id)<<2) bitor (ran%4) ;
     ran >>= 2 ;
   } while ( id not_eq &((*secretdata)[0]) ) ; }  
-  
+/*
+void datasole5 ( arrcp const secretdata , arrp const secretdatasole , size_t  data_size ) {
+  uint8_t const * id = &((*secretdata)[data_size]) ;
+  uint8_t * ids = &((*secretdatasole)[data_size]) ;
+  int ran = rand ( )  ;
+  do {
+    -- id ;
+    --  ids ;
+    // главное данные , хвост - соль : xxx => xxx00 или xxx01 или xxx10 или xxx11
+    // в таблице всё рядом, 4 варианта равномерно распределены
+    (* ids) = ((* id)<<2) bitor (ran%4) ;
+    ran >>= 2 ;
+  } while ( id not_eq &((*secretdata)[0]) ) ; }    
+  */
 static  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
   unsigned  char c = buf & 0xf ;
   if ( c >= 0 and c <= 9 ) (*buf2)[0] = '0' + c ;
@@ -795,6 +808,46 @@ static  void reset_keypress (void) {
     ns_shifr  . string_exception  = (char const (*)[]) se ;
     longjmp(ns_shifr  . jump,1); } }  
   
+typedef struct  s_streambuf  {
+  // file
+  FILE  * oRmq  ;
+  // buf
+  uint8_t FmoX ;
+  // bufbitsize
+  uint8_t XUvM  ;
+} t_streambuf ;
+  
+# define  streambuf_file_pub( M ) ((M)->oRmq)
+# define  streambuf_file_pri( M ) "streambuf::file is private"
+# define  streambuf_file  streambuf_file_pub
+
+# define  streambuf_buf_pub( M ) ((M)->FmoX)
+# define  streambuf_buf_pri( M ) "streambuf::buf is private"
+# define  streambuf_buf  streambuf_buf_pub
+
+# define  streambuf_bufbitsize_pub( M ) ((M)->XUvM)
+# define  streambuf_bufbitsize_pri( M ) "streambuf::bufbitsize is private"
+# define  streambuf_bufbitsize  streambuf_bufbitsize_pub
+
+# undef streambuf_file
+# define  streambuf_file  streambuf_file_pub
+
+static  inline  void  streambuf_init  ( t_streambuf * const restrict me  , FILE  * const f ) {
+  streambuf_file  ( me  ) = f ;
+  streambuf_bufbitsize  ( me  ) = 0 ; }
+  
+void  streambuf_write ( t_streambuf * const restrict me  , uint8_t (  * encrypteddata ) [ 3 ] ,
+  uint8_t secretdatasolesize ) {
+  
+  }
+  
+# undef streambuf_file
+# define  streambuf_file  streambuf_file_pri
+# undef streambuf_buf
+# define  streambuf_buf  streambuf_buf_pri
+# undef streambuf_bufbitsize
+# define  streambuf_bufbitsize  streambuf_bufbitsize_pri
+
 int main  ( int  argc , char * * argv  )  {
   char const * const locale = setlocale ( LC_ALL  , ""  ) ;
   ns_shifr . localerus = ( strcmp  ( locale  , "ru_RU.UTF-8" ) ==  0 ) ;
@@ -1133,7 +1186,8 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
       longjmp(ns_shifr  . jump,1); }
     flagclosefilefrom = true ;
     filefrom = f ;    }
-//printf("filefrom = %p\n",filefrom);        
+  //t_streambuf filebuffrom ;
+  //streambuf_init  ( & filebuffrom , filefrom )  ;
   if ( flagoutputtofile ) {
     FILE * f = fopen(&((*outputfilename)[0]),&("w"[0]));
     if(f == NULL) {
@@ -1146,16 +1200,8 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
       longjmp(ns_shifr  . jump,1); }
     flagclosefileto = true ;
     fileto  = f ;    }
-/*printf("filefrom = %p = [ ",filefrom);            
-for ( uint8_t const * i = ( uint8_t const * ) filefrom  ;
-  i < ( uint8_t const * const ) ( filefrom  + 1 ) ; ++  i )
-  printf("%x , ",(unsigned int)(*i));
-puts("]");                
-printf("fileto = %p = [ ",fileto);            
-for ( uint8_t const * i = ( uint8_t const * ) fileto ;
-  i < ( uint8_t const * const ) ( fileto + 1 ) ; ++  i )
-  printf("%x , ",(unsigned int)(*i));
-puts("]");            */
+  t_streambuf filebufto ;
+  streambuf_init  ( & filebufto , fileto )  ;
   { uint8_t shifr [ shifr_deshi_size5 ] = { } ;
     // 0 .. 3 - варианты секретных кодов для буквы 0
     // 4 .. 7 - варианты секретных кодов для буквы 1
@@ -1272,6 +1318,13 @@ puts("]");            */
     else  {
       // версия 5 шифруем ...
       int bytecount = 0 ;
+      int bitscount  = 0 ;
+      uint8_t secretdata  [ 4 ] ;
+      uint8_t secretdatasole  [ 3 ] ;
+      uint8_t secretdatasolesize  ;
+      char  bufwrite  ;
+      char  bufwritebits = 0 ;
+      uint8_t encrypteddata [ 3 ] ;
     do {
       char buf ;
       size_t readcount = fread ( & buf , 1 , 1 , filefrom ) ;
@@ -1283,12 +1336,44 @@ puts("]");            */
             (char const (*)[]) & "error reading file" ) ;
           longjmp(ns_shifr  . jump,1); }
         break ; }
-      uint8_t secretdata  [ 4 ] = { [ 0 ]  = buf  & 3 , [ 1 ] = ( buf >>  2 ) & 3 ,
-        [ 2 ] = ( buf >>  4 ) & 3 , [ 3 ] = ( buf >>  6 ) & 3 } ;
-      uint8_t secretdatasole  [ 4 ] ;
-      datasole ( & secretdata , & secretdatasole , 4 )  ;
-      uint8_t encrypteddata [ 4 ] ;
-      crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata , 4 ) ;
+      switch  ( bitscount  ) {
+      case  0 :
+        // <= [ [1 0] [2 1 0] [2 1 0] ]
+        secretdata = (uint8_t[3]){ [ 0 ]  = buf  & 0x7 , [ 1 ] = ( buf >>  3 ) & 0x7 ,
+          [ 2 ] = ( buf >>  6 ) & 0x7 } ;
+        bitscount  = 8 ;
+        secretdatasolesize  = 2 ;
+        break ;
+      case  1 : 
+        // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
+        secretdata [ 0 ] = secretdata [ 3 ] bitor (( buf  & 0x3 )<<1) ;
+        secretdata [ 1 ] = ( buf >>  2 ) & 0x7 ;
+        secretdata [ 2 ] = ( buf >>  5 ) & 0x7 ;
+        bitscount  = 9 ;  
+        secretdatasolesize  = 3 ;
+      case  2 :
+        // <= [ [0] [2 1 0] [2 1 0] [2] ] <= [ [1 0] ..
+        secretdata [ 0 ] = secretdata [ 2 ] bitor (( buf  & 0x1 )<<2) ;
+        secretdata [ 1 ] = ( buf >>  1 ) & 0x7 ;
+        secretdata [ 2 ] = ( buf >>  4 ) & 0x7 ;
+        secretdata [ 3 ] = ( buf >>  7 ) & 0x7 ;
+        bitscount  = 10 ;
+        secretdatasolesize  = 3 ;
+        break ;
+      default :
+        printf(stderr,( ns_shifr . localerus ? u8"неожиданное значение bitsremain = %d\n":
+          "unexpected value bitsremain = %d\n"),bitsremain);
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+          (char const (*)[]) & u8"неожиданное значение bitsremain" :
+          (char const (*)[]) & "unexpected value bitsremain" ) ;
+        longjmp(ns_shifr  . jump,1); }
+      datasole ( & secretdata , & secretdatasole , secretdatasolesize )  ;
+      crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata , secretdatasolesize ) ;
+      streambuf_write ( & filebufto , & encrypteddata , secretdatasolesize )  ;
+      // secretdata(буфер 0-2 бит) => secretdatasole(буфер 1) => write out
+      
+      // ! Написать класс записи в файл с буфером
+      
       for ( int i = 0 ; i < 4 ; i +=  2 ) {
         buf = ( encrypteddata [ i ] & 0xf ) bitor
           ( ( encrypteddata [ i + 1 ] & 0xf ) << 4  ) ;
