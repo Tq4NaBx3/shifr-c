@@ -20,6 +20,7 @@
 // пароль будет 26 бит
 // ascii буквы 126-32+1 = 95 шт
 // длина буквенного пароля : log ( 95 , 63063000 ) ≈ 3.944 буквы < 4 буквы
+//  log ( 62 , 63063000 ) ≈ 4.352 буквы < 5 букв
 // память = 2385 байт = 2.329 KB
 // 63063000 = 00011011110000100100001111 реверсивно от слабых к главному 26 бит
 // 63063000 * 32 = 2018016000 = 0000000011011110000100100001111 = 0x78487b00
@@ -60,7 +61,9 @@ C(4,12)=495=C(3,11)+C(3,10)+...+C(3,3)=165+120+84+56+35+20+10+4+1
 // минимум можно записать с помощью log(2,2.39*(10^24)) ≈ 80.98 бит < 11 байт
 // пароль будет 81 бит
 // ascii буквы 126-32+1 = 95 шт
+// цифры,буквы,заглавные = 10 + 26 + 26 = 62 шт
 // длина буквенного пароля : log ( 95 , 2.39*(10^24) ) ≈ 12.33 букв < 13 букв
+// log ( 62 , 2.39*(10^24) ) ≈ 13.6 букв < 14 букв
 // три рандома по 31 бит = 93 бит, сдвигаем побитно на 12 бит назад. Получаем 81 бит.
 // проверяем, не превысилили ли максимум, (делаем всё заново если-что).
 // 2.39*(10^24) / (2^64) = 129587
@@ -213,10 +216,10 @@ uint16_t  s [ 4 ] ;
 type_raspr_xp ( 4 )  xp  [ 4 ] ;
  
 // тип архива бинарного 0x04 + 0x00
-unsigned char const headerbyn [ header_type_size ] ;
+//unsigned char const headerbyn [ header_type_size ] ;
 
 // "4\n"
-unsigned char const headertxt [ header_type_size ] ;
+//unsigned char const headertxt [ header_type_size ] ;
 
 bool  live  ;
 
@@ -241,10 +244,13 @@ uint16_t  s [ 8 ] ;
 type_raspr_xp ( 4 )  xp  [ 8 ] ;
  
 // тип архива бинарного 0x05 + 0x00
-unsigned char const headerbyn [ header_type_size ] ;
+//unsigned char const headerbyn [ header_type_size ] ;
 
 // "5\n"
-unsigned char const headertxt [ header_type_size ] ;
+//unsigned char const headertxt [ header_type_size ] ;
+
+// ! ? Большой заголовок может спровоцировать к расшифровке.
+// Если известно, что зашифровано shifr.
 
 // live
 bool  gTNb  ;
@@ -293,7 +299,10 @@ bool  localerus ;
 struct termios stored_termios  ;
 
 // заголовок архива "shifr" без конца строки
-unsigned char const mainheader [ 5 ] ;
+//unsigned char const mainheader [ 5 ] ;
+
+// ! ? Большой заголовок может спровоцировать к расшифровке.
+// Если известно, что зашифровано shifr.
 
 // исключения
 jmp_buf jump ;
@@ -311,13 +320,13 @@ int use_version ; //  4 или 5
 # define  isLive5name isLive5namepub
 
 static  struct  s_ns_shifr  ns_shifr = {
-  .mainheader = { [ 0 ] = 's' , [ 1 ] = 'h' ,
-    [ 2 ] = 'i' , [ 3 ] = 'f' , [ 4 ] = 'r' } ,
+  /*.mainheader = { [ 0 ] = 's' , [ 1 ] = 'h' ,
+    [ 2 ] = 'i' , [ 3 ] = 'f' , [ 4 ] = 'r' } ,*/
   .raspr4 = {
     .s = { [ 3 ] = raspr4_16_size , [ 2 ] = raspr4_12_size ,
       [ 1 ] = raspr4_8_size , [ 0 ] = raspr4_4_size } ,
-    .headerbyn = { [ 0 ] = 0x04 , [ 1 ] = 0x00 } ,
-    .headertxt = { [ 0 ] = '4' , [ 1 ] = '\n' } ,
+    //.headerbyn = { [ 0 ] = 0x04 , [ 1 ] = 0x00 } ,
+    //.headertxt = { [ 0 ] = '4' , [ 1 ] = '\n' } ,
     .live = false ,
     } ,
   .raspr5 = {
@@ -325,8 +334,8 @@ static  struct  s_ns_shifr  ns_shifr = {
       [ 5 ] = raspr4_24_size , [ 4 ] = raspr4_20_size ,
       [ 3 ] = raspr4_16_size , [ 2 ] = raspr4_12_size ,
       [ 1 ] = raspr4_8_size , [ 0 ] = raspr4_4_size } ,
-    .headerbyn = { [ 0 ] = 0x05 , [ 1 ] = 0x00 } ,
-    .headertxt = { [ 0 ] = '5' , [ 1 ] = '\n' } ,
+    //.headerbyn = { [ 0 ] = 0x05 , [ 1 ] = 0x00 } ,
+    //.headertxt = { [ 0 ] = '5' , [ 1 ] = '\n' } ,
     . isLive5name = false ,
     } ,
   . use_version  = 4 ,
@@ -415,49 +424,20 @@ static  void  password_to_string5_uni (
       ++  stringi ;
     } while ( number128_not0 ( & password ) ) ; }
   ( * stringi ) = '\00' ;  }
-  /*
-static  void  password_to_string5 (
-  t_number128 const * const restrict password0 , strp const string ) {
-  char * stringi = & ( ( * string )  [ 0 ] ) ;
-  if ( number128_not0 ( password0 ) ) {
-    t_number128 password = * password0  ;
-    do {
-      // здесь предыдущие размеры заняли место паролей
-      number128dec  ( & password  ) ;
-      ( * stringi ) = ns_shifr . letters [ number128_div8mod  ( & password ,
-        letters_count ) ] ;
-      ++  stringi ;
-    } while ( number128_not0 ( & password ) ) ;  }
-  ( * stringi ) = 0 ;  }
 
-// 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
-static  void  password2_to_string5 (
-  t_number128 const * const restrict password0 , strp const string ) {
-  char * stringi = & ( ( * string )  [ 0 ] ) ;
-  if ( number128_not0 ( password0 ) ) {
-    t_number128 password = * password0  ;
-    do {
-      // здесь предыдущие размеры заняли место паролей
-      number128dec  ( & password  ) ;
-      ( * stringi ) = ns_shifr . letters2 [ number128_div8mod  ( & password ,
-        letters_count2 ) ] ;
-      ++  stringi ;
-    } while ( number128_not0 ( & password ) ) ;  }
-  ( * stringi ) = 0 ;  }*/
-  
-static  void  string_to_password ( strcp const string ,
-  uint32_t * const password ) {
+static  void  string_to_password_uni ( strcp const string ,
+  uint32_t * const password , char (  * letters ) [ ] , uint8_t  letterscount ) {
   char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
-  if  ( ( * stringi ) == 0 ) {
+  if  ( ( * stringi ) == '\00' ) {
     ( * password  ) = 0 ;
     return ; }
   uint32_t pass = 0 ;
   uint32_t  mult  = 1 ;
   do  {
-    uint8_t i = letters_count ;
+    uint8_t i = letterscount ;
     do {
       -- i ;
-      if ( ( * stringi ) == ns_shifr . letters  [ i ] ) goto found ; 
+      if ( ( * stringi ) == (*letters)  [ i ] ) goto found ; 
     } while ( i ) ;
     ns_shifr  . string_exception  = ( ns_shifr . localerus ?
       ( char const ( * ) [ ] ) & u8"неправильная буква в пароле" :
@@ -465,36 +445,10 @@ static  void  string_to_password ( strcp const string ,
     longjmp(ns_shifr  . jump,1);
 found :
     pass  +=  ((uint32_t)(i+1)) * mult ;
-    mult  *=  (uint32_t)letters_count ;
+    mult  *=  (uint32_t)letterscount ;
     ++  stringi ;
   } while ( * stringi ) ;
-  ( * password ) = pass ; }
-  
-// 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
-static  void  string_to_password2 ( strcp const string ,
-  uint32_t * const password ) {
-  char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
-  if  ( ( * stringi ) == 0 ) {
-    ( * password  ) = 0 ;
-    return ; }
-  uint32_t pass = 0 ;
-  uint32_t  mult  = 1 ;
-  do  {
-    uint8_t i = letters_count2 ;
-    do {
-      -- i ;
-      if ( ( * stringi ) == ns_shifr . letters2  [ i ] ) goto found ; 
-    } while ( i ) ;
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-      ( char const ( * ) [ ] ) & u8"неправильная буква в пароле" :
-      ( char const ( * ) [ ] ) & "wrong letter in password" ) ;
-    longjmp(ns_shifr  . jump,1);
-found :
-    pass  +=  ((uint32_t)(i+1)) * mult ;
-    mult  *=  (uint32_t)letters_count2 ;
-    ++  stringi ;
-  } while ( * stringi ) ;
-  ( * password ) = pass ; }
+  ( * password ) = pass ; }  
   
 static  inline  void number128_set0  (
   t_number128 * const restrict np ) {
@@ -512,81 +466,43 @@ static  inline  void number128_add  (
   if (  np  ->  a [ 0 ] < old ) ++  ( np  ->  a [ 1 ] ) ; }
   
 void  number128_mul8  ( t_number128 * const restrict np , uint8_t const m ) {
-//printf("np=[%lx,%lx],m=%d ",np->a[1],np->a[0],(unsigned int)m);  
   // [0]
   uint64_t r0 = ( ( ( ( np  ->  a [ 0 ] ) << 8 ) >> 8 ) * ( ( uint64_t  ) m ) ) ;
-//printf("r0=%lx ",r0);
   // верхние 8 бит [0] + [1] малые 56 бит
   uint64_t r1 = ( ( ( ( np  ->  a [ 0 ]  ) >> 56 ) bitor
       ( ( ( np  ->  a [ 1 ]  ) <<  16 ) >> 8 ) ) * ( ( uint64_t  ) m ) ) ;
-//printf("r1=%lx ",r1);      
   // верхние 16 бит [1]
   uint64_t r2 = ( ( ( np  ->  a [ 1 ]  ) >>  48  ) * ( ( uint64_t  ) m ) ) ;
-//printf("r2=%lx ",r2);  
   np->a [ 1 ] = ( r1 >>  8 ) + ( r2 << 48 ) ;
-//printf("[1]=%lx ",np->a [ 1 ]);  
   np->a [ 0 ] = r0 + ( r1 << 56 ) ;
-//printf("[0]=%lx ",np->a [ 0 ]);  
-  if ( np ->  a [ 0 ] < r0  ) {
-    ++  ( np  ->  a [ 1 ] ) ;
-//printf("[1]=%lx ",np->a [ 1 ]);    
-  }  }
-  
-static  void  string_to_password5 ( strcp const string ,
-  t_number128 * const restrict password ) {
+  if ( np ->  a [ 0 ] < r0  ) ++  ( np  ->  a [ 1 ] ) ; }
+
+static  void  string_to_password5_uni ( strcp const string ,
+  t_number128 * const restrict password , char (  * letters ) [ ] , uint8_t  letterscount ) {
   char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
-  if  ( ( * stringi ) == 0 ) {
+  if  ( ( * stringi ) == '\00' ) {
     number128_set0 ( password  ) ;
     return ; }
   t_number128  pass ;
   number128_set0  ( & pass  ) ;
-  t_number128  mult = {{ [ 0 ] = 1 , [ 1 ] = 0 }} ;
+  t_number128  mult = { { [ 0 ] = 1 , [ 1 ] = 0 } } ;
   do  {
-    uint8_t i = letters_count ;
+    uint8_t i = letterscount ;
     do {
       -- i ;
-      if ( ( * stringi ) == ns_shifr . letters  [ i ] ) goto found ; 
+      if ( ( * stringi ) == ( * letters ) [ i ] ) goto found ; 
     } while ( i ) ;
     ns_shifr  . string_exception  = ( ns_shifr . localerus ?
       ( char const ( * ) [ ] ) & u8"неправильная буква в пароле" :
       ( char const ( * ) [ ] ) & "wrong letter in password" ) ;
-    longjmp(ns_shifr  . jump,1);
+    longjmp ( ns_shifr  . jump  , 1 ) ;
 found : ;
     { t_number128  tmp = mult ;
       number128_mul8  ( & tmp , i + 1 ) ;
       number128_add ( &  pass  , & tmp )  ; }
-    number128_mul8  ( & mult , letters_count ) ;
+    number128_mul8  ( & mult , letterscount ) ;
     ++  stringi ;
-  } while ( * stringi ) ;
-  ( * password  ) = pass ; }
-  
-// 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
-static  void  string2_to_password5 ( strcp const string ,
-  t_number128 * const restrict password ) {
-  char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
-  if  ( ( * stringi ) == 0 ) {
-    number128_set0 ( password  ) ;
-    return ; }
-  t_number128  pass ;
-  number128_set0  ( & pass  ) ;
-  t_number128  mult = {{ [ 0 ] = 1 , [ 1 ] = 0 }} ;
-  do  {
-    uint8_t i = letters_count2 ;
-    do {
-      -- i ;
-      if ( ( * stringi ) == ns_shifr . letters2  [ i ] ) goto found ; 
-    } while ( i ) ;
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-      ( char const ( * ) [ ] ) & u8"неправильная буква в пароле" :
-      ( char const ( * ) [ ] ) & "wrong letter in password" ) ;
-    longjmp(ns_shifr  . jump,1);
-found : ;
-    { t_number128  tmp = mult ;
-      number128_mul8  ( & tmp , i + 1 ) ;
-      number128_add ( &  pass  , & tmp )  ; }
-    number128_mul8  ( & mult , letters_count2 ) ;
-    ++  stringi ;
-  } while ( * stringi ) ;
+  } while ( ( * stringi ) not_eq '\00' ) ;
   ( * password  ) = pass ; }
   
 static  void  shifr_init ( void  ) {
@@ -629,15 +545,14 @@ static  void  raspr4_init ( void  ) {
               ++  j ; } }
   } while ( raspri > 1 ) ; 
   ns_shifr .  raspr4 . live = true  ; }
-
-static  void  raspr4_show ( void  ) {
+  
 # ifdef SHIFR_DEBUG
+static  void  raspr4_show ( void  ) {
   if ( not  ns_shifr .  raspr4 . live ) {
     ns_shifr  . string_exception  = ( ns_shifr . localerus ?
       ( char const ( * ) [ ] ) & u8"raspr4_show: распределение не создано" :
       ( char const ( * ) [ ] ) & "raspr4_show: raspr is not created" ) ;
     longjmp ( ns_shifr  . jump  , 1 ) ; }
-# endif
   uint8_t raspri  = 4 ;
   do {
     uint8_t const raspri4 = raspri * 4 ;
@@ -651,12 +566,13 @@ static  void  raspr4_show ( void  ) {
         for ( uint8_t i1 = i0 + 1 ; i1 < (  raspri4 - 2 )  ; ++  i1 )
           for ( uint8_t i2 = i1 + 1 ; i2 < (  raspri4 - 1 ) ; ++  i2 )
             for ( uint8_t i3 = i2 + 1 ; i3 < raspri4  ; ++  i3 ) {
-printf("[%x,%x,%x,%x]",( * ap ) [ j ] [ 0 ],( * ap ) [ j ] [ 1 ],
-  ( * ap ) [ j ] [ 2 ],( * ap ) [ j ] [ 3 ]);
+              printf("[%x,%x,%x,%x]",( * ap ) [ j ] [ 0 ],( * ap ) [ j ] [ 1 ],
+                ( * ap ) [ j ] [ 2 ],( * ap ) [ j ] [ 3 ]);
               ++  j ; } }
-puts("\n");
+    puts("\n");
   } while ( raspri > 1 ) ; }  
-  
+# endif
+
 # undef isLive5
 # define  isLive5 isLive5pub
   
@@ -840,20 +756,7 @@ void datasole ( arrcp const secretdata , arrp const secretdatasole , size_t  dat
     (* ids) = ((* id)<<2) bitor (ran%4) ;
     ran >>= 2 ;
   } while ( id not_eq &((*secretdata)[0]) ) ; }  
-/*
-void datasole5 ( arrcp const secretdata , arrp const secretdatasole , size_t  data_size ) {
-  uint8_t const * id = &((*secretdata)[data_size]) ;
-  uint8_t * ids = &((*secretdatasole)[data_size]) ;
-  int ran = rand ( )  ;
-  do {
-    -- id ;
-    --  ids ;
-    // главное данные , хвост - соль : xxx => xxx00 или xxx01 или xxx10 или xxx11
-    // в таблице всё рядом, 4 варианта равномерно распределены
-    (* ids) = ((* id)<<2) bitor (ran%4) ;
-    ran >>= 2 ;
-  } while ( id not_eq &((*secretdata)[0]) ) ; }    
-  */
+
 static  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
   unsigned  char c = buf & 0xf ;
   if ( c >= 0 and c <= 9 ) (*buf2)[0] = '0' + c ;
@@ -914,6 +817,8 @@ typedef struct  s_streambuf  {
   uint8_t FmoX ;
   // bufbitsize
   uint8_t XUvM  ;
+  // bytecount
+  int D6h7 ;
 } t_streambuf ;
   
 # define  streambuf_file_pub( M ) ((M)->oRmq)
@@ -928,13 +833,41 @@ typedef struct  s_streambuf  {
 # define  streambuf_bufbitsize_pri( M ) "streambuf::bufbitsize is private"
 # define  streambuf_bufbitsize  streambuf_bufbitsize_pub
 
+# define  streambuf_bytecount_pub( M ) ((M)->D6h7)
+# define  streambuf_bytecount_pri( M ) "streambuf::bytecount is private"
+# define  streambuf_bytecount  streambuf_bytecount_pub
+
 static  inline  void  streambuf_init  ( t_streambuf * const restrict me  ,
   FILE  * const f ) {
   streambuf_file  ( me  ) = f ;
-  streambuf_bufbitsize  ( me  ) = 0 ; }
+  streambuf_bufbitsize  ( me  ) = 0 ;
+  streambuf_bytecount ( me  ) = 0 ; }
+
+// читаю 5 бит
+bool  isEOFstreambuf_read ( t_streambuf * const restrict me  ,
+  uint8_t * const encrypteddata , bool const  flagtext ) {
+  if  ( streambuf_bufbitsize  ( me  ) >= 5 ) {
+    streambuf_bufbitsize  ( me  ) -=  5 ;
+    ( * encrypteddata ) = streambuf_buf ( me  ) bitand 0x1f ;
+    streambuf_buf ( me  ) >>= 5 ;
+    return  false ; }
+  uint8_t buf ;
+  { size_t  const nreads  = fread ( & buf , 1 , 1 , streambuf_file  ( me  ) ) ;
+    if ( nreads ==  0 ) {
+      if  ( feof  ( streambuf_file  ( me  ) ) ) return  true  ;
+      if  ( ferror  ( streambuf_file  ( me  ) ) ) {
+        clearerr ( streambuf_file  ( me  ) ) ;
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+          (char const (*)[]) & u8"isEOFstreambuf_read: ошибка чтения пяти бит" :
+          (char const (*)[]) & "isEOFstreambuf_read: five bits read error" ) ;
+        longjmp(ns_shifr  . jump,1); } } } // nreads
+  ( * encrypteddata ) = (streambuf_buf ( me  ) bitand  ( buf << streambuf_bufbitsize  ( me  ) )) bitand 0x1f  ;
+  streambuf_buf ( me  ) = buf >>  ( 5 - streambuf_bufbitsize  ( me  ) ) ;
+  streambuf_bufbitsize  ( me  ) +=  3 ; // + 8 - 5
+  return  false ; }
   
 void  streambuf_write ( t_streambuf * const restrict me  ,
-  uint8_t (  * encrypteddata ) [ 3 ] , uint8_t secretdatasolesize ) {
+  uint8_t (  * encrypteddata ) [ 3 ] , uint8_t secretdatasolesize , bool const  flagtext ) {
   for ( uint8_t i = 0 ; i < secretdatasolesize ; ++  i ) {
     if  ( streambuf_bufbitsize  ( me  ) < 3 ) {
       streambuf_buf ( me  ) or_eq (  ( * encrypteddata ) [ i ] ) <<
@@ -943,8 +876,25 @@ void  streambuf_write ( t_streambuf * const restrict me  ,
     else  {
       uint8_t const to_write  = ( ( ( * encrypteddata ) [ i ] ) <<
         streambuf_bufbitsize  ( me  ) ) bitor streambuf_buf ( me  ) ;
-      size_t  const writen_count = fwrite ( & to_write , 1 , 1 ,
-        streambuf_file  ( me  ) ) ;
+      size_t  writen_count  ;
+      if  ( flagtext  ) {
+        char buf2 [ 2 ] ;
+        char_to_hex ( to_write , & buf2  ) ;
+        writen_count = fwrite ( & buf2 , 1 , 2 , streambuf_file  ( me  ) ) ;
+        if ( writen_count < 2 ) {
+          clearerr ( streambuf_file  ( me  ) ) ; 
+          ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+            (char const (*)[]) & u8"streambuf_write: ошибка записи байта" :
+            (char const (*)[]) & "streambuf_write: byte write error" ) ;
+          longjmp(ns_shifr  . jump,1); }
+        ++ streambuf_bytecount ( me  ) ;
+        if ( streambuf_bytecount ( me  ) >= 24 )  {
+          streambuf_bytecount ( me  ) = 0 ;
+          buf2  [ 0 ] = '\n' ;
+          writen_count = fwrite ( & ( buf2  [ 0 ] ) , 1 , 1 , streambuf_file  ( me  ) ) ; } }
+      else
+        writen_count = fwrite ( & to_write , 1 , 1 ,
+          streambuf_file  ( me  ) ) ;
       if ( writen_count < 1 ) {
         clearerr ( streambuf_file  ( me  ) ) ; 
         ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
@@ -956,17 +906,44 @@ void  streambuf_write ( t_streambuf * const restrict me  ,
       streambuf_buf ( me  ) = ( ( * encrypteddata ) [ i ] ) >>
         ( 5 - streambuf_bufbitsize  ( me  ) ) ; } } }
         
-void  streambuf_writeflushzero ( t_streambuf * const restrict me  ) {
+void  streambuf_writeflushzero ( t_streambuf * const restrict me , bool const  flagtext ) {
   if  ( streambuf_bufbitsize  ( me  ) ) {
-    size_t  const writen_count = fwrite ( & streambuf_buf ( me  ) , 1 , 1 ,
-      streambuf_file  ( me  ) ) ;
+    size_t  writen_count  ;
+    if  ( flagtext  ) {
+      char buf2 [ 2 ] ;
+      char_to_hex ( streambuf_buf ( me  ) , & buf2  ) ;
+      writen_count = fwrite ( & buf2 , 1 , 2 , streambuf_file  ( me  ) ) ;
+      if ( writen_count < 2 ) {
+        clearerr ( streambuf_file  ( me  ) ) ; 
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+          (char const (*)[]) & u8"streambuf_writeflushzero: ошибка записи байта" :
+          (char const (*)[]) & "streambuf_writeflushzero: byte write error" ) ;
+        longjmp(ns_shifr  . jump,1); }
+      ++ streambuf_bytecount ( me  ) ;
+      if ( streambuf_bytecount ( me  ) >= 24 )  {
+        streambuf_bytecount ( me  ) = 0 ;
+        buf2  [ 0 ] = '\n' ;
+        writen_count = fwrite ( & ( buf2  [ 0 ] ) , 1 , 1 , streambuf_file  ( me  ) ) ; } }
+    else
+      writen_count = fwrite ( & streambuf_buf ( me  ) , 1 , 1 ,
+        streambuf_file  ( me  ) ) ;
     if ( writen_count < 1 ) {
       clearerr ( streambuf_file  ( me  ) ) ; 
       ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
         (char const (*)[]) & u8"streambuf_writeflushzero: ошибка записи байта" :
         (char const (*)[]) & "streambuf_writeflushzero: byte write error" ) ;
       longjmp(ns_shifr  . jump,1); }
-    streambuf_bufbitsize  ( me  ) = 0 ; } }
+    streambuf_bufbitsize  ( me  ) = 0 ; }
+  if ( streambuf_bytecount ( me  ) )  {
+    streambuf_bytecount ( me  ) = 0 ;
+    char  buf2 = '\n' ;
+    size_t  const writen_count = fwrite ( & buf2 , 1 , 1 , streambuf_file  ( me  ) ) ;
+    if ( writen_count < 1 ) {
+      clearerr ( streambuf_file  ( me  ) ) ; 
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+        (char const (*)[]) & u8"streambuf_writeflushzero: ошибка записи байта" :
+        (char const (*)[]) & "streambuf_writeflushzero: byte write error" ) ;
+      longjmp(ns_shifr  . jump,1); } } }
   
 # undef streambuf_file
 # define  streambuf_file  streambuf_file_pri
@@ -974,6 +951,8 @@ void  streambuf_writeflushzero ( t_streambuf * const restrict me  ) {
 # define  streambuf_buf  streambuf_buf_pri
 # undef streambuf_bufbitsize
 # define  streambuf_bufbitsize  streambuf_bufbitsize_pri
+# undef streambuf_bytecount
+# define  streambuf_bytecount  streambuf_bytecount_pri
 
 int main  ( int  argc , char * * argv  )  {
   char const * const locale = setlocale ( LC_ALL  , ""  ) ;
@@ -1073,27 +1052,35 @@ int main  ( int  argc , char * * argv  )  {
           (char const (*)[]) & "password already set" );
         longjmp(ns_shifr  . jump,1); }
       if ( ns_shifr . use_version == 4 ) {
-        string_to_password ( (char(*)[])(argv[argj]) ,
-                           & ns_shifr . raspr4  . password_const ) ; 
+        if ( password_alphabet == 95 )
+          string_to_password_uni ( (char(*)[])(argv[argj]) ,
+            & ns_shifr . raspr4  . password_const , & ns_shifr . letters , letters_count ) ; 
+        else
+          string_to_password_uni ( (char(*)[])(argv[argj]) ,
+            & ns_shifr . raspr4  . password_const , & ns_shifr . letters2 , letters_count2 ) ;
 # ifdef SHIFR_DEBUG
       printf  ( (ns_shifr . localerus ? u8"из строки во внутренний пароль = %x\n" :
         "from string to internal password = %x\n" ) , ns_shifr . raspr4  . password_const ) ;
 # endif                           
         }
       else {
-        string_to_password5 ( (char(*)[])(argv[argj]) ,
-                           & ns_shifr . raspr5  . password_const ) ; 
+        if ( password_alphabet == 95 )
+          string_to_password5_uni ( (char(*)[])(argv[argj]) ,
+            & ns_shifr . raspr5  . password_const , & ns_shifr . letters , letters_count ) ;
+        else
+          string_to_password5_uni ( (char(*)[])(argv[argj]) ,
+            & ns_shifr . raspr5  . password_const , & ns_shifr . letters2 , letters_count2 ) ; 
 # ifdef SHIFR_DEBUG                           
-{ t_number128 password5 ;
-      string_to_password5 ( (char(*)[])(argv[argj]) , & password5 ) ; 
+        { t_number128 password5 ;
+          if ( password_alphabet == 95 )
+            string_to_password5_uni ( (char(*)[])(argv[argj]) , & password5 , & ns_shifr . letters , letters_count ) ; 
+          else
+            string_to_password5_uni ( (char(*)[])(argv[argj]) , & password5 , & ns_shifr . letters2 , letters_count2 ) ; 
 
-      printf  ( ( ns_shifr . localerus ?
-          u8"из строки во внутренний пароль = [ %lx , %lx ]\n"  :
-          "from string to internal password = [ %lx , %lx ]\n"  ) ,
-        password5 . a [ 1 ] , password5 . a [ 0 ] ) ;
-      
-
-    }
+          printf  ( ( ns_shifr . localerus ?
+            u8"из строки во внутренний пароль = [ %lx , %lx ]\n"  :
+            "from string to internal password = [ %lx , %lx ]\n"  ) ,
+          password5 . a [ 1 ] , password5 . a [ 0 ] ) ; }
 # endif    
         
       }
@@ -1237,10 +1224,7 @@ randok : ns_shifr . raspr5  . password_const = (  t_number128 ) { {
   bitor ( ( uint64_t  ) ( ro  . a [ 0 ] ) ) } } ;
 printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
   "password5 = [ %x , %x , %x ]\n"  ) , ro  . a [ 2 ] , ro  . a [ 1 ] ,
-  ro  . a [ 0 ] ) ;
-/*printf(u8"пароль5=[%lu,%lu]\n",ns_shifr . raspr5  . password_const.a[1],
-  ns_shifr . raspr5  . password_const.a[0]) ;*/
-      }
+  ro  . a [ 0 ] ) ;      }
       
     flagpasswd  = true  ;
 # ifdef SHIFR_DEBUG    
@@ -1272,30 +1256,30 @@ printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
     printf  ( ( ns_shifr . localerus ? u8"--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
       "--a62\tby letters between quotes = \'%s\' (by default)\n"  ) ,
       & ( password_letters2  [ 0 ] ) ) ;
+# ifdef SHIFR_DEBUG      
     if ( ns_shifr . use_version == 4 ) {
       uint32_t password2 ;
-      string_to_password ( & password_letters , & password2 ) ; 
-# ifdef SHIFR_DEBUG
-      printf  ( (ns_shifr . localerus ? u8"из строки во внутренний пароль = %x\n" :
-        "from string to internal password = %x\n" ) , password2 ) ;
-# endif
-    }
+        string_to_password_uni ( & password_letters , & password2  , & ns_shifr . letters , letters_count ) ; 
+        printf  ( (ns_shifr . localerus ? u8"из строки95 во внутренний пароль = %x\n" :
+          "from string95 to internal password = %x\n" ) , password2 ) ;
+        string_to_password_uni ( & password_letters2 , & password2  , & ns_shifr . letters2 , letters_count2 ) ; 
+        printf  ( ( ns_shifr . localerus ? u8"из строки62 во внутренний пароль = %x\n" :
+          "from string62 to internal password = %x\n" ) , password2 ) ;   }
     else  {
-      /*
-string_to_password5 ( (char(*)[])(argv[argj]) ,
-                           & ns_shifr . raspr5  . password_const ) ;       */
-//printf("password_letters = '%s'\n", & password_letters )  ;      
       t_number128 password5 ;
-      string_to_password5 ( & password_letters , & password5 ) ; 
-# ifdef SHIFR_DEBUG
+        string_to_password5_uni ( & password_letters , & password5 , & ns_shifr . letters , letters_count ) ; 
       printf  ( ( ns_shifr . localerus ?
-          u8"из строки во внутренний пароль = [ %lx , %lx ]\n"  :
-          "from string to internal password = [ %lx , %lx ]\n" ) ,
+          u8"из строки95 во внутренний пароль = [ %lx , %lx ]\n"  :
+          "from string95 to internal password = [ %lx , %lx ]\n" ) ,
         password5 . a [ 1 ] , 
         password5 . a [ 0 ] ) ;
-      
-# endif
-    }
+        string_to_password5_uni ( & password_letters2 , & password5 , & ns_shifr . letters2 , letters_count2 ) ; 
+      printf  ( ( ns_shifr . localerus ?
+          u8"из строки62 во внутренний пароль = [ %lx , %lx ]\n"  :
+          "from string62 to internal password = [ %lx , %lx ]\n" ) ,
+        password5 . a [ 1 ] , 
+        password5 . a [ 0 ] ) ;   }
+# endif    
     if ( not flagoutputtofile ) {
       puts  ( ns_shifr . localerus ?
         u8"Шифрование не произведено. Используйте опцию заданием выходного файла или с опцией --пароль предлагаемого пароля." :
@@ -1325,10 +1309,43 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
         (char const (*)[]) & u8"в пароле нет конца строки" :
         (char const (*)[]) & "there is no end of line in the password" ) ;
       longjmp(ns_shifr  . jump,1); }
+      
     if ( ns_shifr . use_version == 4 )
-      string_to_password ( res , & ns_shifr . raspr4  . password_const ) ;
-    else 
-      string_to_password5 ( res , & ns_shifr . raspr5  . password_const ) ; }
+      if ( password_alphabet == 95 )
+        string_to_password_uni ( res , & ns_shifr . raspr4  . password_const , & ns_shifr . letters ,
+          letters_count ) ;
+      else
+        string_to_password_uni ( res , & ns_shifr . raspr4  . password_const , & ns_shifr . letters2 ,
+          letters_count2 ) ;
+    else {
+      if ( password_alphabet == 95 )
+        string_to_password5_uni ( res , & ns_shifr . raspr5  . password_const , & ns_shifr . letters ,
+                                  letters_count ) ;
+      else
+        string_to_password5_uni ( res , & ns_shifr . raspr5  . password_const , & ns_shifr . letters2 ,
+                                  letters_count2 ) ; }
+    char  password_letters [ 20 ] ;
+        
+      if ( ns_shifr . use_version == 4 ) {
+        if ( password_alphabet == 95 )
+          password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+            & password_letters , & ns_shifr . letters , letters_count ) ;
+        else
+          password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+            & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
+      else  {
+        if ( password_alphabet == 95 )
+          password_to_string5_uni ( & ns_shifr . raspr5  . password_const ,
+            & password_letters , & ns_shifr . letters , letters_count ) ;
+        else
+          password_to_string5_uni ( & ns_shifr . raspr5  . password_const ,
+            & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
+           
+      if  ( strcmp ( &(password_letters[0]) , &((*res)[0]) ) )  
+        fprintf  ( stderr , ( ns_shifr . localerus ?
+          u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
+          "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
+          , &((*res)[0]) , & ( password_letters  [ 0 ] ) ) ; }
   FILE  * filefrom  = stdin ;
   FILE  * fileto  = stdout  ;
   if ( flaginputfromfile ) {
@@ -1371,63 +1388,62 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
     // 18 .. 1b - варианты секретных кодов для буквы 6
     // 1c .. 1f - варианты секретных кодов для буквы 7
     uint8_t deshi [ shifr_deshi_size5 ] = { } ;
-//puts("0.");    
     if ( ns_shifr . use_version == 4 )  
       password_load ( ns_shifr . raspr4  . password_const  , & shifr , & deshi ) ;
     else
       password_load5 ( & ns_shifr . raspr5  . password_const  , & shifr , & deshi ) ;
-//puts("1.");  
+# ifdef SHIFR_DEBUG    
   printarr  ( & "shifr" , & shifr , shifr_deshi_size5 ) ;
   printarr  ( & "deshi" , & deshi , shifr_deshi_size5 ) ;
-
+# endif
   if ( flagenc ) {
     // главный заголовок "шифр" без конца строки
-    size_t writecount = fwrite ( & ns_shifr . mainheader  , 1 ,
-      sizeof ( ns_shifr . mainheader ) , fileto ) ;
-    if ( writecount < sizeof ( ns_shifr . mainheader ) ) {
+    /*size_t writecount = fwrite ( & ns_shifr . mainheader  , 1 ,
+      sizeof ( ns_shifr . mainheader ) , fileto ) ;*/
+    /*if ( writecount < sizeof ( ns_shifr . mainheader ) ) {
       clearerr ( fileto ) ; 
       ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
         (char const (*)[]) & u8"ошибка записи заголовка" :
         (char const (*)[]) & "header write error" ) ;
-      longjmp(ns_shifr  . jump,1); }
+      longjmp(ns_shifr  . jump,1); }*/
     if ( flagtext ) { // заголовок : "2\n" 
       if ( ns_shifr . use_version == 4 ) {
-        size_t writecount = fwrite ( & ns_shifr.raspr4 . headertxt  , 1 ,
+        /*size_t writecount = fwrite ( & ns_shifr.raspr4 . headertxt  , 1 ,
           sizeof ( ns_shifr.raspr4 . headertxt ) , fileto ) ;
         if ( writecount < sizeof ( ns_shifr.raspr4 . headertxt ) ) {
           clearerr ( fileto ) ; 
           ns_shifr  . string_exception  = ( ns_shifr . localerus ?
             (char const (*)[]) & u8"ошибка записи заголовка" :
             (char const (*)[]) & "header write error" ) ;
-          longjmp(ns_shifr  . jump,1); } }
+          longjmp(ns_shifr  . jump,1); }*/ }
       else {
-        size_t writecount = fwrite ( & ns_shifr.raspr5 . headertxt  , 1 ,
+        /*size_t writecount = fwrite ( & ns_shifr.raspr5 . headertxt  , 1 ,
           sizeof ( ns_shifr.raspr5 . headertxt ) , fileto ) ;
         if ( writecount < sizeof ( ns_shifr.raspr5 . headertxt ) ) {
           clearerr ( fileto ) ; 
           ns_shifr  . string_exception  = ( ns_shifr . localerus ?
             (char const (*)[]) & u8"ошибка записи заголовка" :
             (char const (*)[]) & "header write error" ) ;
-          longjmp(ns_shifr  . jump,1); } } }
+          longjmp(ns_shifr  . jump,1); }*/ } }
     else { // заголовок : 0x02 + 0x00 
       if ( ns_shifr . use_version == 4 ) {
-        size_t writecount = fwrite ( & ns_shifr.raspr4 . headerbyn , 1 ,
+        /*size_t writecount = fwrite ( & ns_shifr.raspr4 . headerbyn , 1 ,
           sizeof ( ns_shifr.raspr4 . headerbyn ) , fileto ) ;
         if ( writecount < sizeof ( ns_shifr.raspr4 . headerbyn ) ) {
           clearerr ( fileto ) ; 
           ns_shifr  . string_exception  = ( ns_shifr . localerus ?
             (char const (*)[]) & u8"ошибка записи заголовка" :
             (char const (*)[]) & "header write error" ) ;
-          longjmp(ns_shifr  . jump,1); } }
+          longjmp(ns_shifr  . jump,1); }*/ }
       else  {
-        size_t writecount = fwrite ( & ns_shifr.raspr5 . headerbyn , 1 ,
+        /*size_t writecount = fwrite ( & ns_shifr.raspr5 . headerbyn , 1 ,
           sizeof ( ns_shifr.raspr5 . headerbyn ) , fileto ) ;
         if ( writecount < sizeof ( ns_shifr.raspr5 . headerbyn ) ) {
           clearerr ( fileto ) ; 
           ns_shifr  . string_exception  = ( ns_shifr . localerus ?
             (char const (*)[]) & u8"ошибка записи заголовка" :
             (char const (*)[]) & "header write error" ) ;
-          longjmp(ns_shifr  . jump,1); } } } // if text / digit
+          longjmp(ns_shifr  . jump,1); }*/ } } // if text / digit
     if ( ns_shifr . use_version == 4 )  {
     int bytecount = 0 ;
     do {
@@ -1447,6 +1463,9 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
       datasole ( & secretdata , & secretdatasole , 4 )  ;
       uint8_t encrypteddata [ 4 ] ;
       crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata , 4 ) ;
+      
+      //streambuf_write4 ( & filebufto , & encrypteddata , 4 , flagtext )  ;
+      
       for ( int i = 0 ; i < 4 ; i +=  2 ) {
         buf = ( encrypteddata [ i ] & 0xf ) bitor
           ( ( encrypteddata [ i + 1 ] & 0xf ) << 4  ) ;
@@ -1531,41 +1550,43 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
       datasole ( & secretdata , & secretdatasole , secretdatasolesize )  ;
       crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata ,
         secretdatasolesize ) ;
-      streambuf_write ( & filebufto , & encrypteddata , secretdatasolesize )  ;
+      streambuf_write ( & filebufto , & encrypteddata , secretdatasolesize , flagtext )  ;
     } while ( true ) ; 
-    streambuf_writeflushzero ( & filebufto ) ; }  // была 5-ая версия 
+    streambuf_writeflushzero ( & filebufto , flagtext ) ; }  // была 5-ая версия 
     } // кодировали
   else  { // декодируем
     // главный заголовок должен быть "шифр" без конца строки
-    unsigned char buf [ sizeof ( ns_shifr . mainheader ) ] ;
+    //unsigned char bufmh [ sizeof ( ns_shifr . mainheader ) ] ;
+    //unsigned char buf [ sizeof ( ns_shifr.raspr4 . headerbyn ) ] ;
 //printf("sizeof ( ns_shifr . mainheader )=%zd\n",sizeof ( ns_shifr . mainheader ));    
-    size_t readcount = fread ( & buf , 1 ,
-      sizeof ( ns_shifr . mainheader ) , filefrom ) ;
+    //size_t readcount  ;
+    /*readcount = fread ( & buf , 1 ,
+      sizeof ( ns_shifr . mainheader ) , filefrom ) ;*/
 //printf("0.readcount=%zd\n",readcount);      
-    if ( readcount < sizeof ( ns_shifr . mainheader ) ) {
+    /*if ( readcount < sizeof ( ns_shifr . mainheader ) ) {
       if ( ferror ( filefrom ) ) clearerr ( filefrom ) ;
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
         (char const (*)[]) & u8"ошибка чтения заголовка" :
         (char const (*)[]) & "read header error");
-      longjmp(ns_shifr  . jump,1); }
-    if ( memcmp ( & ( ns_shifr . mainheader [ 0 ] ) , & ( buf [ 0 ] ) ,
+      longjmp(ns_shifr  . jump,1); }*/
+    /*if ( memcmp ( & ( ns_shifr . mainheader [ 0 ] ) , & ( bufmh [ 0 ] ) ,
       sizeof ( ns_shifr . mainheader ) ) ) {
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
         (char const (*)[]) & u8"плохой заголовок" :
         (char const (*)[]) & "bad header" ) ;
-      longjmp(ns_shifr  . jump,1); }
+      longjmp(ns_shifr  . jump,1); }*/
     // 0x02,0x00 или "2\n"    
 //printf("sizeof ( ns_shifr.raspr4 . headerbyn )=%zd\n",sizeof ( ns_shifr.raspr4 . headerbyn ));    
-    readcount = fread ( & buf , 1 ,
-      sizeof ( ns_shifr.raspr4 . headerbyn ) , filefrom ) ;
+    /*readcount = fread ( & buf , 1 ,
+      sizeof ( ns_shifr.raspr4 . headerbyn ) , filefrom ) ;*/
 //printf("1.readcount=%zd\n",readcount);      
-    if ( readcount < sizeof ( ns_shifr.raspr4 . headerbyn ) ) {
+    /*if ( readcount < sizeof ( ns_shifr.raspr4 . headerbyn ) ) {
       if ( ferror ( filefrom ) ) clearerr ( filefrom ) ;
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
         (char const (*)[]) & u8"ошибка чтения заголовка" :
         (char const (*)[]) & "read header error");
-      longjmp(ns_shifr  . jump,1); }
-    if ( memcmp ( & ( ns_shifr.raspr4 . headerbyn [ 0 ] ) , & ( buf [ 0 ] ) ,
+      longjmp(ns_shifr  . jump,1); }*/
+    /*if ( memcmp ( & ( ns_shifr.raspr4 . headerbyn [ 0 ] ) , & ( buf [ 0 ] ) ,
       sizeof ( ns_shifr.raspr4 . headerbyn ) ) ) {
       if ( memcmp ( & ( ns_shifr.raspr4 . headertxt [ 0 ] ) , & ( buf [ 0 ] ) ,
         sizeof ( ns_shifr.raspr4 . headertxt ) ) ) {
@@ -1574,7 +1595,8 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
             (char const (*)[]) & "bad header" ) ;
         longjmp(ns_shifr  . jump,1); }
       else  flagtext  = true  ; }
-    else  flagtext  = false ;
+    else  flagtext  = false ;*/
+    if ( ns_shifr . use_version == 4 ) {
     do {
       char buf [ 2 ] ;
       size_t readcount ;
@@ -1651,7 +1673,93 @@ string_to_password5 ( (char(*)[])(argv[argj]) ,
             (char const (*)[]) & "error writing file" ) ;
           longjmp(ns_shifr  . jump,1); }
         break ; }
-    } while ( true ) ; } } // shifr deshi
+    } while ( true ) ; } // ver4
+    else { // ver 5
+      
+      // .. пишем
+      
+    do {
+      char buf [ 2 ] ;
+      size_t readcount ;
+      if  ( flagtext  ) {
+        char buf4 [ 4 ] ;
+        // читаем четыре буквы '0a1b' -> декодируем в два байта "XY"
+        do {
+          readcount = fread ( & (buf4[0]) , 1 , 1 , filefrom ) ;
+          if ( readcount == 0 ) {
+            if ( feof ( filefrom ) ) goto out ;
+            if ( ferror ( filefrom ) ) {
+              clearerr ( filefrom ) ;
+              ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+                (char const (*)[]) & u8"ошибка чтения файла" :
+                (char const (*)[]) & "error reading file" ) ;
+              longjmp(ns_shifr  . jump,1); }
+            goto out ; }
+          // если это НЕ цифра и НЕ буква
+        } while ( ( buf4[0] < '0' or buf4[0] > '9') and
+            ( buf4[0] < 'a' or buf4[0] > 'f')) ;
+        readcount = fread ( & (buf4[1]) , 1 , 3 , filefrom ) ;
+        if ( readcount < 3 ) {
+          if ( feof ( filefrom ) )
+            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+              (char const (*)[]) & u8"ошибка hex данных" :
+              (char const (*)[]) & "error hex data" ) ;
+          else
+            if ( ferror ( filefrom ) ) {
+              clearerr ( filefrom ) ;
+              ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+                (char const (*)[]) & u8"ошибка чтения файла" :
+                (char const (*)[]) & "error reading file" ) ; }
+            else
+              ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+                (char const (*)[]) & u8"ошибка hex данных" :
+                (char const (*)[]) & "error hex data" ) ;
+          longjmp(ns_shifr  . jump,1);  }
+        for ( char const * i = &(buf4[1]); i <= &(buf4[3]) ; ++ i ) {
+          if (not(( (*i) >= '0' and (*i) <= '9') or ((*i) >= 'a' and (*i) <= 'f'))) {
+            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+              (char const (*)[]) & u8"ошибка hex данных" :
+              (char const (*)[]) & "error hex data" ) ;
+            longjmp(ns_shifr  . jump,1); } }
+//printf("buf4=[%c,%c,%c,%c]\n",buf4[0],buf4[1],buf4[2],buf4[3]);
+        hex_to_char ( ( char const ( * ) [ 2 ] ) ( & buf4 ) ,
+          & ( buf [ 0 ] ) ) ;  
+        hex_to_char ( ( char const ( * ) [ 2 ] ) ( & ( buf4 [ 2 ] ) ) ,
+          & ( buf [ 1 ] ) ) ; }
+      else {
+        readcount = fread ( & (buf[0]) , 1 , 2 , filefrom ) ;
+//printf("2.readcount=%zd\n",readcount);        
+        if ( readcount < 2 ) {
+          if ( feof ( filefrom  ) ) break ;
+          if ( ferror ( filefrom ) ) {
+            clearerr ( filefrom ) ;
+            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+              (char const (*)[]) & u8"ошибка чтения файла" :
+              (char const (*)[]) & "error reading file" ) ;
+            longjmp(ns_shifr  . jump,1); }
+          break ; } }
+      uint8_t secretdata [ 4 ] = { [0]  = buf[0]&0xf ,[1]=(buf[0]>>4)&0xf ,
+        [2]  = buf[1]&0xf ,[3]=(buf[1]>>4)&0xf      } ;
+      uint8_t decrypteddata [ 4 ] ;
+      crypt_decrypt ( & secretdata , & deshi , & decrypteddata , 4 ) ;
+      buf[0] = (decrypteddata [ 0 ] & 0x3) bitor ((decrypteddata [ 1 ] & 0x3) << 2)
+        bitor ((decrypteddata [ 2 ] & 0x3)<<4) bitor
+        ((decrypteddata [ 3 ] & 0x3) << 6);
+      size_t writecount = fwrite ( & (buf[0]) , 1 , 1 , fileto ) ;
+      if ( writecount == 0 ) {
+        if ( ferror ( fileto ) ) {
+          clearerr ( fileto ) ;
+          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+            (char const (*)[]) & u8"ошибка записи файла" :
+            (char const (*)[]) & "error writing file" ) ;
+          longjmp(ns_shifr  . jump,1); }
+        break ; }
+    } while ( true ) ;
+      
+    } // ver 5
+    }  //  decode 
+    
+  } // shifr deshi
 out : ;  
   int resulterror  = 0 ;
 //printf(u8"закрываю выход\n");
