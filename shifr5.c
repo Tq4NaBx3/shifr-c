@@ -743,8 +743,9 @@ void  password_load5 ( t_number128  const * password_constp  , arrp const shifrp
           ( * shifrp  ) [ i ] = index3 ;
           ( * deship  ) [ index3 ] = 7 ;
           ++  index3 ; } } }  
-  
-void datasole ( arrcp const secretdata , arrp const secretdatasole , size_t  data_size ) {
+  /*
+void datasole ( arrcp const secretdata , arrp const secretdatasole , 
+  size_t  data_size ) {
   uint8_t const * id = &((*secretdata)[data_size]) ;
   uint8_t * ids = &((*secretdatasole)[data_size]) ;
   int ran = rand ( )  ;
@@ -755,7 +756,22 @@ void datasole ( arrcp const secretdata , arrp const secretdatasole , size_t  dat
     // в таблице всё рядом, 4 варианта равномерно распределены
     (* ids) = ((* id)<<2) bitor (ran%4) ;
     ran >>= 2 ;
-  } while ( id not_eq &((*secretdata)[0]) ) ; }  
+  } while ( id not_eq &((*secretdata)[0]) ) ; }  */
+
+void datasole ( arrcp const secretdata , arrp const secretdatasole ,
+  size_t const data_size ) {
+  uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
+  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
+  int ran = rand ( )  ;
+  do {
+    -- id ;
+    --  ids ;
+    // главное данные , хвост - соль : 101 =>
+    //   10100 или 10101 или 10110 или 10111
+    // в таблице всё рядом, 4 варианта равномерно распределены
+    ( * ids ) = ( ( * id  ) <<  2 ) bitor ( ran bitand  0x3 ) ;
+    ran >>= 2 ;
+  } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
 static  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
   unsigned  char c = buf & 0xf ;
@@ -840,6 +856,7 @@ typedef struct  s_streambuf  {
 static  inline  void  streambuf_init  ( t_streambuf * const restrict me  ,
   FILE  * const f ) {
   streambuf_file  ( me  ) = f ;
+  streambuf_buf ( me  ) = 0 ;
   streambuf_bufbitsize  ( me  ) = 0 ;
   streambuf_bytecount ( me  ) = 0 ; }
 
@@ -853,6 +870,7 @@ bool  isEOFstreambuf_read5bits ( t_streambuf * const restrict me  ,
     return  false ; }
   uint8_t buf ;
   { size_t  const nreads  = fread ( & buf , 1 , 1 , streambuf_file  ( me  ) ) ;
+printf(u8"чф[%x]",buf);
     if ( nreads ==  0 ) {
       if  ( feof  ( streambuf_file  ( me  ) ) ) return  true  ;
       if  ( ferror  ( streambuf_file  ( me  ) ) ) {
@@ -861,22 +879,27 @@ bool  isEOFstreambuf_read5bits ( t_streambuf * const restrict me  ,
           (char const (*)[]) & u8"isEOFstreambuf_read5bits: ошибка чтения пяти бит" :
           (char const (*)[]) & "isEOFstreambuf_read5bits: five bits read error" ) ;
         longjmp(ns_shifr  . jump,1); } } } // nreads
-  ( * encrypteddata ) = (streambuf_buf ( me  ) bitand  ( buf << streambuf_bufbitsize  ( me  ) )) bitand 0x1f  ;
+  ( * encrypteddata ) = (streambuf_buf ( me  ) bitor 
+    ( buf << streambuf_bufbitsize  ( me  ) )) bitand 0x1f  ;
   streambuf_buf ( me  ) = buf >>  ( 5 - streambuf_bufbitsize  ( me  ) ) ;
   streambuf_bufbitsize  ( me  ) +=  3 ; // + 8 - 5
   return  false ; }
   
-// пишу по пять байт
+// пишу по пять бит
+// secretdatasolesize количество пяти-битных отделов (2 или 3)
+// encrypteddata массив пяти-битных чисел
 void  streambuf_write ( t_streambuf * const restrict me  ,
-  uint8_t const (  * encrypteddata ) [ 3 ] , uint8_t secretdatasolesize , bool const  flagtext ) {
+  uint8_t const (  * encrypteddata ) [ 3 ] , uint8_t secretdatasolesize ,
+  bool const  flagtext ) {
   for ( uint8_t i = 0 ; i < secretdatasolesize ; ++  i ) {
     if  ( streambuf_bufbitsize  ( me  ) < 3 ) {
-      streambuf_buf ( me  ) or_eq ((  ( * encrypteddata ) [ i ] ) <<
-        streambuf_bufbitsize  ( me  )) ;
+      streambuf_buf ( me  ) or_eq ( ( ( * encrypteddata ) [ i ] ) <<
+        streambuf_bufbitsize  ( me  ) ) ;
       streambuf_bufbitsize  ( me  ) +=  5 ; }
     else  {
       uint8_t const to_write  = ( ( ( * encrypteddata ) [ i ] ) <<
         streambuf_bufbitsize  ( me  ) ) bitor streambuf_buf ( me  ) ;
+printf("tw[%x]",(unsigned int)to_write);
       size_t  writen_count  ;
       if  ( flagtext  ) {
         char buf2 [ 2 ] ;
@@ -892,7 +915,8 @@ void  streambuf_write ( t_streambuf * const restrict me  ,
         if ( streambuf_bytecount ( me  ) >= 24 )  {
           streambuf_bytecount ( me  ) = 0 ;
           buf2  [ 0 ] = '\n' ;
-          writen_count = fwrite ( & ( buf2  [ 0 ] ) , 1 , 1 , streambuf_file  ( me  ) ) ; } }
+          writen_count = fwrite ( & ( buf2  [ 0 ] ) , 1 , 1 ,
+            streambuf_file  ( me  ) ) ; } }
       else
         writen_count = fwrite ( & to_write , 1 , 1 ,
           streambuf_file  ( me  ) ) ;
@@ -948,7 +972,9 @@ void  streambuf_writeflushzero ( t_streambuf * const restrict me , bool const  f
   
 // версия 5 пишу три бита для расшифровки
 void  streambuf_write3bits ( t_streambuf * const restrict me  ,
-  uint8_t encrypteddata ) {
+  uint8_t const encrypteddata ) {
+printf(u8"ед[%x]",encrypteddata);
+printf(u8"ббс[%x]",streambuf_bufbitsize  ( me  ));
     if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
       streambuf_buf ( me  ) or_eq (    encrypteddata    <<
         streambuf_bufbitsize  ( me  )) ;
@@ -1422,19 +1448,7 @@ randok : ns_shifr . raspr5  . password_const = (  t_number128 ) { {
   printarr  ( & "deshi" , & deshi , shifr_deshi_size5 ) ;
 # endif
   if ( flagenc ) {
-    // главный заголовок "шифр" без конца строки
-    
-    
-    if ( flagtext ) { // заголовок : "2\n" 
-      if ( ns_shifr . use_version == 4 ) {
-         }
-      else {
-         } }
-    else { // заголовок : 0x02 + 0x00 
-      if ( ns_shifr . use_version == 4 ) {
-         }
-      else  {
-         } } // if text / digit
+     // if text / digit
     if ( ns_shifr . use_version == 4 )  {
     int bytecount = 0 ;
     do {
@@ -1492,8 +1506,11 @@ randok : ns_shifr . raspr5  . password_const = (  t_number128 ) { {
       uint8_t secretdatasolesize  ;
       uint8_t encrypteddata [ 3 ] ;
     do {
-      char buf ;
+      unsigned  char buf ;
       size_t readcount = fread ( & buf , 1 , 1 , filefrom ) ;
+printf(u8"ч[%x]",(unsigned int)buf);
+printf(u8"бк[%x]",bitscount);
+printf(u8"д[%x,%x,%x,%x]",secretdata [ 3 ],secretdata [ 2 ],secretdata [ 1 ],secretdata [ 0 ]);
       if ( readcount == 0 ) {
         if ( ferror ( filefrom ) ) {
           clearerr ( filefrom ) ;
@@ -1513,11 +1530,14 @@ randok : ns_shifr . raspr5  . password_const = (  t_number128 ) { {
         break ;
       case  1 : 
         // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
+printf(u8"д3[%x],buf[%x]",secretdata [ 3 ],buf);
         secretdata [ 0 ] = secretdata [ 3 ] bitor (( buf  bitand 0x3 )<<1) ;
+printf(u8"д0[%x]",secretdata [ 0 ]);
         secretdata [ 1 ] = ( buf >>  2 ) bitand 0x7 ;
         secretdata [ 2 ] = ( buf >>  5 ) bitand 0x7 ;
         bitscount  = 0 ;   // 1 + 8 - 9
         secretdatasolesize  = 3 ;
+        break ;
       case  2 :
         // <= [ [0] [2 1 0] [2 1 0] [2] ] <= [ [1 0] ..
         secretdata [ 0 ] = secretdata [ 2 ] bitor (( buf  bitand 0x1 )<<2) ;
@@ -1534,11 +1554,19 @@ randok : ns_shifr . raspr5  . password_const = (  t_number128 ) { {
         ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
           (char const (*)[]) & u8"неожиданное значение bitscount" :
           (char const (*)[]) & "unexpected value bitscount" ) ;
-        longjmp(ns_shifr  . jump,1); }
+        longjmp ( ns_shifr  . jump  , 1 ) ; }
+printf(u8"д[%x,%x,%x,%x]",secretdata [ 3 ],secretdata [ 2 ],secretdata [ 1 ],secretdata [ 0 ]);
+/*{if(secretdatasolesize==2)printf(u8"д[%x,%x]",secretdata [ 1 ],secretdata [ 0 ]);
+else  printf(u8"д[%x,%x,%x]",secretdata [ 2 ],secretdata [ 1 ],secretdata [ 0 ]);}*/
       datasole ( & secretdata , & secretdatasole , secretdatasolesize )  ;
+{if(secretdatasolesize==2)printf(u8"с[%x,%x]",secretdatasole [ 1 ],secretdatasole [ 0 ]);
+else  printf(u8"с[%x,%x,%x]",secretdatasole [ 2 ],secretdatasole [ 1 ],secretdatasole [ 0 ]);}
       crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata ,
         secretdatasolesize ) ;
-      streambuf_write ( & filebufto , & encrypteddata , secretdatasolesize , flagtext )  ;
+{if(secretdatasolesize==2)printf(u8"ш[%x,%x]",encrypteddata [ 1 ],encrypteddata [ 0 ]);
+else  printf(u8"ш[%x,%x,%x]",encrypteddata [ 2 ],encrypteddata [ 1 ],encrypteddata [ 0 ]);}
+      streambuf_write ( & filebufto , & encrypteddata , secretdatasolesize ,
+        flagtext )  ;
     } while ( true ) ; 
     streambuf_writeflushzero ( & filebufto , flagtext ) ; }  // была 5-ая версия 
     } // кодировали
@@ -1627,8 +1655,10 @@ randok : ns_shifr . raspr5  . password_const = (  t_number128 ) { {
       uint8_t secretdata [ 1 ] ;
       while ( not isEOFstreambuf_read5bits ( & filebuffrom ,
         & ( secretdata [ 0 ] ) , flagtext ) ) {
+printf(u8"чд=[%x]",(unsigned int)secretdata [ 0 ]);
         uint8_t decrypteddata [ 1 ] ;
         crypt_decrypt ( & secretdata , & deshi , & decrypteddata , 1 ) ;
+printf(u8"рш=[%x]",(unsigned int)decrypteddata [ 0 ]);
         streambuf_write3bits ( & filebufto , decrypteddata [ 0 ] ) ; } } // ver 5
     }  //  decode 
   } // shifr deshi
