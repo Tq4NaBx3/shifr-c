@@ -844,7 +844,7 @@ static  inline  void  streambuf_init  ( t_streambuf * const restrict me  ,
   streambuf_bytecount ( me  ) = 0 ; }
 
 // читаю 5 бит
-bool  isEOFstreambuf_read ( t_streambuf * const restrict me  ,
+bool  isEOFstreambuf_read5bits ( t_streambuf * const restrict me  ,
   uint8_t * const encrypteddata , bool const  flagtext ) {
   if  ( streambuf_bufbitsize  ( me  ) >= 5 ) {
     streambuf_bufbitsize  ( me  ) -=  5 ;
@@ -858,20 +858,21 @@ bool  isEOFstreambuf_read ( t_streambuf * const restrict me  ,
       if  ( ferror  ( streambuf_file  ( me  ) ) ) {
         clearerr ( streambuf_file  ( me  ) ) ;
         ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
-          (char const (*)[]) & u8"isEOFstreambuf_read: ошибка чтения пяти бит" :
-          (char const (*)[]) & "isEOFstreambuf_read: five bits read error" ) ;
+          (char const (*)[]) & u8"isEOFstreambuf_read5bits: ошибка чтения пяти бит" :
+          (char const (*)[]) & "isEOFstreambuf_read5bits: five bits read error" ) ;
         longjmp(ns_shifr  . jump,1); } } } // nreads
   ( * encrypteddata ) = (streambuf_buf ( me  ) bitand  ( buf << streambuf_bufbitsize  ( me  ) )) bitand 0x1f  ;
   streambuf_buf ( me  ) = buf >>  ( 5 - streambuf_bufbitsize  ( me  ) ) ;
   streambuf_bufbitsize  ( me  ) +=  3 ; // + 8 - 5
   return  false ; }
   
+// пишу по пять байт
 void  streambuf_write ( t_streambuf * const restrict me  ,
-  uint8_t (  * encrypteddata ) [ 3 ] , uint8_t secretdatasolesize , bool const  flagtext ) {
+  uint8_t const (  * encrypteddata ) [ 3 ] , uint8_t secretdatasolesize , bool const  flagtext ) {
   for ( uint8_t i = 0 ; i < secretdatasolesize ; ++  i ) {
     if  ( streambuf_bufbitsize  ( me  ) < 3 ) {
-      streambuf_buf ( me  ) or_eq (  ( * encrypteddata ) [ i ] ) <<
-        streambuf_bufbitsize  ( me  ) ;
+      streambuf_buf ( me  ) or_eq ((  ( * encrypteddata ) [ i ] ) <<
+        streambuf_bufbitsize  ( me  )) ;
       streambuf_bufbitsize  ( me  ) +=  5 ; }
     else  {
       uint8_t const to_write  = ( ( ( * encrypteddata ) [ i ] ) <<
@@ -945,6 +946,30 @@ void  streambuf_writeflushzero ( t_streambuf * const restrict me , bool const  f
         (char const (*)[]) & "streambuf_writeflushzero: byte write error" ) ;
       longjmp(ns_shifr  . jump,1); } } }
   
+// версия 5 пишу три бита для расшифровки
+void  streambuf_write3bits ( t_streambuf * const restrict me  ,
+  uint8_t encrypteddata ) {
+    if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
+      streambuf_buf ( me  ) or_eq (    encrypteddata    <<
+        streambuf_bufbitsize  ( me  )) ;
+      streambuf_bufbitsize  ( me  ) +=  3 ; }
+    else  {
+      uint8_t const to_write  = (    encrypteddata   <<
+        streambuf_bufbitsize  ( me  ) ) bitor streambuf_buf ( me  ) ;
+      size_t  writen_count  ;
+        writen_count = fwrite ( & to_write , 1 , 1 ,
+          streambuf_file  ( me  ) ) ;
+      if ( writen_count < 1 ) {
+        clearerr ( streambuf_file  ( me  ) ) ; 
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+          (char const (*)[]) & u8"streambuf_write3bits: ошибка записи байта" :
+          (char const (*)[]) & "streambuf_write3bits: byte write error" ) ;
+        longjmp(ns_shifr  . jump,1); }
+      // + 3 - 8
+      streambuf_bufbitsize  ( me  ) -= 5 ;
+      streambuf_buf ( me  ) =    encrypteddata   >>
+        ( 3 - streambuf_bufbitsize  ( me  ) ) ; } }
+
 # undef streambuf_file
 # define  streambuf_file  streambuf_file_pri
 # undef streambuf_buf
@@ -1222,9 +1247,9 @@ randtry :
 randok : ns_shifr . raspr5  . password_const = (  t_number128 ) { {
   [ 1 ] = ro  . a [ 2 ] , [ 0 ] = ( ( ( uint64_t  ) ( ro  . a [ 1 ] ) ) <<  32  )
   bitor ( ( uint64_t  ) ( ro  . a [ 0 ] ) ) } } ;
-printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
+/*printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
   "password5 = [ %x , %x , %x ]\n"  ) , ro  . a [ 2 ] , ro  . a [ 1 ] ,
-  ro  . a [ 0 ] ) ;      }
+  ro  . a [ 0 ] ) ;*/      }
       
     flagpasswd  = true  ;
 # ifdef SHIFR_DEBUG    
@@ -1362,8 +1387,6 @@ printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
       longjmp(ns_shifr  . jump,1); }
     flagclosefilefrom = true ;
     filefrom = f ;    }
-  //t_streambuf filebuffrom ;
-  //streambuf_init  ( & filebuffrom , filefrom )  ;
   if ( flagoutputtofile ) {
     FILE * f = fopen(&((*outputfilename)[0]),&("w"[0]));
     if(f == NULL) {
@@ -1376,6 +1399,8 @@ printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
       longjmp(ns_shifr  . jump,1); }
     flagclosefileto = true ;
     fileto  = f ;    }
+  t_streambuf filebuffrom ;
+  streambuf_init  ( & filebuffrom , filefrom )  ;
   t_streambuf filebufto ;
   streambuf_init  ( & filebufto , fileto )  ;
   { uint8_t shifr [ shifr_deshi_size5 ] = { } ;
@@ -1398,52 +1423,18 @@ printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
 # endif
   if ( flagenc ) {
     // главный заголовок "шифр" без конца строки
-    /*size_t writecount = fwrite ( & ns_shifr . mainheader  , 1 ,
-      sizeof ( ns_shifr . mainheader ) , fileto ) ;*/
-    /*if ( writecount < sizeof ( ns_shifr . mainheader ) ) {
-      clearerr ( fileto ) ; 
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
-        (char const (*)[]) & u8"ошибка записи заголовка" :
-        (char const (*)[]) & "header write error" ) ;
-      longjmp(ns_shifr  . jump,1); }*/
+    
+    
     if ( flagtext ) { // заголовок : "2\n" 
       if ( ns_shifr . use_version == 4 ) {
-        /*size_t writecount = fwrite ( & ns_shifr.raspr4 . headertxt  , 1 ,
-          sizeof ( ns_shifr.raspr4 . headertxt ) , fileto ) ;
-        if ( writecount < sizeof ( ns_shifr.raspr4 . headertxt ) ) {
-          clearerr ( fileto ) ; 
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-            (char const (*)[]) & u8"ошибка записи заголовка" :
-            (char const (*)[]) & "header write error" ) ;
-          longjmp(ns_shifr  . jump,1); }*/ }
+         }
       else {
-        /*size_t writecount = fwrite ( & ns_shifr.raspr5 . headertxt  , 1 ,
-          sizeof ( ns_shifr.raspr5 . headertxt ) , fileto ) ;
-        if ( writecount < sizeof ( ns_shifr.raspr5 . headertxt ) ) {
-          clearerr ( fileto ) ; 
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-            (char const (*)[]) & u8"ошибка записи заголовка" :
-            (char const (*)[]) & "header write error" ) ;
-          longjmp(ns_shifr  . jump,1); }*/ } }
+         } }
     else { // заголовок : 0x02 + 0x00 
       if ( ns_shifr . use_version == 4 ) {
-        /*size_t writecount = fwrite ( & ns_shifr.raspr4 . headerbyn , 1 ,
-          sizeof ( ns_shifr.raspr4 . headerbyn ) , fileto ) ;
-        if ( writecount < sizeof ( ns_shifr.raspr4 . headerbyn ) ) {
-          clearerr ( fileto ) ; 
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-            (char const (*)[]) & u8"ошибка записи заголовка" :
-            (char const (*)[]) & "header write error" ) ;
-          longjmp(ns_shifr  . jump,1); }*/ }
+         }
       else  {
-        /*size_t writecount = fwrite ( & ns_shifr.raspr5 . headerbyn , 1 ,
-          sizeof ( ns_shifr.raspr5 . headerbyn ) , fileto ) ;
-        if ( writecount < sizeof ( ns_shifr.raspr5 . headerbyn ) ) {
-          clearerr ( fileto ) ; 
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-            (char const (*)[]) & u8"ошибка записи заголовка" :
-            (char const (*)[]) & "header write error" ) ;
-          longjmp(ns_shifr  . jump,1); }*/ } } // if text / digit
+         } } // if text / digit
     if ( ns_shifr . use_version == 4 )  {
     int bytecount = 0 ;
     do {
@@ -1495,13 +1486,10 @@ printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
       fwrite ( & buf , 1 , 1 , fileto ) ; } } // была 4-ая версия
     else  {
       // версия 5 шифруем ...
-      //int bytecount = 0 ;
       int bitscount  = 0 ;
       uint8_t secretdata  [ 4 ] ;
       uint8_t secretdatasole  [ 3 ] ;
       uint8_t secretdatasolesize  ;
-      //char  bufwrite  ;
-      //char  bufwritebits = 0 ;
       uint8_t encrypteddata [ 3 ] ;
     do {
       char buf ;
@@ -1556,46 +1544,7 @@ printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
     } // кодировали
   else  { // декодируем
     // главный заголовок должен быть "шифр" без конца строки
-    //unsigned char bufmh [ sizeof ( ns_shifr . mainheader ) ] ;
-    //unsigned char buf [ sizeof ( ns_shifr.raspr4 . headerbyn ) ] ;
-//printf("sizeof ( ns_shifr . mainheader )=%zd\n",sizeof ( ns_shifr . mainheader ));    
-    //size_t readcount  ;
-    /*readcount = fread ( & buf , 1 ,
-      sizeof ( ns_shifr . mainheader ) , filefrom ) ;*/
-//printf("0.readcount=%zd\n",readcount);      
-    /*if ( readcount < sizeof ( ns_shifr . mainheader ) ) {
-      if ( ferror ( filefrom ) ) clearerr ( filefrom ) ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        (char const (*)[]) & u8"ошибка чтения заголовка" :
-        (char const (*)[]) & "read header error");
-      longjmp(ns_shifr  . jump,1); }*/
-    /*if ( memcmp ( & ( ns_shifr . mainheader [ 0 ] ) , & ( bufmh [ 0 ] ) ,
-      sizeof ( ns_shifr . mainheader ) ) ) {
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        (char const (*)[]) & u8"плохой заголовок" :
-        (char const (*)[]) & "bad header" ) ;
-      longjmp(ns_shifr  . jump,1); }*/
-    // 0x02,0x00 или "2\n"    
-//printf("sizeof ( ns_shifr.raspr4 . headerbyn )=%zd\n",sizeof ( ns_shifr.raspr4 . headerbyn ));    
-    /*readcount = fread ( & buf , 1 ,
-      sizeof ( ns_shifr.raspr4 . headerbyn ) , filefrom ) ;*/
-//printf("1.readcount=%zd\n",readcount);      
-    /*if ( readcount < sizeof ( ns_shifr.raspr4 . headerbyn ) ) {
-      if ( ferror ( filefrom ) ) clearerr ( filefrom ) ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        (char const (*)[]) & u8"ошибка чтения заголовка" :
-        (char const (*)[]) & "read header error");
-      longjmp(ns_shifr  . jump,1); }*/
-    /*if ( memcmp ( & ( ns_shifr.raspr4 . headerbyn [ 0 ] ) , & ( buf [ 0 ] ) ,
-      sizeof ( ns_shifr.raspr4 . headerbyn ) ) ) {
-      if ( memcmp ( & ( ns_shifr.raspr4 . headertxt [ 0 ] ) , & ( buf [ 0 ] ) ,
-        sizeof ( ns_shifr.raspr4 . headertxt ) ) ) {
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-            (char const (*)[]) & u8"плохой заголовок" :
-            (char const (*)[]) & "bad header" ) ;
-        longjmp(ns_shifr  . jump,1); }
-      else  flagtext  = true  ; }
-    else  flagtext  = false ;*/
+
     if ( ns_shifr . use_version == 4 ) {
     do {
       char buf [ 2 ] ;
@@ -1616,7 +1565,7 @@ printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
             goto out ; }
           // если это НЕ цифра и НЕ буква
         } while ( ( buf4[0] < '0' or buf4[0] > '9') and
-            ( buf4[0] < 'a' or buf4[0] > 'f')) ;
+            ( buf4[0] < 'a' or buf4[0] > 'f') ) ;
         readcount = fread ( & (buf4[1]) , 1 , 3 , filefrom ) ;
         if ( readcount < 3 ) {
           if ( feof ( filefrom ) )
@@ -1675,90 +1624,13 @@ printf  ( ( ns_shifr . localerus ? u8"пароль5 = [ %x , %x , %x ]\n" :
         break ; }
     } while ( true ) ; } // ver4
     else { // ver 5
-      
-      // .. пишем
-      
-    do {
-      char buf [ 2 ] ;
-      size_t readcount ;
-      if  ( flagtext  ) {
-        char buf4 [ 4 ] ;
-        // читаем четыре буквы '0a1b' -> декодируем в два байта "XY"
-        do {
-          readcount = fread ( & (buf4[0]) , 1 , 1 , filefrom ) ;
-          if ( readcount == 0 ) {
-            if ( feof ( filefrom ) ) goto out ;
-            if ( ferror ( filefrom ) ) {
-              clearerr ( filefrom ) ;
-              ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-                (char const (*)[]) & u8"ошибка чтения файла" :
-                (char const (*)[]) & "error reading file" ) ;
-              longjmp(ns_shifr  . jump,1); }
-            goto out ; }
-          // если это НЕ цифра и НЕ буква
-        } while ( ( buf4[0] < '0' or buf4[0] > '9') and
-            ( buf4[0] < 'a' or buf4[0] > 'f')) ;
-        readcount = fread ( & (buf4[1]) , 1 , 3 , filefrom ) ;
-        if ( readcount < 3 ) {
-          if ( feof ( filefrom ) )
-            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-              (char const (*)[]) & u8"ошибка hex данных" :
-              (char const (*)[]) & "error hex data" ) ;
-          else
-            if ( ferror ( filefrom ) ) {
-              clearerr ( filefrom ) ;
-              ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-                (char const (*)[]) & u8"ошибка чтения файла" :
-                (char const (*)[]) & "error reading file" ) ; }
-            else
-              ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-                (char const (*)[]) & u8"ошибка hex данных" :
-                (char const (*)[]) & "error hex data" ) ;
-          longjmp(ns_shifr  . jump,1);  }
-        for ( char const * i = &(buf4[1]); i <= &(buf4[3]) ; ++ i ) {
-          if (not(( (*i) >= '0' and (*i) <= '9') or ((*i) >= 'a' and (*i) <= 'f'))) {
-            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-              (char const (*)[]) & u8"ошибка hex данных" :
-              (char const (*)[]) & "error hex data" ) ;
-            longjmp(ns_shifr  . jump,1); } }
-//printf("buf4=[%c,%c,%c,%c]\n",buf4[0],buf4[1],buf4[2],buf4[3]);
-        hex_to_char ( ( char const ( * ) [ 2 ] ) ( & buf4 ) ,
-          & ( buf [ 0 ] ) ) ;  
-        hex_to_char ( ( char const ( * ) [ 2 ] ) ( & ( buf4 [ 2 ] ) ) ,
-          & ( buf [ 1 ] ) ) ; }
-      else {
-        readcount = fread ( & (buf[0]) , 1 , 2 , filefrom ) ;
-//printf("2.readcount=%zd\n",readcount);        
-        if ( readcount < 2 ) {
-          if ( feof ( filefrom  ) ) break ;
-          if ( ferror ( filefrom ) ) {
-            clearerr ( filefrom ) ;
-            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-              (char const (*)[]) & u8"ошибка чтения файла" :
-              (char const (*)[]) & "error reading file" ) ;
-            longjmp(ns_shifr  . jump,1); }
-          break ; } }
-      uint8_t secretdata [ 4 ] = { [0]  = buf[0]&0xf ,[1]=(buf[0]>>4)&0xf ,
-        [2]  = buf[1]&0xf ,[3]=(buf[1]>>4)&0xf      } ;
-      uint8_t decrypteddata [ 4 ] ;
-      crypt_decrypt ( & secretdata , & deshi , & decrypteddata , 4 ) ;
-      buf[0] = (decrypteddata [ 0 ] & 0x3) bitor ((decrypteddata [ 1 ] & 0x3) << 2)
-        bitor ((decrypteddata [ 2 ] & 0x3)<<4) bitor
-        ((decrypteddata [ 3 ] & 0x3) << 6);
-      size_t writecount = fwrite ( & (buf[0]) , 1 , 1 , fileto ) ;
-      if ( writecount == 0 ) {
-        if ( ferror ( fileto ) ) {
-          clearerr ( fileto ) ;
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-            (char const (*)[]) & u8"ошибка записи файла" :
-            (char const (*)[]) & "error writing file" ) ;
-          longjmp(ns_shifr  . jump,1); }
-        break ; }
-    } while ( true ) ;
-      
-    } // ver 5
+      uint8_t secretdata [ 1 ] ;
+      while ( not isEOFstreambuf_read5bits ( & filebuffrom ,
+        & ( secretdata [ 0 ] ) , flagtext ) ) {
+        uint8_t decrypteddata [ 1 ] ;
+        crypt_decrypt ( & secretdata , & deshi , & decrypteddata , 1 ) ;
+        streambuf_write3bits ( & filebufto , decrypteddata [ 0 ] ) ; } } // ver 5
     }  //  decode 
-    
   } // shifr deshi
 out : ;  
   int resulterror  = 0 ;
