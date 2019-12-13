@@ -108,7 +108,7 @@ C(4,12)=495=C(3,11)+C(3,10)+...+C(3,3)=165+120+84+56+35+20+10+4+1
 # include <termios.h>
 # include <setjmp.h>
 
-# define  SHIFR_DEBUG
+//# define  SHIFR_DEBUG
 
 # ifdef SHIFR_DEBUG
 static  unsigned  long  int fact  ( unsigned  long  int x ) {
@@ -707,6 +707,14 @@ static  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
   if ( c >= 0 and c <= 9 ) (*buf2)[1] = '0' + c ;
   else  (*buf2)[1] = 'a' + (c - 10) ; }
 
+static  inline  char  bits5_to_letter ( uint8_t const bits5 ) {
+  if  ( bits5 < 0x10  ) return  'a' + bits5 ;
+  return  'A' + ( bits5 - 0x10  ) ; }
+
+static  inline  uint8_t letter_to_bits5 ( char  const letter  ) {
+  if  ( ( ( uint8_t ) letter )  >=  ( ( uint8_t ) 'a' ) ) return  letter  - 'a' ;
+  return  0x10  + ( letter  - 'A' ) ; }
+
 static  void  hex_to_char ( char const ( * restrict buf2 ) [ 2 ] , char * const restrict buf ) {
   if  ((*buf2)[0] >= '0' and (*buf2)[0] <= '9') (* buf) = (*buf2)[0] - '0';
   else  if((*buf2)[0] >= 'a' and (*buf2)[0] <= 'f') (* buf) = 10 + ((*buf2)[0] - 'a');
@@ -797,11 +805,10 @@ static  inline  uint8_t streambuf_Buf (
   t_streambuf const * const restrict me ) {
   return  streambuf_buf ( me  ) ; }
 
-
 // читаю 5 бит
 bool  isEOFstreambuf_read5bits ( t_streambuf * const restrict me  ,
   uint8_t * const encrypteddata , bool const  flagtext ) {
-  if  ( streambuf_bufbitsize  ( me  ) >= 5 ) {
+  if  ( ( not flagtext ) and streambuf_bufbitsize  ( me  ) >= 5 ) {
     streambuf_bufbitsize  ( me  ) -=  5 ;
     ( * encrypteddata ) = streambuf_buf ( me  ) bitand 0x1f ;
     streambuf_buf ( me  ) >>= 5 ;
@@ -809,17 +816,33 @@ bool  isEOFstreambuf_read5bits ( t_streambuf * const restrict me  ,
   uint8_t buf ;
   { size_t  const nreads  = fread ( & buf , 1 , 1 , streambuf_file  ( me  ) ) ;
     if ( nreads ==  0 ) {
-      if  ( feof  ( streambuf_file  ( me  ) ) ) {
-        if  ( streambuf_bufbitsize  ( me  ) == 0  ) return  true  ;
-        ( * encrypteddata ) = streambuf_buf ( me  ) ;
-        streambuf_bufbitsize  ( me  ) = 0 ;
-        return  false ; }
+      if  ( feof  ( streambuf_file  ( me  ) ) ) return  true  ;
       if  ( ferror  ( streambuf_file  ( me  ) ) ) {
         clearerr ( streambuf_file  ( me  ) ) ;
         ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
           (char const (*)[]) & u8"isEOFstreambuf_read5bits: ошибка чтения пяти бит" :
           (char const (*)[]) & "isEOFstreambuf_read5bits: five bits read error" ) ;
         longjmp(ns_shifr  . jump,1); } } } // nreads
+
+  if  ( flagtext  ) {
+    // читаем одну букву 'A'-'P'|'a'-'p' -> декодируем в пять бит
+    // если это НЕ большая и НЕ маленькая
+//dowhile :
+    while ( ( buf < 'A' or buf > 'P') and ( buf < 'a' or buf > 'p') ) {
+      { size_t  const nreads  = fread ( & buf , 1 , 1 , streambuf_file  ( me  ) ) ;
+        if ( nreads ==  0 ) {
+          if  ( feof  ( streambuf_file  ( me  ) ) ) return  true  ;
+          if  ( ferror  ( streambuf_file  ( me  ) ) ) {
+            clearerr ( streambuf_file  ( me  ) ) ;
+            ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+              (char const (*)[]) & u8"isEOFstreambuf_read5bits: ошибка чтения пяти бит из текста" :
+              (char const (*)[]) & "isEOFstreambuf_read5bits: five bits read error from text" ) ;
+            longjmp(ns_shifr  . jump,1); } } } // nreads
+          } //  while not digit and not letter
+    ( * encrypteddata ) = letter_to_bits5 ( buf ) ;
+  /*}
+
+
   if  ( flagtext  ) {
 dowhile :
     // читаем одну букву '0'-'9'|'a'-'f' -> декодируем в пять бит
@@ -827,11 +850,7 @@ dowhile :
     while ( ( buf < '0' or buf > '9') and ( buf < 'a' or buf > 'f') ) {
       { size_t  const nreads  = fread ( & buf , 1 , 1 , streambuf_file  ( me  ) ) ;
         if ( nreads ==  0 ) {
-          if  ( feof  ( streambuf_file  ( me  ) ) ) {
-            if  ( streambuf_bufbitsize  ( me  ) == 0  ) return  true  ;
-            ( * encrypteddata ) = streambuf_buf ( me  ) ;
-            streambuf_bufbitsize  ( me  ) = 0 ;
-            return  false ; }
+          if  ( feof  ( streambuf_file  ( me  ) ) ) return  true  ;
           if  ( ferror  ( streambuf_file  ( me  ) ) ) {
             clearerr ( streambuf_file  ( me  ) ) ;
             ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
@@ -840,7 +859,8 @@ dowhile :
             longjmp(ns_shifr  . jump,1); } } } // nreads
           } //  while not digit and not letter
       if  (buf >= '0' and buf <= '9') buf = buf - '0';
-      else  buf = 10 + (buf - 'a');
+      else  buf = 10 + (buf - 'a');*/
+/*
     if  ( streambuf_bufbitsize  ( me  ) == 0  ) {
       streambuf_buf ( me  ) = buf ;
       streambuf_bufbitsize  ( me  ) = 4 ;
@@ -849,6 +869,7 @@ dowhile :
       ( buf <<  streambuf_bufbitsize  ( me  ) ) ) bitand  0x1f  ;
     streambuf_buf ( me  ) = buf >>  ( 5 - streambuf_bufbitsize  ( me  ) ) ;
     streambuf_bufbitsize  ( me  ) -=  1 ; // +4 -5
+*/
     }
   else  {
     ( * encrypteddata ) = ( streambuf_buf ( me  ) bitor 
@@ -864,6 +885,26 @@ void  streambuf_write ( t_streambuf * const restrict me  ,
   uint8_t const (  * encrypteddata ) [ 3 ] , uint8_t secretdatasolesize ,
   bool const  flagtext ) {
   for ( uint8_t i = 0 ; i < secretdatasolesize ; ++  i ) {
+
+    if  ( flagtext  ) {
+        char  buf2  = bits5_to_letter ( ( * encrypteddata ) [ i ] ) ;
+        size_t  writen_count  ;
+        writen_count  = fwrite  ( & buf2  , 1 , 1 , streambuf_file  ( me  ) ) ;
+        if  ( writen_count  ==  0 ) {
+          clearerr  ( streambuf_file  ( me  ) ) ; 
+          ns_shifr  . string_exception  = ( ns_shifr  . localerus ? 
+            ( char  const ( * ) [ ] ) & u8"streambuf_write: ошибка записи байта"  :
+            ( char  const ( * ) [ ] ) & "streambuf_write: byte write error" ) ;
+          longjmp ( ns_shifr  . jump  , 1 ) ; }
+        ++  streambuf_bytecount ( me  ) ;
+        if  ( streambuf_bytecount ( me  ) >=  36  ) {
+          streambuf_bytecount ( me  ) = 0 ;
+          buf2  = '\n'  ;
+          writen_count  = fwrite  ( & buf2  , 1 , 1 ,
+            streambuf_file  ( me  ) ) ; }
+        
+         } else {
+
     if  ( streambuf_bufbitsize  ( me  ) < 3 ) {
       streambuf_buf ( me  ) or_eq ( ( ( * encrypteddata ) [ i ] ) <<
         streambuf_bufbitsize  ( me  ) ) ;
@@ -871,24 +912,7 @@ void  streambuf_write ( t_streambuf * const restrict me  ,
     else  {
       uint8_t const to_write  = ( ( ( * encrypteddata ) [ i ] ) <<
         streambuf_bufbitsize  ( me  ) ) bitor streambuf_buf ( me  ) ;
-      size_t  writen_count  ;
-      if  ( flagtext  ) {
-        char buf2 [ 2 ] ;
-        char_to_hex ( to_write , & buf2  ) ;
-        writen_count = fwrite ( & buf2 , 1 , 2 , streambuf_file  ( me  ) ) ;
-        if ( writen_count < 2 ) {
-          clearerr ( streambuf_file  ( me  ) ) ; 
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
-            (char const (*)[]) & u8"streambuf_write: ошибка записи байта" :
-            (char const (*)[]) & "streambuf_write: byte write error" ) ;
-          longjmp(ns_shifr  . jump,1); }
-        ++ streambuf_bytecount ( me  ) ;
-        if ( streambuf_bytecount ( me  ) >= 24 )  {
-          streambuf_bytecount ( me  ) = 0 ;
-          buf2  [ 0 ] = '\n' ;
-          writen_count = fwrite ( & ( buf2  [ 0 ] ) , 1 , 1 ,
-            streambuf_file  ( me  ) ) ; } }
-      else
+        size_t  writen_count  ;
         writen_count = fwrite ( & to_write , 1 , 1 ,
           streambuf_file  ( me  ) ) ;
       if ( writen_count < 1 ) {
@@ -897,31 +921,34 @@ void  streambuf_write ( t_streambuf * const restrict me  ,
           (char const (*)[]) & u8"streambuf_write: ошибка записи байта" :
           (char const (*)[]) & "streambuf_write: byte write error" ) ;
         longjmp(ns_shifr  . jump,1); }
-      // + 5 - 8
-      streambuf_bufbitsize  ( me  ) -= 3 ;
-      streambuf_buf ( me  ) = ( ( * encrypteddata ) [ i ] ) >>
-        ( 5 - streambuf_bufbitsize  ( me  ) ) ; } } }
+      
+        // + 5 - 8
+        streambuf_bufbitsize  ( me  ) -= 3 ;
+        streambuf_buf ( me  ) = ( ( * encrypteddata ) [ i ] ) >>
+          ( 5 - streambuf_bufbitsize  ( me  ) ) ;  } }}}
         
 void  streambuf_writeflushzero ( t_streambuf * const restrict me ,
   bool const  flagtext ) {
   if  ( streambuf_bufbitsize  ( me  ) ) {
     size_t  writen_count  ;
-    if  ( flagtext  ) {
-      char buf2 [ 2 ] ;
-      char_to_hex ( streambuf_buf ( me  ) , & buf2  ) ;
-      writen_count = fwrite ( & buf2 , 1 , 2 , streambuf_file  ( me  ) ) ;
-      if ( writen_count < 2 ) {
-        clearerr ( streambuf_file  ( me  ) ) ; 
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
-          (char const (*)[]) & u8"streambuf_writeflushzero: ошибка записи байта" :
-          (char const (*)[]) & "streambuf_writeflushzero: byte write error" ) ;
-        longjmp(ns_shifr  . jump,1); }
-      ++ streambuf_bytecount ( me  ) ;
-      if ( streambuf_bytecount ( me  ) >= 24 )  {
+    /*if  ( flagtext  ) {
+printf(u8"zero:streambuf_buf ( me  )  bitand  0x1f = %x streambuf_bufbitsize  ( me  ) = %x ",(unsigned int)(streambuf_buf ( me  )  bitand  0x1f),streambuf_bufbitsize  ( me  ));
+      char  buf2  = bits5_to_letter ( streambuf_buf ( me  )  bitand  0x1f  ) ;
+      writen_count  = fwrite  ( & buf2  , 1 , 1 , streambuf_file  ( me  ) ) ;
+      if  ( writen_count  ==  0 ) {
+        clearerr  ( streambuf_file  ( me  ) ) ; 
+        ns_shifr  . string_exception  = ( ns_shifr  . localerus ? 
+          ( char  const ( * ) [ ] ) & u8"streambuf_writeflushzero: ошибка записи байта"  :
+          ( char  const ( * ) [ ] ) & "streambuf_writeflushzero: byte write error" ) ;
+        longjmp ( ns_shifr  . jump  , 1 ) ; }
+      ++  streambuf_bytecount ( me  ) ;
+      if  ( streambuf_bytecount ( me  ) >=  24  ) {
         streambuf_bytecount ( me  ) = 0 ;
-        buf2  [ 0 ] = '\n' ;
-        writen_count = fwrite ( & ( buf2  [ 0 ] ) , 1 , 1 , streambuf_file  ( me  ) ) ; } }
-    else
+        buf2  = '\n'  ;
+        writen_count  = fwrite  ( & buf2  , 1 , 1 ,
+          streambuf_file  ( me  ) ) ; }
+}
+    else*/
       writen_count = fwrite ( & streambuf_buf ( me  ) , 1 , 1 ,
         streambuf_file  ( me  ) ) ;
     if ( writen_count < 1 ) {
@@ -1605,10 +1632,10 @@ randok :
       uint8_t secretdata [ 1 ] ;
       while ( not isEOFstreambuf_read5bits ( & filebuffrom ,
         & ( secretdata [ 0 ] ) , flagtext ) ) {
-printf(u8"secretdata=%x ",(unsigned int)(secretdata [ 0 ]));
+//printf(u8"secretdata=%x ",(unsigned int)(secretdata [ 0 ]));
         uint8_t decrypteddata [ 1 ] ;
         crypt_decrypt ( & secretdata , & deshi , & decrypteddata , 1 ) ;
-printf(u8"secretdata=%x ",(unsigned int)(secretdata [ 0 ]));
+//printf(u8"secretdata=%x ",(unsigned int)(secretdata [ 0 ]));
         streambuf_write3bits ( & filebufto , decrypteddata [ 0 ] ) ; }
 /*printf  ( u8"ByteCount=%x,BufBitSize=%x,streambuf_Buf=%x\n" ,
   streambuf_ByteCount ( & filebufto ) ,
