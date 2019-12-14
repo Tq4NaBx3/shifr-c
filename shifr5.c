@@ -18,9 +18,7 @@
 // ascii буквы 126-32+1 = 95 шт
 // длина буквенного пароля : log ( 95 , 63063000 ) ≈ 3.944 буквы < 4 буквы
 //  log ( 62 , 63063000 ) ≈ 4.352 буквы < 5 букв
-// память = 2385 байт = 2.329 KB
-// 63063000 = 00011011110000100100001111 реверсивно от слабых к главному 26 бит
-// 63063000 * 32 = 2018016000 = 0000000011011110000100100001111 = 0x78487b00
+// 63063000 * 32 = 0x78487b00
 // RAND_MAX размер 31 бит
 
 /*
@@ -130,7 +128,7 @@ C(4,12)=495=C(3,11)+C(3,10)+...+C(3,3)=165+120+84+56+35+20+10+4+1
 # include <termios.h>
 # include <setjmp.h>
 
-# define  SHIFR_DEBUG
+//# define  SHIFR_DEBUG
 
 # ifdef SHIFR_DEBUG
 static  unsigned  long  int fact  ( unsigned  long  int x ) {
@@ -387,7 +385,8 @@ uint16_t  number128_div16mod  ( t_number128 * restrict const number ,
   number05 /= ( uint64_t  ) div ;
   number  ->  a [ 1 ] +=  ( number05  >> 48 ) ;
   number05  <<= 16 ;
-  uint32_t number00 = ( ( ((uint32_t)ost) << 16 ) bitor ( number ->  a [ 0 ] bitand 0xffff ) ) ;
+  uint32_t number00 = ( ( ((uint32_t)ost) << 16 ) bitor
+    ( number ->  a [ 0 ] bitand 0xffff ) ) ;
   ost = number00 % ( uint16_t ) div ;
   number  ->  a [ 0 ] = number05 bitor ( number00 / ( uint16_t ) div ) ; 
   return  ost ; }  
@@ -596,22 +595,22 @@ static  void  raspr5_init ( void  ) {
   
 # undef isLive5
 # define  isLive5 isLive5pri
-  
+
 static  void  raspr4_destr ( void  ) {
   if ( not  ns_shifr .  raspr4 . live ) return  ;
-  uint8_t raspri  = 4 ;
+  uint8_t (**i)[][4]  = & ( ns_shifr  . raspr4  . xp [ 4 ] ) ;
   do {
-    --  raspri  ;
-    free ( ns_shifr  . raspr4  . xp [ raspri ] ) ;
-  } while ( raspri > 1 ) ; }
+    -- i ;
+    free ( * i ) ;
+  } while ( i > & ( ns_shifr  . raspr4  . xp [ 1 ] ) ) ; }
 
 static  void  raspr5_destr ( void  ) {
   if ( not  isLive5 ( & ns_shifr .  raspr5  ) ) return  ;
-  uint8_t raspri  = 8 ;
+  uint8_t (**i)[][4]  = & ( ns_shifr  . raspr5  . xp [ 8 ] ) ;
   do {
-    --  raspri  ;
-    free ( ns_shifr  . raspr5  . xp [ raspri ] ) ;
-  } while ( raspri > 1 ) ; }
+    --  i ;
+    free ( * i ) ;
+  } while ( i > & ( ns_shifr  . raspr5  . xp [ 1 ] ) ) ; }
   
 static  void  shifr_destr ( void  ) {
   raspr4_destr  ( ) ;
@@ -1080,48 +1079,64 @@ int main  ( int  argc , char * * argv  )  {
   shifr_init  ( ) ;
   if  ( argc  <=  1  ) {
     puts ( ns_shifr . localerus ?
-      u8"Шифр5 ©2019 Глебов А.Н.\nСимметричное поточное шифрование с 'солью'.\nОслаблением статистических закономерностей и увеличением размера данных на 67%.\nНет диагностики неправильного пароля.\nСинтаксис : shifr5 [параметры]" :
-      "Shifr5 ©2019 Glebe A.N.\nSymmetric stream encryption with 'salt'.\nThe weakening of statistical patterns and an increase in data size by 67%.\nThere is no diagnosis of the wrong password.\nSyntax : shifr5 [options]" ) ;
+      u8"Шифр5 ©2019 Глебов А.Н.\nСимметричное поточное шифрование с 'солью'.\n'Соль' генерируется постоянно, что даёт хорошую стойкость.\nРазмер данных увеличивается на 67%.\nНет диагностики неправильного пароля.\nСинтаксис : shifr5 [параметры]" :
+      "Shifr5 ©2019 Glebe A.N.\nSymmetric stream encryption with 'salt'.\n'Salt' is constantly generated, which gives good durability.\nData size increases by 67%.\nThere is no diagnosis of the wrong password.\nSyntax : shifr5 [options]" ) ;
     puts  ( ns_shifr . localerus ? u8"Параметры :" : "Options :"  ) ;
     puts  (ns_shifr . localerus ?
-      u8"--ген-пар или\n--gen-pas\tгенерировать пароль" :
-      "--gen-pas\tpassword generate" );
+      u8"  --ген-пар или\n  --gen-pas\tгенерировать пароль" :
+      "  --gen-pas\tpassword generate" );
     puts  (ns_shifr . localerus ?
-      u8"--зашифр или\n--encrypt\tзашифровать\t(по-умолчанию)" :
-      "--encrypt\t(by default)" );
-    puts  (ns_shifr . localerus ? u8"--расшифр или\n--decrypt\tрасшифровать" :
-      "--decrypt" );
+      u8"  --зашифр или\n  --encrypt\tзашифровать\t(по-умолчанию)" :
+      "  --encrypt\t(by default)" );
+    puts  (ns_shifr . localerus ? u8"  --расшифр или\n  --decrypt\tрасшифровать" :
+      "  --decrypt" );
     puts  (ns_shifr . localerus ?
-      u8"--пароль или\n--pass \"строка_пароля\"\tиспользовать данный пароль" :
-      "--pass \"password_string\"\tuse this password" );
+      u8"  --пароль или\n  --pass 'строка_пароля'\tиспользовать данный пароль" :
+      "  --pass 'password_string'\tuse this password" );
     /* ! --пар-путь --psw-path */
     puts  (ns_shifr . localerus ?
-      u8"--вход или\n--input \"имя_файла\"\tчитать из файла (без данной опции читаются данные со стандартного входа)" :
-      "--input \"file_name\"\tread from file (without this option data reads from standard input)");
+      u8"  --вход или\n  --input 'имя_файла'\tчитать из файла (без данной опции читаются данные со стандартного входа)" :
+      "  --input 'file_name'\tread from file (without this option data reads from standard input)");
     puts  (ns_shifr . localerus ? 
-      u8"--выход или\n--output \"имя_файла\"\tзаписывать в файл (без данной опции записываются данные в стандартный выход)" :
-      "--output \"file_name\"\twrite to file (without this option data writes to standard output)"    );
+      u8"  --выход или\n  --output 'имя_файла'\tзаписывать в файл (без данной опции записываются данные в стандартный выход)" :
+      "  --output 'file_name'\twrite to file (without this option data writes to standard output)"    );
     puts  (ns_shifr . localerus ? 
-      u8"--текст или\n--text\tшифрованный файл записан текстом ascii" :
-      "--text\tencrypted file written in ascii text"    );
+      u8"  --текст или\n  --text\tшифрованный файл записан текстом ascii" :
+      "  --text\tencrypted file written in ascii text"    );
     puts  ( ns_shifr . localerus ? 
-      u8"--4\tиспользовать четырёх битное шифрование, ключ = 26 бит ( четыре/пять букв ). Размер шифрованного файла в два раза больше исходного." :
-      "--4\tusing four bit encryption, key = 26 bits ( four/five letters ). The encrypted file is twice the size of the original." ) ;
+      u8"  --4\tиспользовать четырёх битное шифрование, ключ = 26 бит ( четыре/пять букв ). Размер шифрованного файла в два раза больше исходного." :
+      "  --4\tusing four bit encryption, key = 26 bits ( four/five letters ). The encrypted file is twice the size of the original." ) ;
     puts  ( ns_shifr . localerus ? 
-      u8"--5\tиспользовать пяти битное шифрование, ключ = 81 бит ( тринадцать/четырнадцать букв ). Размер шифрованного файла на 67% больше исходного. ( по-умолчанию )" :
-      "--5\tusing five bit encryption, key = 81 bits ( thirteen/fourteen letters ). The encrypted file is 67% larger than the original. ( by default )" ) ;
-    fputs  ( ns_shifr . localerus ?  u8"Буквы в пароле (алфавит):\n--а95 или\n--a95\t\'" :
-      "Letters in password (alphabet):\n--a95\t\'" , stdout ) ;
+      u8"  --5\tиспользовать пяти битное шифрование, ключ = 81 бит ( тринадцать/четырнадцать букв ). Размер шифрованного файла на 67% больше исходного. ( по-умолчанию )" :
+      "  --5\tusing five bit encryption, key = 81 bits ( thirteen/fourteen letters ). The encrypted file is 67% larger than the original. ( by default )" ) ;
+    fputs  ( ns_shifr . localerus ?  u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
+      "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
     for ( char const * cj = & ( ns_shifr  . letters [ 0 ] ) ;
       cj not_eq ( & ( ns_shifr  . letters [ letters_count ] ) ) ; ++ cj )
       fputc ( * cj  , stdout  ) ;
-    fputs ( ( ns_shifr . localerus ? u8"\'\n--а62 или\n--a62\t\'" :
-      "\'\n--a62\t\'" ) , stdout  ) ;
+    fputs ( ( ns_shifr . localerus ? u8"\'\n  --а62 или\n  --a62\t\'" :
+      "\'\n  --a62\t\'" ) , stdout  ) ;
     for ( char const * cj = & ( ns_shifr  . letters2 [ 0 ] ) ;
       cj not_eq ( & ( ns_shifr  . letters2 [ letters_count2 ] ) ) ; ++ cj )
       fputc ( * cj  , stdout  ) ;
     fputs ( ( ns_shifr . localerus ? u8"\'\t(по умолчанию)\n" :
       "\'\t(by default)\n"  ) , stdout  ) ;
+    puts  ( ns_shifr  . localerus ? u8"Пример использования :"  :
+      "Usage example"  ) ;
+    puts  ( ns_shifr  . localerus ? u8"  > ./shifr5 --ген-пар --4"  :
+      "  > ./shifr5 --gen-pas --4"  ) ;
+    puts("  flQO2");
+    puts  ( ns_shifr  . localerus ?
+      u8"  > ./shifr5 --4 --пароль 'flQO2' > test.e --текст"  :
+      "  > ./shifr5 --4 --pass 'flQO2' > test.e --text"  ) ;
+    puts( ns_shifr  . localerus ? u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
+      "  2+2 (Press Enter,Ctrl+D)" ) ;
+    puts("  > cat test.e");
+    puts("  54b7b40e8481ded5");
+    puts( ns_shifr  . localerus ?
+      u8"  > ./shifr5 --4 --пароль 'flQO2' < test.e --текст --расшифр" :
+      "  > ./shifr5 --4 --pass 'flQO2' < test.e --text --decrypt" ) ;
+    puts("  2+2");
     shifr_destr ( ) ;
     return 0 ; }
 # if  RAND_MAX  !=  0x7fffffff
