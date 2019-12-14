@@ -690,7 +690,8 @@ void  password_load5 ( t_number128  const * password_constp  , arrp const shifrp
     // 001-110
       for ( uint8_t arr_ind = 1 ; arr_ind <= 6 ; ++ arr_ind ) {
         uint8_t index = 0 ;
-        uint16_t  cindex4_i  = number128_div16mod  ( & password  , ns_shifr.raspr5.s [ 7 - arr_ind ]  ) ;
+        uint16_t  cindex4_i  = number128_div16mod  ( & password  ,
+          ns_shifr.raspr5.s [ 7 - arr_ind ]  ) ;
         { uint8_t old_index = 0xff ;
           for ( uint8_t j = 0 ; j < 4 ; ++  j ) {
             uint8_t new_index = ( * ( ns_shifr.raspr5.xp [ 7 - arr_ind ] ) )
@@ -749,10 +750,10 @@ void  data_xor  ( uint8_t * const restrict  old_last_sole ,
   } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
 static  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
-  unsigned  char c = buf & 0xf ;
+  unsigned  char c = buf bitand 0xf ;
   if ( c >= 0 and c <= 9 ) (*buf2)[0] = '0' + c ;
   else  (*buf2)[0] = 'a' + (c - 10) ;
-  c = (buf >> 4) & 0xf ;
+  c = (buf >> 4) bitand 0xf ;
   if ( c >= 0 and c <= 9 ) (*buf2)[1] = '0' + c ;
   else  (*buf2)[1] = 'a' + (c - 10) ; }
 
@@ -764,17 +765,24 @@ static  inline  uint8_t letter_to_bits5 ( char  const letter  ) {
   if  ( ( ( uint8_t ) letter )  >=  ( ( uint8_t ) 'a' ) ) return  letter  - 'a' ;
   return  0x10  + ( letter  - 'A' ) ; }
 
-static  void  hex_to_char ( char const ( * restrict buf2 ) [ 2 ] , char * const restrict buf ) {
+static  void  hex_to_char ( char const ( * restrict buf2 ) [ 2 ] ,
+  char * const restrict buf ) {
   if  ((*buf2)[0] >= '0' and (*buf2)[0] <= '9') (* buf) = (*buf2)[0] - '0';
-  else  if((*buf2)[0] >= 'a' and (*buf2)[0] <= 'f') (* buf) = 10 + ((*buf2)[0] - 'a');
+  else
+    if((*buf2)[0] >= 'a' and (*buf2)[0] <= 'f') (* buf) = 10 + ((*buf2)[0] - 'a');
   else  {
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ? (char const (*)[]) & u8"плохая hex буква" :
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+      (char const (*)[]) & u8"плохая hex буква" :
       (char const (*)[])& "bad hex letter" ) ;
     longjmp(ns_shifr  . jump,1); }
-  if  ((*buf2)[1] >= '0' and (*buf2)[1] <= '9') (* buf) or_eq (((*buf2)[1] - '0')<<4);
-  else  if((*buf2)[1] >= 'a' and (*buf2)[1] <= 'f') (* buf) or_eq ((10 + ((*buf2)[1] - 'a'))<<4);
+  if  ((*buf2)[1] >= '0' and (*buf2)[1] <= '9')
+    (* buf) or_eq (((*buf2)[1] - '0')<<4);
+  else
+    if((*buf2)[1] >= 'a' and (*buf2)[1] <= 'f')
+      (* buf) or_eq ((10 + ((*buf2)[1] - 'a'))<<4);
   else  {
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ? (char const (*)[]) & u8"плохая hex буква" :
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+      (char const (*)[]) & u8"плохая hex буква" :
       (char const (*)[]) & "bad hex letter" ) ;
     longjmp(ns_shifr  . jump,1); } }
     
@@ -782,7 +790,8 @@ static  void  hex_to_char ( char const ( * restrict buf2 ) [ 2 ] , char * const 
 static  void set_keypress (void) {
   if  ( tcgetattr ( 0 , & ns_shifr  . stored_termios  ) ) {
     char const * const se = strerror ( errno ) ;
-    fprintf ( stderr  , ( ns_shifr . localerus ? u8"ошибка чтения tcgetattr : %s\n" :
+    fprintf ( stderr  , ( ns_shifr . localerus ?
+      u8"ошибка чтения tcgetattr : %s\n" :
       "error read tcgetattr : %s\n" ) ,se ) ;
     ns_shifr  . string_exception  = (char const (*)[])se ;
     longjmp(ns_shifr  . jump,1); }
@@ -794,7 +803,8 @@ static  void set_keypress (void) {
  
   if(tcsetattr(0, TCSANOW, & new_termios)){
     char const * const se = strerror ( errno ) ;
-    fprintf ( stderr  , ( ns_shifr . localerus ? u8"ошибка записи tcsetattr : %s\n" :
+    fprintf ( stderr  , ( ns_shifr . localerus ?
+      u8"ошибка записи tcsetattr : %s\n" :
       "error write tcsetattr : %s\n"  ) , se  ) ;
     ns_shifr  . string_exception  = (char const (*)[])se ;
     longjmp(ns_shifr  . jump,1); } }
@@ -888,38 +898,7 @@ bool  isEOFstreambuf_read5bits ( t_streambuf * const restrict me  ,
               (char const (*)[]) & "isEOFstreambuf_read5bits: five bits read error from text" ) ;
             longjmp(ns_shifr  . jump,1); } } } // nreads
           } //  while not digit and not letter
-    ( * encrypteddata ) = letter_to_bits5 ( buf ) ;
-  /*}
-
-
-  if  ( flagtext  ) {
-dowhile :
-    // читаем одну букву '0'-'9'|'a'-'f' -> декодируем в пять бит
-    // если это НЕ цифра и НЕ буква
-    while ( ( buf < '0' or buf > '9') and ( buf < 'a' or buf > 'f') ) {
-      { size_t  const nreads  = fread ( & buf , 1 , 1 , streambuf_file  ( me  ) ) ;
-        if ( nreads ==  0 ) {
-          if  ( feof  ( streambuf_file  ( me  ) ) ) return  true  ;
-          if  ( ferror  ( streambuf_file  ( me  ) ) ) {
-            clearerr ( streambuf_file  ( me  ) ) ;
-            ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
-              (char const (*)[]) & u8"isEOFstreambuf_read5bits: ошибка чтения пяти бит из текста" :
-              (char const (*)[]) & "isEOFstreambuf_read5bits: five bits read error from text" ) ;
-            longjmp(ns_shifr  . jump,1); } } } // nreads
-          } //  while not digit and not letter
-      if  (buf >= '0' and buf <= '9') buf = buf - '0';
-      else  buf = 10 + (buf - 'a');*/
-/*
-    if  ( streambuf_bufbitsize  ( me  ) == 0  ) {
-      streambuf_buf ( me  ) = buf ;
-      streambuf_bufbitsize  ( me  ) = 4 ;
-      goto  dowhile ; }
-    ( * encrypteddata ) = ( streambuf_buf ( me  ) bitor 
-      ( buf <<  streambuf_bufbitsize  ( me  ) ) ) bitand  0x1f  ;
-    streambuf_buf ( me  ) = buf >>  ( 5 - streambuf_bufbitsize  ( me  ) ) ;
-    streambuf_bufbitsize  ( me  ) -=  1 ; // +4 -5
-*/
-    }
+    ( * encrypteddata ) = letter_to_bits5 ( buf ) ; }
   else  {
     ( * encrypteddata ) = ( streambuf_buf ( me  ) bitor 
       ( buf <<  streambuf_bufbitsize  ( me  ) ) ) bitand  0x1f  ;
@@ -980,24 +959,7 @@ void  streambuf_writeflushzero ( t_streambuf * const restrict me ,
   bool const  flagtext ) {
   if  ( streambuf_bufbitsize  ( me  ) ) {
     size_t  writen_count  ;
-    /*if  ( flagtext  ) {
-printf(u8"zero:streambuf_buf ( me  )  bitand  0x1f = %x streambuf_bufbitsize  ( me  ) = %x ",(unsigned int)(streambuf_buf ( me  )  bitand  0x1f),streambuf_bufbitsize  ( me  ));
-      char  buf2  = bits5_to_letter ( streambuf_buf ( me  )  bitand  0x1f  ) ;
-      writen_count  = fwrite  ( & buf2  , 1 , 1 , streambuf_file  ( me  ) ) ;
-      if  ( writen_count  ==  0 ) {
-        clearerr  ( streambuf_file  ( me  ) ) ; 
-        ns_shifr  . string_exception  = ( ns_shifr  . localerus ? 
-          ( char  const ( * ) [ ] ) & u8"streambuf_writeflushzero: ошибка записи байта"  :
-          ( char  const ( * ) [ ] ) & "streambuf_writeflushzero: byte write error" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; }
-      ++  streambuf_bytecount ( me  ) ;
-      if  ( streambuf_bytecount ( me  ) >=  24  ) {
-        streambuf_bytecount ( me  ) = 0 ;
-        buf2  = '\n'  ;
-        writen_count  = fwrite  ( & buf2  , 1 , 1 ,
-          streambuf_file  ( me  ) ) ; }
-}
-    else*/
+    
       writen_count = fwrite ( & streambuf_buf ( me  ) , 1 , 1 ,
         streambuf_file  ( me  ) ) ;
     if ( writen_count < 1 ) {
@@ -1156,28 +1118,35 @@ int main  ( int  argc , char * * argv  )  {
       if ( ns_shifr . use_version == 4 ) {
         if ( password_alphabet == 95 )
           string_to_password_uni ( (char(*)[])(argv[argj]) ,
-            & ns_shifr . raspr4  . password_const , & ns_shifr . letters , letters_count ) ; 
+            & ns_shifr . raspr4  . password_const , & ns_shifr . letters ,
+            letters_count ) ; 
         else
           string_to_password_uni ( (char(*)[])(argv[argj]) ,
-            & ns_shifr . raspr4  . password_const , & ns_shifr . letters2 , letters_count2 ) ;
+            & ns_shifr . raspr4  . password_const , & ns_shifr . letters2 ,
+            letters_count2 ) ;
 # ifdef SHIFR_DEBUG
       printf  ( (ns_shifr . localerus ? u8"из строки во внутренний пароль = %x\n" :
-        "from string to internal password = %x\n" ) , ns_shifr . raspr4  . password_const ) ;
+        "from string to internal password = %x\n" ) ,
+        ns_shifr . raspr4  . password_const ) ;
 # endif                           
         }
       else {
         if ( password_alphabet == 95 )
           string_to_password5_uni ( (char(*)[])(argv[argj]) ,
-            & ns_shifr . raspr5  . password_const , & ns_shifr . letters , letters_count ) ;
+            & ns_shifr . raspr5  . password_const , & ns_shifr . letters ,
+            letters_count ) ;
         else
           string_to_password5_uni ( (char(*)[])(argv[argj]) ,
-            & ns_shifr . raspr5  . password_const , & ns_shifr . letters2 , letters_count2 ) ; 
+            & ns_shifr . raspr5  . password_const , & ns_shifr . letters2 ,
+            letters_count2 ) ; 
 # ifdef SHIFR_DEBUG                           
         { t_number128 password5 ;
           if ( password_alphabet == 95 )
-            string_to_password5_uni ( (char(*)[])(argv[argj]) , & password5 , & ns_shifr . letters , letters_count ) ; 
+            string_to_password5_uni ( (char(*)[])(argv[argj]) , & password5 ,
+              & ns_shifr . letters , letters_count ) ; 
           else
-            string_to_password5_uni ( (char(*)[])(argv[argj]) , & password5 , & ns_shifr . letters2 , letters_count2 ) ; 
+            string_to_password5_uni ( (char(*)[])(argv[argj]) , & password5 ,
+              & ns_shifr . letters2 , letters_count2 ) ; 
 
           printf  ( ( ns_shifr . localerus ?
             u8"из строки во внутренний пароль = [ %lx , %lx ]\n"  :
@@ -1292,6 +1261,31 @@ int main  ( int  argc , char * * argv  )  {
       |      |         |        |       |   
   [ 17 ]      [ 10 22 ]         [ 5 27]
   в сумме 17+32+32=81 бит   
+
+!!
+
+микросекунды , два рандома 
+19 + 31 + 31 = 81 бит
+
+[1 17 2]   [1  30  1]     [1   31]
+   |   |       |     |        |
+[17]   [2    30]      [1    31]
+
+#include <sys/time.h>
+
+**
+ * Returns the current time in microseconds.
+ *
+long getMicrotime(){
+	struct timeval currentTime;
+	gettimeofday(&currentTime, NULL);
+	return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
+}
+
+Циклом не делать, будет неравномерность. Берём 19 бит. 
+Пихаем в
+ ro.a  [ 2 ] = currentTime.tv_usec bitand ((1UL<<19)-1);
+
  */      
 randtry :
       ro0 = (t_number96){{ rand  ( ) , rand  ( ) , rand  ( ) }} ;
