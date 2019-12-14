@@ -33,6 +33,28 @@ x=1819 первый код 1101 , второй 1110 , третий 1111
 C(4,12)=495=C(3,11)+C(3,10)+...+C(3,3)=165+120+84+56+35+20+10+4+1
 нумерация кодов уже не по порядку, а с исключением занятых кодов буквой b00.
  */
+/*
+Соль одного элемента будет ксорить следующий элемент для исчезания повторов.
+Если все элементы будут одного значения, тогда все шифрованные значения будут
+иметь псевдо-случайные шивры.
+
+Файл с нулевыми данными.
+
+Данные :     00⊻00=00 00⊻10=10 00⊻01=01  ...
+              /       /       /        /
+Соль   : 00     10       01       11
+    
+Шифр   :      S(0010)  S(1001)  S(0111)
+
+Для расшифровки требуется ксорить данные с предыдущей солью.
+
+Шифр   :      R(0010)  R(1001)   R(0111)
+
+Соль   : 00     10        01        11
+            \        \         \
+Данные :     00⊻00=00  10⊻10=00  01⊻01=00  ...
+
+*/
 
 // Version 5
 
@@ -108,7 +130,7 @@ C(4,12)=495=C(3,11)+C(3,10)+...+C(3,3)=165+120+84+56+35+20+10+4+1
 # include <termios.h>
 # include <setjmp.h>
 
-//# define  SHIFR_DEBUG
+# define  SHIFR_DEBUG
 
 # ifdef SHIFR_DEBUG
 static  unsigned  long  int fact  ( unsigned  long  int x ) {
@@ -165,6 +187,19 @@ static  void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
     ( * ied ) = ( * tablep ) [ * id ] ;
   } while ( id not_eq & ( ( * datap ) [ 0 ] ) ) ; }
   
+static  void  decrypt_sole ( arrp const datap , arrcp const tablep ,
+  arrp const decrp , size_t const data_size ,
+  uint8_t * const restrict old_last_sole ) {
+  uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
+  uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
+  do {
+    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
+      ( * ide ) = ( data_sole >>  2 ) xor ( * old_last_sole ) ;
+      ( * old_last_sole ) = data_sole bitand  0x3 ; }
+    ++  id  ;
+    ++  ide ;
+  } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
+
 // указатель на массив разной длины
 # define  t_type_raspr_xp(  N )  \
   typedef uint8_t ( * type_raspr##N##_xp  ) [ ] [ N ] ;
@@ -587,6 +622,7 @@ static  void  shifr_destr ( void  ) {
   // пароль делим на 16, остаются 15! вариантов пароля
   // пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
   // секретных кодов для соли+данных 0x1  
+// в deshi нужна соль
 void  password_load ( uint32_t  const password_const  , arrp const shifrp , 
   arrp const deship ) {
   uint8_t const codefree = 0xff ;
@@ -599,8 +635,8 @@ void  password_load ( uint32_t  const password_const  , arrp const shifrp ,
   for ( uint8_t j = 0 ; j < 4 ; ++  j ) {
     (*shifrp) [ j ] = ( * ( ns_shifr.raspr4.xp [ 3 ] ) )
        [ cindex4_16 ] [ j ] ;
-    (*deship) [ ( * ( ns_shifr.raspr4.xp [ 3 ] ) )
-       [ cindex4_16 ] [ j ] ] = 0 ; }
+    ( * deship  ) [ ( * ( ns_shifr  . raspr4  . xp [ 3 ] ) )
+       [ cindex4_16 ] [ j ] ] = j ; }
     // 01-10
       for ( uint8_t arr_ind = 1 ; arr_ind <= 2 ; ++ arr_ind ) {
         uint8_t index = 0 ;
@@ -619,7 +655,7 @@ void  password_load ( uint32_t  const password_const  , arrp const shifrp ,
               } while ( true ) ; }
             old_index = new_index ;
             ( * shifrp  ) [ 0x4 * arr_ind + j ] = index ;
-            ( * deship  ) [ index ] = arr_ind ;
+            ( * deship  ) [ index ] = ( ( arr_ind << 2  ) bitor  j )  ;
             ++  index ; } } } //  for arr_ind
       
       // пароль больше не нужен , беру оставшиеся коды
@@ -631,7 +667,7 @@ void  password_load ( uint32_t  const password_const  , arrp const shifrp ,
             ++  index3 ;
           } while ( true  ) ; 
           ( * shifrp  ) [ i ] = index3 ;
-          ( * deship  ) [ index3 ] = 3 ;
+          ( * deship  ) [ index3 ] = i ;
           ++  index3 ; } } }
 
 // пароль раскладываем в таблицу шифровки , дешифровки
@@ -693,11 +729,25 @@ void datasole ( arrcp const secretdata , arrp const secretdatasole ,
     -- id ;
     --  ids ;
     // главное данные , хвост - соль : 101 =>
-    //   10100 или 10101 или 10110 или 10111
+    //   101_00 или 101_01 или 101_10 или 101_11
     // в таблице всё рядом, 4 варианта равномерно распределены
     ( * ids ) = ( ( * id  ) <<  2 ) bitor ( ran bitand  0x3 ) ;
     ran >>= 2 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
+
+void  data_xor  ( uint8_t * const restrict  old_last_sole ,
+  arrp  const secretdatasole  , size_t  const data_size ) {
+  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
+  do {
+    // главное данные , хвост - соль : 101 =>
+    //   101_00 или 101_01 или 101_10 или 101_11
+    // в таблице всё рядом, 4 варианта равномерно распределены
+    // данные сыпью предыдущей солью
+    ( * ids ) xor_eq  ( ( * old_last_sole ) << 2  ) ;
+    // берю свежую соль
+    ( * old_last_sole ) = ( * ids ) bitand  0x3 ;
+    ++  ids ;
+  } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
 static  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
   unsigned  char c = buf & 0xf ;
@@ -1321,6 +1371,9 @@ randok :
   //  по-умолчанию шифруем
   if ( not flagdec  ) flagenc = true  ;
   if ( not flagpasswd )    {
+
+// ! искать в ~/.shifr5/default ?
+
     char p [ 26 ] ;
     fputs ( ( ns_shifr . localerus ? u8"введите пароль = " :
       "enter the password = " ) , stdout  ) ;
@@ -1329,9 +1382,9 @@ randok :
       fgets ( & ( p [ 0 ] ) , 26 , stdin ) ;
     reset_keypress ( ) ;
     char * j = &((*res)[0]) ;
-    while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\0' ) and
+    while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and
       ( j < ( & ( * res ) [ 26 ] ) ) ) ++ j ;
-    if ( j < ( & ( ( * res ) [ 26 ] ) ) ) ( * j ) = '\0' ;
+    if ( j < ( & ( ( * res ) [ 26 ] ) ) ) ( * j ) = '\00' ;
     else  {
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
         (char const (*)[]) & u8"в пароле нет конца строки" :
@@ -1428,6 +1481,7 @@ randok :
      // if text / digit
     if ( ns_shifr . use_version == 4 )  {
     int bytecount = 0 ;
+    uint8_t old_last_sole = 0 ;
     do {
       char buf ;
       size_t readcount = fread ( & buf , 1 , 1 , filefrom ) ;
@@ -1439,10 +1493,13 @@ randok :
             (char const (*)[]) & "error reading file" ) ;
           longjmp(ns_shifr  . jump,1); }
         break ; }
-      uint8_t secretdata  [ 4 ] = { [ 0 ]  = buf  & 3 , [ 1 ] = ( buf >>  2 ) & 3 ,
-        [ 2 ] = ( buf >>  4 ) & 3 , [ 3 ] = ( buf >>  6 ) & 3 } ;
+      uint8_t const secretdata  [ 4 ] = { [ 0 ]  = buf  bitand 0x3 ,
+        [ 1 ] = ( buf >>  2 ) bitand 0x3 , [ 2 ] = ( buf >>  4 ) bitand 0x3 ,
+        [ 3 ] = ( buf >>  6 ) bitand 0x3 } ;
       uint8_t secretdatasole  [ 4 ] ;
       datasole ( & secretdata , & secretdatasole , 4 )  ;
+      // после подсоления, данные переворачиваем предыдущим ксором
+      data_xor ( & old_last_sole , & secretdatasole , 4 )  ;
       uint8_t encrypteddata [ 4 ] ;
       crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata , 4 ) ;
             
@@ -1550,9 +1607,8 @@ randok :
     streambuf_writeflushzero ( & filebufto , flagtext ) ; }  // была 5-ая версия 
     } // кодировали
   else  { // декодируем
-    // главный заголовок должен быть "шифр" без конца строки
-
     if ( ns_shifr . use_version == 4 ) {
+      uint8_t old_last_sole = 0 ;
     do {
       char buf [ 2 ] ;
       size_t readcount ;
@@ -1601,7 +1657,7 @@ randok :
         hex_to_char ( ( char const ( * ) [ 2 ] ) ( & ( buf4 [ 2 ] ) ) ,
           & ( buf [ 1 ] ) ) ; }
       else {
-        readcount = fread ( & (buf[0]) , 1 , 2 , filefrom ) ;
+        readcount = fread ( & ( buf [ 0 ] ) , 1 , 2 , filefrom ) ;
         if ( readcount < 2 ) {
           if ( feof ( filefrom  ) ) break ;
           if ( ferror ( filefrom ) ) {
@@ -1611,13 +1667,17 @@ randok :
               (char const (*)[]) & "error reading file" ) ;
             longjmp(ns_shifr  . jump,1); }
           break ; } }
-      uint8_t secretdata [ 4 ] = { [0]  = buf[0]&0xf ,[1]=(buf[0]>>4)&0xf ,
-        [2]  = buf[1]&0xf ,[3]=(buf[1]>>4)&0xf      } ;
+      uint8_t secretdata  [ 4 ] = { [ 0 ] = buf [ 0 ] bitand  0xf ,
+        [ 1 ] = ( buf [ 0 ] >>  4 ) bitand  0xf ,
+        [ 2 ] = buf [ 1 ] bitand  0xf ,
+        [ 3 ] = ( buf [ 1 ] >>  4 ) bitand  0xf  } ;
       uint8_t decrypteddata [ 4 ] ;
-      crypt_decrypt ( & secretdata , & deshi , & decrypteddata , 4 ) ;
-      buf[0] = (decrypteddata [ 0 ] & 0x3) bitor ((decrypteddata [ 1 ] & 0x3) << 2)
-        bitor ((decrypteddata [ 2 ] & 0x3)<<4) bitor
-        ((decrypteddata [ 3 ] & 0x3) << 6);
+      decrypt_sole ( & secretdata , & deshi , & decrypteddata , 4 ,
+        & old_last_sole ) ;
+      buf [ 0 ] = ( decrypteddata [ 0 ] bitand 0x3  ) bitor
+        ( ( decrypteddata [ 1 ] bitand 0x3  ) << 2  )
+        bitor ( ( decrypteddata [ 2 ] bitand 0x3  ) <<  4 ) bitor
+        ( ( decrypteddata [ 3 ] bitand 0x3  ) << 6  ) ;
       size_t writecount = fwrite ( & (buf[0]) , 1 , 1 , fileto ) ;
       if ( writecount == 0 ) {
         if ( ferror ( fileto ) ) {
