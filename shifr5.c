@@ -1103,8 +1103,8 @@ int main  ( int  argc , char * * argv  )  {
             & ns_shifr . raspr4  . password_const , & ns_shifr . letters2 ,
             letters_count2 ) ;
 # ifdef SHIFR_DEBUG
-      printf  ( (ns_shifr . localerus ? u8"из строки во внутренний пароль = %x\n" :
-        "from string to internal password = %x\n" ) ,
+      printf  ( (ns_shifr . localerus ? u8"из строки во внутренний пароль = %lx\n" :
+        "from string to internal password = %lx\n" ) ,
         ns_shifr . raspr4  . password_const ) ;
 # endif                           
         }
@@ -1301,10 +1301,10 @@ randok :
   flagpasswd  = true  ;
 # ifdef SHIFR_DEBUG    
     if ( ns_shifr . use_version == 4 )
-      printf  ( ( ns_shifr . localerus ? u8 "внутренний пароль = %x\n" :
-        "internal password = %x\n") , ns_shifr . raspr4  . password_const  ) ;
+      printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = %lx\n" :
+        "internal password = %lx\n") , ns_shifr . raspr4  . password_const  ) ;
     else
-      printf  ( ( ns_shifr . localerus ? u8 "внутренний пароль = [ %lx , %lx ]\n"  :
+      printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = [ %lx , %lx ]\n"  :
         "inner password = [ %lx , %lx ]\n"  ) ,
         ns_shifr . raspr5  . password_const . a [ 1 ] ,
         ns_shifr . raspr5  . password_const . a [ 0 ] ) ;
@@ -1327,21 +1327,21 @@ randok :
     "--a95\tby letters between quotes = \'%s\'\n"  ) ,
     & ( password_letters  [ 0 ] ) ) ;
   printf  ( ( ns_shifr . localerus ?
-    u8  "--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
+    u8"--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
     "--a62\tby letters between quotes = \'%s\' (by default)\n"  ) ,
     & ( password_letters2  [ 0 ] ) ) ;
     if ( ns_shifr . use_version == 4 ) {
-      uint32_t password2 ;
+      uint64_t password2 ;
       string_to_password_uni ( & password_letters , & password2  ,
         & ns_shifr . letters , letters_count ) ; 
       printf  ( ( ns_shifr . localerus ?
-        u8  "из строки95 во внутренний пароль = %x\n" :
-        "from string95 to internal password = %x\n" ) , password2 ) ;
+        u8"из строки95 во внутренний пароль = %lx\n" :
+        "from string95 to internal password = %lx\n" ) , password2 ) ;
       string_to_password_uni ( & password_letters2 , & password2  ,
         & ns_shifr . letters2 , letters_count2 ) ; 
       printf  ( ( ns_shifr . localerus ?
-        u8  "из строки62 во внутренний пароль = %x\n" :
-        "from string62 to internal password = %x\n" ) , password2 ) ; }
+        u8"из строки62 во внутренний пароль = %lx\n" :
+        "from string62 to internal password = %lx\n" ) , password2 ) ; }
     else  {
       t_number128 password5 ;
         string_to_password5_uni ( & password_letters , & password5 , & ns_shifr . letters , letters_count ) ; 
