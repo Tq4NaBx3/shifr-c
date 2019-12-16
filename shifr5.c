@@ -3,38 +3,32 @@
 // 2 бита соль
 // 2 бита инфа
 // итого 4 бита
-// таблица шифра личные 2 бита <-- 4 бита шифрованные
-// личные данные b00 => могут быть зашифрованы набором 2^2 = 4шт из 
+// таблица шифра: личные 2 бита + соль 2 бита => 4 бита шифрованные
+// личные данные b00 => могут быть зашифрованы упорядоченным набором 2^2 = 4шт из 
 // b0000 ... b1111 2^4 = 4*4 = 16 штук
 // разные расклады шифрования для данных
-// b00 = ℂ(4,4*4) = 16*15*14*13/2/3/4 = 1820
-// b01 = ℂ(4,4*3) = 12*11*10*9/2/3/4 = 495
-// b10 = ℂ(4,4*2) = 8*7*6*5/2/3/4 = 70
-// b11 = ℂ(4,4) = 4*3*2*1/2/3/4 = 1
-// разные расклады шифрования = b00 * b01 * b10 * b11 =
-//  = (4*4)! / ((4!)^4) = 63063000 = (4 ^ 2)! / (((2 ^ 2)!)^(2 ^ 2))
-// минимум можно записать с помощью log(2,63063000) ≈ 25.91 бит < 4 байт
-// пароль будет 26 бит
+// b00 = 16*15*14*13 = 43680
+// b01 = 12*11*10*9 = 11880
+// b10 = 8*7*6*5 = 1680
+// b11 = 4*3*2*1 = 24
+// в общем = b00 * b01 * b10 * b11 =
+//   = 16! = 20922789888000
+// минимум можно записать пароль с помощью
+// log(2,20922789888000) ≈ 44.25 бит < 6 байт
+// пароль будет 45 бит
 // ascii буквы 126-32+1 = 95 шт
-// длина буквенного пароля : log ( 95 , 63063000 ) ≈ 3.944 буквы < 4 буквы
-//  log ( 62 , 63063000 ) ≈ 4.352 буквы < 5 букв
-// 63063000 * 32 = 0x78487b00
+// длина буквенного пароля : log ( 95 , 20922789888000 ) ≈ 6.735 букв < 7 букв
+//  log ( 62 , 20922789888000 ) ≈ 7.432 буквы < 8 букв
 // RAND_MAX размер 31 бит
+// первый рандом 22/31 , второй 23/31 
+// максимальный рандом < [ 2494190 , 7700480 ] =
+//   2494190 * ( 2 ^ 23 ) + 7700480 == 20922789888000
 
-/*
-Связь паролей с идентификацией какой код какому набору биту принадлежит.
-Пароль % 1820 даёт код битовых наборов для буквы b00.
-C(4,16)=1820=C(3,15)+C(3,14)+...+C(3,3)=455+364+286+220+165+120+84+56+35+20+10+4+1
-x<455 первый код 0000 , 455<=x<455+364 первый код 0001 , ...
-x=1819 первый код 1101 , второй 1110 , третий 1111
-Дальше [пароль/1820] % 495 даёт код для буквы b01.
-C(4,12)=495=C(3,11)+C(3,10)+...+C(3,3)=165+120+84+56+35+20+10+4+1
-нумерация кодов уже не по порядку, а с исключением занятых кодов буквой b00.
- */
 /*
 Соль одного элемента будет ксорить следующий элемент для исчезания повторов.
 Если все элементы будут одного значения, тогда все шифрованные значения будут
-иметь псевдо-случайные шивры.
+иметь псевдо-случайные шивры. И данные и соль имеют секретность кроме первой нулевой соли.
+Функция Шифр(пары: данные+соль) должна быть случайной неупорядоченной.
 
 Файл с нулевыми данными.
 
@@ -128,7 +122,7 @@ C(4,12)=495=C(3,11)+C(3,10)+...+C(3,3)=165+120+84+56+35+20+10+4+1
 # include <termios.h>
 # include <setjmp.h>
 
-//# define  SHIFR_DEBUG
+# define  SHIFR_DEBUG
 
 # ifdef SHIFR_DEBUG
 static  unsigned  long  int fact  ( unsigned  long  int x ) {
@@ -172,9 +166,9 @@ static  void  printarr  ( strcp const  name , arrcp const p ,
     printf  ( "%x , " , ( int ) ( * i ) ) ; 
     ++  i ;
   } while ( i not_eq  & ( ( * p ) [ arrsize ] ) ) ;
-  fputs ( u8"]\n" , stdout  ) ; }
+  puts ( u8"]" ) ; }
 # endif
-  
+
 static  void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
   arrp const encrp , size_t const data_size ) {
   uint8_t const * id = & ( ( * datap ) [ data_size ] ) ;
@@ -211,10 +205,10 @@ t_type_raspr_xp ( 4 )
 # define  raspr4_28_size (UINT16_C(20475))
 # define  raspr4_24_size (UINT16_C(10626))
 # define  raspr4_20_size (UINT16_C(4845))
-# define  raspr4_16_size (UINT16_C(1820))
-# define  raspr4_12_size (UINT16_C(495))
-# define  raspr4_8_size (UINT8_C(70))
-# define  raspr4_4_size (UINT8_C(1))
+# define  raspr4_16_size (UINT16_C(43680))
+# define  raspr4_12_size (UINT16_C(11880))
+# define  raspr4_8_size (UINT16_C(1680))
+# define  raspr4_4_size (UINT8_C(24))
 /*
 # define  raspr8_8_size (UINT64_C(4426165368))
 # define  raspr8_7_size (UINT32_C(1420494075))
@@ -245,7 +239,7 @@ type_raspr_xp ( 4 )  xp  [ 4 ] ;
  
 bool  live  ;
 
-uint32_t  password_const  ;
+uint64_t  password_const  ;
 
 } ;
 
@@ -339,7 +333,7 @@ static  struct  s_ns_shifr  ns_shifr = {
       [ 1 ] = raspr4_8_size , [ 0 ] = raspr4_4_size } ,
     . isLive5name = false ,
     } ,
-  . use_version  = 5 ,
+  . use_version  = 4 ,
 } ;
 
 # undef isLive5name
@@ -419,29 +413,29 @@ static  void  password_to_string5_uni (
   ( * stringi ) = '\00' ;  }
 
 static  void  string_to_password_uni ( strcp const string ,
-  uint32_t * const password , char (  * letters ) [ ] , uint8_t  letterscount ) {
+  uint64_t * const password , char (  * letters ) [ ] , uint8_t  letterscount ) {
   char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
   if  ( ( * stringi ) == '\00' ) {
     ( * password  ) = 0 ;
     return ; }
-  uint32_t pass = 0 ;
-  uint32_t  mult  = 1 ;
+  uint64_t  pass  = 0 ;
+  uint64_t  mult  = 1 ;
   do  {
     uint8_t i = letterscount ;
     do {
       -- i ;
-      if ( ( * stringi ) == (*letters)  [ i ] ) goto found ; 
+      if ( ( * stringi ) == ( * letters )  [ i ] ) goto found ; 
     } while ( i ) ;
     ns_shifr  . string_exception  = ( ns_shifr . localerus ?
       ( char const ( * ) [ ] ) & u8"неправильная буква в пароле" :
       ( char const ( * ) [ ] ) & "wrong letter in password" ) ;
-    longjmp(ns_shifr  . jump,1);
+    longjmp ( ns_shifr  . jump  , 1 ) ;
 found :
-    pass  +=  ((uint32_t)(i+1)) * mult ;
-    mult  *=  (uint32_t)letterscount ;
+    pass  +=  ( ( uint64_t  ) ( i + 1 ) ) * mult ;
+    mult  *=  ( uint64_t  ) letterscount ;
     ++  stringi ;
   } while ( * stringi ) ;
-  ( * password ) = pass ; }  
+  ( * password ) = pass ; }
   
 static  inline  void number128_set0  (
   t_number128 * const restrict np ) {
@@ -508,34 +502,31 @@ static  void  shifr_init ( void  ) {
     for ( uint8_t i = 'a' ; i <= 'z' ; ++ i , ++ j ) ( * j ) = i ; } }
 
 static  void  raspr4_init ( void  ) {
-# ifdef SHIFR_DEBUG
-  if ( ns_shifr .  raspr4 . live ) {
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-      ( char const ( * ) [ ] ) & u8"raspr4_init: двойной вызов конструктора" :
-      ( char const ( * ) [ ] ) & "raspr4_init: double constructor call" ) ;
-    longjmp ( ns_shifr  . jump  , 1 ) ; }
-# endif
+  if ( ns_shifr .  raspr4 . live ) return  ;
   uint8_t raspri  = 4 ;
   do {
     uint8_t const raspri4 = raspri * 4 ;
     --  raspri  ;
-    // raspri = 3 , 2 , 1
-    // raspri4 = 16 , 12 , 8
+    // raspri = 3 , 2 , 1 , 0
+    // raspri4 = 16 , 12 , 8 , 4
     { uint16_t  j = 0 ;
       type_raspr_xp ( 4 ) ap = malloc  ( sizeof (
           uint8_t [ ns_shifr .  raspr4  . s [ raspri ] ] [ 4 ] ) ) ;
       ns_shifr  . raspr4  . xp [ raspri ] = ap ;
       // ap - указатели на разные массивы
-      for ( uint8_t i0 = 0 ; i0 < ( raspri4 - 3 )  ; ++  i0 )
-        for ( uint8_t i1 = i0 + 1 ; i1 < (  raspri4 - 2 )  ; ++  i1 )
-          for ( uint8_t i2 = i1 + 1 ; i2 < (  raspri4 - 1 ) ; ++  i2 )
-            for ( uint8_t i3 = i2 + 1 ; i3 < raspri4  ; ++  i3 ) {
-              ( * ap ) [ j ] [ 0 ] = i0  ;
-              ( * ap ) [ j ] [ 1 ] = i1  ;
-              ( * ap ) [ j ] [ 2 ] = i2  ;
-              ( * ap ) [ j ] [ 3 ] = i3  ; 
-              ++  j ; } }
-  } while ( raspri > 1 ) ; 
+      for ( uint8_t i0 = 0 ; i0 < raspri4 ; ++  i0 )
+        for ( uint8_t i1 = 0 ; i1 < raspri4 ; ++  i1 )
+          if  ( i1 not_eq  i0 )
+            for ( uint8_t i2 = 0 ; i2 < raspri4 ; ++  i2 )
+              if  ( ( i2  not_eq  i0 ) and ( i2 not_eq i1 )  )
+                for ( uint8_t i3 = 0 ; i3 < raspri4  ; ++  i3 )
+                  if  ( ( i3  not_eq  i0 ) and ( i3 not_eq i1 )  and ( i3 not_eq i2 ) ) {
+                    ( * ap ) [ j ] [ 0 ] = i0  ;
+                    ( * ap ) [ j ] [ 1 ] = i1  ;
+                    ( * ap ) [ j ] [ 2 ] = i2  ;
+                    ( * ap ) [ j ] [ 3 ] = i3  ; 
+                    ++  j ; } }
+  } while ( raspri > 0 ) ;
   ns_shifr .  raspr4 . live = true  ; }
   
 # ifdef SHIFR_DEBUG
@@ -622,52 +613,36 @@ static  void  shifr_destr ( void  ) {
   // пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
   // секретных кодов для соли+данных 0x1  
 // в deshi нужна соль
-void  password_load ( uint32_t  const password_const  , arrp const shifrp , 
+void  password_load ( uint64_t  const password_const  , arrp const shifrp , 
   arrp const deship ) {
   uint8_t const codefree = 0xff ;
   initarr ( shifrp , codefree , shifr_deshi_size2 )  ;
   initarr ( deship , codefree , shifr_deshi_size2 )  ;
-  uint32_t password = password_const ;
-  uint16_t  cindex4_16  = password  % raspr4_16_size ;
-  password  /=  raspr4_16_size  ;
-  // 00
-  for ( uint8_t j = 0 ; j < 4 ; ++  j ) {
-    (*shifrp) [ j ] = ( * ( ns_shifr.raspr4.xp [ 3 ] ) )
-       [ cindex4_16 ] [ j ] ;
-    ( * deship  ) [ ( * ( ns_shifr  . raspr4  . xp [ 3 ] ) )
-       [ cindex4_16 ] [ j ] ] = j ; }
-    // 01-10
-      for ( uint8_t arr_ind = 1 ; arr_ind <= 2 ; ++ arr_ind ) {
-        uint8_t index = 0 ;
-        uint16_t  cindex4_i  = password  % ( ns_shifr.raspr4.s [ 3 - arr_ind ] ) ;
-        password  /= ( ns_shifr.raspr4.s [ 3 - arr_ind ] ) ;
-        { uint8_t old_index = 0xff ;
-          for ( uint8_t j = 0 ; j < 4 ; ++  j ) {
-            uint8_t new_index = ( * ( ns_shifr.raspr4.xp [ 3 - arr_ind ] ) )
-              [ cindex4_i ] [ j ] ;
-            { uint8_t passed = old_index + 1 ;
-              do {
-                if ( (  * deship  ) [ index ] == codefree ) {
-                  if ( passed == new_index ) break ;
-                  ++ passed  ; }
-                ++  index ;
-              } while ( true ) ; }
-            old_index = new_index ;
-            ( * shifrp  ) [ 0x4 * arr_ind + j ] = index ;
-            ( * deship  ) [ index ] = ( ( arr_ind << 2  ) bitor  j )  ;
-            ++  index ; } } } //  for arr_ind
-      
-      // пароль больше не нужен , беру оставшиеся коды
-  // 11
-      { uint8_t index3 = 0 ;
-        for ( uint8_t  i = 0xc  ; i <=  0xf ; ++  i ) {  
-          do  {
-            if ( (  * deship  ) [ index3 ] == codefree ) break  ;
-            ++  index3 ;
-          } while ( true  ) ; 
-          ( * shifrp  ) [ i ] = index3 ;
-          ( * deship  ) [ index3 ] = i ;
-          ++  index3 ; } } }
+  uint64_t  password = password_const ;
+  uint8_t arrind  [ 0x10  ] ;
+  { uint8_t * arrj  = & ( arrind  [ 0x10  ] ) ;
+    uint8_t j = 0x10  ;
+    do  {
+      --  arrj  ;
+      --  j ;
+      ( * arrj )  = j ;
+    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ;  }
+  // 0 .. 15
+  uint8_t cindex  = password  bitand  0xf ; //  % 16
+  password  >>= 4 ; //  /= 16
+  ( * shifrp  ) [ 0 ] = cindex  ;
+  ( * deship  ) [ cindex  ] = 0 ;
+  uint8_t inde  = 1 ;
+  do  {
+    memmove ( & ( arrind  [ cindex  ] ) , & ( arrind  [ cindex  + 1 ] ) ,
+      0x10  - inde  - cindex  ) ;
+    { ldiv_t di = ldiv ( password  , 0x10  - inde ) ;
+      cindex  = arrind [ di . rem ] ;
+      password  = di  . quot  ; }
+    ( * shifrp  ) [ inde ] = cindex ;
+    ( * deship  ) [ cindex  ] = inde ;
+    ++  inde  ;
+  } while ( inde  < 0x10  ) ; }
 
 // пароль раскладываем в таблицу шифровки , дешифровки
   // пароль % 0x20 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
@@ -1022,7 +997,7 @@ int main  ( int  argc , char * * argv  )  {
   int exc = setjmp  ( ns_shifr  . jump  ) ;
   if ( exc ) {
     fprintf ( stderr  , ( ns_shifr . localerus ? u8"Исключение : %s\n" :
-      "Exception : %s\n" ) , & ( ( *ns_shifr  . string_exception ) [ 0 ] ) ) ;
+      "Exception : %s\n" ) , & ( ( *  ns_shifr  . string_exception ) [ 0 ] ) ) ;
     shifr_destr ( ) ;
     return  1 ; }
   bool  flagenc = false ;
@@ -1109,8 +1084,8 @@ int main  ( int  argc , char * * argv  )  {
 # endif
   // 31 бит
   srand ( time  ( 0 ) ) ;
-  //raspr4_init ( ) ;
-  raspr5_init ( ) ;
+  raspr4_init ( ) ;
+  //raspr5_init ( ) ;
   for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
     if  ( flagreadpasswd  ) {
       if  ( flagpasswd  ) {
@@ -1120,11 +1095,11 @@ int main  ( int  argc , char * * argv  )  {
         longjmp(ns_shifr  . jump,1); }
       if ( ns_shifr . use_version == 4 ) {
         if ( password_alphabet == 95 )
-          string_to_password_uni ( (char(*)[])(argv[argj]) ,
+          string_to_password_uni ( (  char  ( * ) [ ] ) ( argv  [ argj  ] ) ,
             & ns_shifr . raspr4  . password_const , & ns_shifr . letters ,
             letters_count ) ; 
         else
-          string_to_password_uni ( (char(*)[])(argv[argj]) ,
+          string_to_password_uni ( (  char  ( * ) [ ] ) ( argv  [ argj  ] ) ,
             & ns_shifr . raspr4  . password_const , & ns_shifr . letters2 ,
             letters_count2 ) ;
 # ifdef SHIFR_DEBUG
@@ -1247,13 +1222,23 @@ int main  ( int  argc , char * * argv  )  {
   if ( flaggenpasswd ) {
     srand ( time  ( 0 ) ) ;
     if ( ns_shifr . use_version == 4 ) {
-      int r ;
+      int r1 , r0 ;
+      // 22 из 31 , 23 из 31
+      // максимальный рандом < 2494190 * ( 2 ^ 23 ) + 7700480 == 20922789888000
       // цикл для равномерного рандома
+# define  shifrrandmax1  (2494190)
+# define  shifrrandmax0  (7700480)
       do {
-        r = rand  ( ) ;
-        // floor((2^31-1)/63063000) == 34
-      } while ( r >= ( 63063000 * 34 ) ) ;
-      ns_shifr . raspr4  . password_const = r / 34 ; }
+        do {
+          r1 = rand  ( ) >> 9 ;
+        } while ( r1 >  shifrrandmax1  ) ;
+        r0 = rand  ( ) >> 8 ;
+      } while ( ( r1 ==  shifrrandmax1  ) and ( r0 >= shifrrandmax0 ) ) ;
+      ns_shifr . raspr4  . password_const = ( ( ( uint64_t  ) r1  ) <<  23 ) bitor
+        ( ( uint64_t  ) r0 ) ;
+# undef shifrrandmax0
+# undef shifrrandmax1
+      }
     else {
       t_number96 ro0 ;
       t_number96 ro ;      
@@ -1316,10 +1301,10 @@ randok :
   flagpasswd  = true  ;
 # ifdef SHIFR_DEBUG    
     if ( ns_shifr . use_version == 4 )
-      printf((ns_shifr . localerus ? u8"внутренний пароль = %x\n" :
-        "internal password = %x\n") ,ns_shifr . raspr4  . password_const  ) ;
+      printf  ( ( ns_shifr . localerus ? u8 "внутренний пароль = %x\n" :
+        "internal password = %x\n") , ns_shifr . raspr4  . password_const  ) ;
     else
-      printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = [ %lx , %lx ]\n"  :
+      printf  ( ( ns_shifr . localerus ? u8 "внутренний пароль = [ %lx , %lx ]\n"  :
         "inner password = [ %lx , %lx ]\n"  ) ,
         ns_shifr . raspr5  . password_const . a [ 1 ] ,
         ns_shifr . raspr5  . password_const . a [ 0 ] ) ;
@@ -1341,17 +1326,22 @@ randok :
   printf  ( ( ns_shifr . localerus ? u8"--a95\tбуквами между кавычек = \'%s\'\n" : 
     "--a95\tby letters between quotes = \'%s\'\n"  ) ,
     & ( password_letters  [ 0 ] ) ) ;
-  printf  ( ( ns_shifr . localerus ? u8"--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
+  printf  ( ( ns_shifr . localerus ?
+    u8  "--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
     "--a62\tby letters between quotes = \'%s\' (by default)\n"  ) ,
     & ( password_letters2  [ 0 ] ) ) ;
     if ( ns_shifr . use_version == 4 ) {
       uint32_t password2 ;
-        string_to_password_uni ( & password_letters , & password2  , & ns_shifr . letters , letters_count ) ; 
-        printf  ( (ns_shifr . localerus ? u8"из строки95 во внутренний пароль = %x\n" :
-          "from string95 to internal password = %x\n" ) , password2 ) ;
-        string_to_password_uni ( & password_letters2 , & password2  , & ns_shifr . letters2 , letters_count2 ) ; 
-        printf  ( ( ns_shifr . localerus ? u8"из строки62 во внутренний пароль = %x\n" :
-          "from string62 to internal password = %x\n" ) , password2 ) ;   }
+      string_to_password_uni ( & password_letters , & password2  ,
+        & ns_shifr . letters , letters_count ) ; 
+      printf  ( ( ns_shifr . localerus ?
+        u8  "из строки95 во внутренний пароль = %x\n" :
+        "from string95 to internal password = %x\n" ) , password2 ) ;
+      string_to_password_uni ( & password_letters2 , & password2  ,
+        & ns_shifr . letters2 , letters_count2 ) ; 
+      printf  ( ( ns_shifr . localerus ?
+        u8  "из строки62 во внутренний пароль = %x\n" :
+        "from string62 to internal password = %x\n" ) , password2 ) ; }
     else  {
       t_number128 password5 ;
         string_to_password5_uni ( & password_letters , & password5 , & ns_shifr . letters , letters_count ) ; 
@@ -1398,7 +1388,6 @@ randok :
         (char const (*)[]) & u8"в пароле нет конца строки" :
         (char const (*)[]) & "there is no end of line in the password" ) ;
       longjmp(ns_shifr  . jump,1); }
-      
     if ( ns_shifr . use_version == 4 )
       if ( password_alphabet == 95 )
         string_to_password_uni ( res , & ns_shifr . raspr4  . password_const ,
@@ -1414,14 +1403,13 @@ randok :
         string_to_password5_uni ( res , & ns_shifr . raspr5  . password_const ,
           & ns_shifr . letters2 , letters_count2 ) ; }
     char  password_letters [ 20 ] ;
-        
-      if ( ns_shifr . use_version == 4 ) {
-        if ( password_alphabet == 95 )
-          password_to_string_uni ( ns_shifr . raspr4  . password_const ,
-            & password_letters , & ns_shifr . letters , letters_count ) ;
-        else
-          password_to_string_uni ( ns_shifr . raspr4  . password_const ,
-            & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
+    if ( ns_shifr . use_version == 4 ) {
+      if ( password_alphabet == 95 )
+        password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+          & password_letters , & ns_shifr . letters , letters_count ) ;
+      else
+        password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+          & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
       else  {
         if ( password_alphabet == 95 )
           password_to_string5_uni ( & ns_shifr . raspr5  . password_const ,
