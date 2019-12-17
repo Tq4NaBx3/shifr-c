@@ -124,17 +124,6 @@
 
 //# define  SHIFR_DEBUG
 
-# ifdef SHIFR_DEBUG
-static  unsigned  long  int fact  ( unsigned  long  int x ) {
-  if  ( x ==  0 ) return  0 ;
-  unsigned  long  int res = x ;
-  do {
-    --  x ;
-    if ( x <= 1UL ) return res ;
-    res *=  x ;
-  } while ( true ) ; }
-# endif
-
 typedef uint8_t ( * arrp ) [ ] ;
 typedef uint8_t const ( * arrcp ) [ ] ;
 typedef char ( * strp ) [ ] ;
@@ -209,16 +198,6 @@ t_type_raspr_xp ( 4 )
 # define  raspr4_12_size (UINT16_C(11880))
 # define  raspr4_8_size (UINT16_C(1680))
 # define  raspr4_4_size (UINT8_C(24))
-/*
-# define  raspr8_8_size (UINT64_C(4426165368))
-# define  raspr8_7_size (UINT32_C(1420494075))
-# define  raspr8_6_size (UINT32_C(377348994))
-# define  raspr8_5_size (UINT32_C(76904685))
-# define  raspr8_4_size (UINT32_C(10518300))
-# define  raspr8_3_size (UINT32_C(735471))
-# define  raspr8_2_size (UINT16_C(12870))
-*/
-# define  header_type_size  (UINT8_C(2))
 
 // 0x20 (пробел) ' '    ---     0x7e (тильда) '~'
 // 95 шт
@@ -230,14 +209,6 @@ t_type_raspr_xp ( 4 )
   ('9' - '0') + 1 + ('Z' - 'A') + 1 + ('z' - 'a') + 1 ))
 
 struct  s_raspr4 {
-# ifdef SHIFR_DEBUG
-// массив размеров разных распределений
-uint16_t  s [ 4 ] ;
-  
-// массив указателей на разные распределения
-type_raspr_xp ( 4 )  xp  [ 4 ] ;
-# endif
-bool  live  ;
 
 uint64_t  password_const  ;
 
@@ -274,25 +245,6 @@ t_number128  password_const  ;
 # define  isLive5pri(  R ) "live is private"
 # define  isLive5 isLive5pro
 
-/*
-struct  s_raspr6 {
-  
-// массив размеров разных распределений
-uint64_t  s [ 8 ] ;
-
-// массив указателей на разные распределения
-type_raspr_xp ( 8 )  xp  [ 8 ] ;
-
-// тип архива бинарного 0x03 + 0x00
-unsigned char const headerbyn [ header_type_size ] ;
-
-// "3\n"
-unsigned char const headertxt [ header_type_size ] ;
-
-bool  live  ;
-
-} ;*/
-
 struct  s_ns_shifr  {
 
 // буквы разрешённые в пароле :
@@ -311,7 +263,6 @@ char const (  * string_exception  ) [ ] ;
 
 struct  s_raspr4 raspr4 ;
 struct  s_raspr5 raspr5 ;
-//struct  s_raspr6 raspr6 ;
 
 int use_version ; //  4 или 5
 
@@ -321,13 +272,6 @@ int use_version ; //  4 или 5
 # define  isLive5name isLive5namepub
 
 static  struct  s_ns_shifr  ns_shifr = {
-  .raspr4 = {
-# ifdef SHIFR_DEBUG
-    .s = { [ 3 ] = raspr4_16_size , [ 2 ] = raspr4_12_size ,
-      [ 1 ] = raspr4_8_size , [ 0 ] = raspr4_4_size } ,
-# endif
-    .live = false ,
-    } ,
   .raspr5 = {
     .s = { [ 7 ] = raspr4_32_size , [ 6 ] = raspr4_28_size ,
       [ 5 ] = raspr4_24_size , [ 4 ] = raspr4_20_size ,
@@ -503,61 +447,6 @@ static  void  shifr_init ( void  ) {
     for ( uint8_t i = 'A' ; i <= 'Z' ; ++ i , ++ j ) ( * j ) = i ;
     for ( uint8_t i = 'a' ; i <= 'z' ; ++ i , ++ j ) ( * j ) = i ; } }
 
-# ifdef SHIFR_DEBUG
-static  void  raspr4_init ( void  ) {
-  if ( ns_shifr .  raspr4 . live ) return  ;
-  uint8_t raspri  = 4 ;
-  do {
-    uint8_t const raspri4 = raspri * 4 ;
-    --  raspri  ;
-    // raspri = 3 , 2 , 1 , 0
-    // raspri4 = 16 , 12 , 8 , 4
-    { uint16_t  j = 0 ;
-      type_raspr_xp ( 4 ) ap = malloc  ( sizeof (
-          uint8_t [ ns_shifr .  raspr4  . s [ raspri ] ] [ 4 ] ) ) ;
-      ns_shifr  . raspr4  . xp [ raspri ] = ap ;
-      // ap - указатели на разные массивы
-      for ( uint8_t i0 = 0 ; i0 < raspri4 ; ++  i0 )
-        for ( uint8_t i1 = 0 ; i1 < raspri4 ; ++  i1 )
-          if  ( i1 not_eq  i0 )
-            for ( uint8_t i2 = 0 ; i2 < raspri4 ; ++  i2 )
-              if  ( ( i2  not_eq  i0 ) and ( i2 not_eq i1 )  )
-                for ( uint8_t i3 = 0 ; i3 < raspri4  ; ++  i3 )
-                  if  ( ( i3  not_eq  i0 ) and ( i3 not_eq i1 )  and ( i3 not_eq i2 ) ) {
-                    ( * ap ) [ j ] [ 0 ] = i0  ;
-                    ( * ap ) [ j ] [ 1 ] = i1  ;
-                    ( * ap ) [ j ] [ 2 ] = i2  ;
-                    ( * ap ) [ j ] [ 3 ] = i3  ; 
-                    ++  j ; } }
-  } while ( raspri > 0 ) ;
-  ns_shifr .  raspr4 . live = true  ; }
-  
-static  void  raspr4_show ( void  ) {
-  if ( not  ns_shifr .  raspr4 . live ) {
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-      ( char const ( * ) [ ] ) & u8"raspr4_show: распределение не создано" :
-      ( char const ( * ) [ ] ) & "raspr4_show: raspr is not created" ) ;
-    longjmp ( ns_shifr  . jump  , 1 ) ; }
-  uint8_t raspri  = 4 ;
-  do {
-    uint8_t const raspri4 = raspri * 4 ;
-    --  raspri  ;
-    // raspri = 3 , 2 , 1
-    // raspri4 = 16 , 12 , 8
-    { uint16_t  j = 0 ;
-      type_raspr_xp ( 4 ) ap = ns_shifr  . raspr4  . xp [ raspri ]  ;
-      // ap - указатели на разные массивы
-      for ( uint8_t i0 = 0 ; i0 < ( raspri4 - 3 )  ; ++  i0 )
-        for ( uint8_t i1 = i0 + 1 ; i1 < (  raspri4 - 2 )  ; ++  i1 )
-          for ( uint8_t i2 = i1 + 1 ; i2 < (  raspri4 - 1 ) ; ++  i2 )
-            for ( uint8_t i3 = i2 + 1 ; i3 < raspri4  ; ++  i3 ) {
-              printf("[%x,%x,%x,%x]",( * ap ) [ j ] [ 0 ],( * ap ) [ j ] [ 1 ],
-                ( * ap ) [ j ] [ 2 ],( * ap ) [ j ] [ 3 ]);
-              ++  j ; } }
-    puts("\n");
-  } while ( raspri > 1 ) ; }  
-# endif
-
 # undef isLive5
 # define  isLive5 isLive5pub
   
@@ -589,17 +478,6 @@ static  void  raspr5_init ( void  ) {
 # undef isLive5
 # define  isLive5 isLive5pri
 
-static  void  raspr4_destr ( void  ) {
-  if ( not  ns_shifr .  raspr4 . live ) return  ;
-# ifdef SHIFR_DEBUG
-  uint8_t (**i)[][4]  = & ( ns_shifr  . raspr4  . xp [ 4 ] ) ;
-  do {
-    -- i ;
-    free ( * i ) ;
-  } while ( i > & ( ns_shifr  . raspr4  . xp [ 1 ] ) ) ;
-# endif
-  }
-
 static  void  raspr5_destr ( void  ) {
   if ( not  isLive5 ( & ns_shifr .  raspr5  ) ) return  ;
   uint8_t (**i)[][4]  = & ( ns_shifr  . raspr5  . xp [ 8 ] ) ;
@@ -609,7 +487,6 @@ static  void  raspr5_destr ( void  ) {
   } while ( i > & ( ns_shifr  . raspr5  . xp [ 1 ] ) ) ; }
   
 static  void  shifr_destr ( void  ) {
-  raspr4_destr  ( ) ;
   raspr5_destr  ( ) ; }
   
 // пароль раскладываем в таблицу шифровки , дешифровки
@@ -620,8 +497,6 @@ static  void  shifr_destr ( void  ) {
 // в deshi нужна соль
 void  password_load ( uint64_t  const password_const  , arrp const shifrp , 
   arrp const deship ) {
-//fputs(u8"2.",stdout);fflush(stdout);
-//printf(u8"password_const=%lx ",password_const);
   uint8_t const codefree = 0xff ;
   initarr ( shifrp , codefree , shifr_deshi_size2 )  ;
   initarr ( deship , codefree , shifr_deshi_size2 )  ;
@@ -636,35 +511,20 @@ void  password_load ( uint64_t  const password_const  , arrp const shifrp ,
     } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ;  }
   // 0 .. 15
   uint8_t cindex  = password  bitand  0xf ; //  % 16
-//printf(u8"до:password=%lu ",password);fflush(stdout);
   password  >>= 4 ; //  /= 16
-//printf(u8"после:password=%lu ",password);fflush(stdout);
   ( * shifrp  ) [ 0 ] = cindex  ;
   ( * deship  ) [ cindex  ] = 0 ;
   uint8_t inde  = 1 ;
-//fputs(u8"3.",stdout);fflush(stdout);
   do  {
-/*printf(u8"cindex=%u ",(unsigned int )cindex);
-fputs(u8"до:arrind=[",stdout);fflush(stdout);
-for(int i = 0 ;i<0x10;++i){printf(u8"%d,",arrind[i]);fflush(stdout);}
-fputs(u8"]",stdout);fflush(stdout);*/
     memmove ( & ( arrind  [ cindex  ] ) , & ( arrind  [ cindex  + 1 ] ) ,
       0x10  - inde  - cindex  ) ;
-/*fputs(u8"после:arrind=[",stdout);fflush(stdout);
-for(int i = 0 ;i<0x10;++i){printf(u8"%d,",arrind[i]);fflush(stdout);}
-fputs(u8"]",stdout);fflush(stdout);
-printf(u8"до:password=%lu ",password);fflush(stdout);
-printf(u8"inde=%u ",(unsigned int)inde);fflush(stdout);*/
     { ldiv_t di = ldiv ( password  , 0x10  - inde ) ;
       cindex  = di . rem ;
       password  = di  . quot  ; 
-//printf(u8"после:password=%lu ",password);fflush(stdout);
       ( * shifrp  ) [ inde ] = arrind [ di . rem ] ;
       ( * deship  ) [ arrind [ di . rem ]  ] = inde ; }
     ++  inde  ;
-  } while ( inde  < 0x10  ) ;
-//fputs(u8"4.",stdout);fflush(stdout);
-  }
+  } while ( inde  < 0x10  ) ; }
 
 // пароль раскладываем в таблицу шифровки , дешифровки
   // пароль % 0x20 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
@@ -1040,8 +900,8 @@ int main  ( int  argc , char * * argv  )  {
   shifr_init  ( ) ;
   if  ( argc  <=  1  ) {
     puts ( ns_shifr . localerus ?
-      u8"Шифр4 ©2019 Глебов А.Н.\nСимметричное поточное шифрование с 'солью'.\n'Соль' генерируется постоянно, что даёт хорошую стойкость.\nРазмер данных увеличивается в два раза.\nНет диагностики неправильного пароля.\nСинтаксис : shifr5 [параметры]" :
-      "Shifr4 ©2019 Glebe A.N.\nSymmetric stream encryption with 'salt'.\n'Salt' is constantly generated, which gives good durability.\nData size doubles.\nThere is no diagnosis of the wrong password.\nSyntax : shifr5 [options]" ) ;
+      u8"Шифр4 ©2019 Глебов А.Н.\nСимметричное поточное шифрование с 'солью'.\n'Соль' генерируется постоянно, что даёт хорошую стойкость.\nРазмер данных увеличивается в два раза.\nНет диагностики неправильного пароля.\nСинтаксис : shifr4 [параметры]" :
+      "Shifr4 ©2019 Glebe A.N.\nSymmetric stream encryption with 'salt'.\n'Salt' is constantly generated, which gives good durability.\nData size doubles.\nThere is no diagnosis of the wrong password.\nSyntax : shifr4 [options]" ) ;
     puts  ( ns_shifr . localerus ? u8"Параметры :" : "Options :"  ) ;
     puts  (ns_shifr . localerus ?
       u8"  --ген-пар или\n  --gen-pas\tгенерировать пароль" :
@@ -1068,8 +928,8 @@ int main  ( int  argc , char * * argv  )  {
       u8"  --4\tиспользовать четырёх битное шифрование, ключ = 45 бит ( семь/восемь букв ). Размер шифрованного файла в два раза больше исходного. ( по-умолчанию )" :
       "  --4\tusing four bit encryption, key = 45 bits ( seven/eight letters ). The encrypted file is twice the size of the original. ( by default )" ) ;
     puts  ( ns_shifr . localerus ? 
-      u8"  --5\tиспользовать пяти битное шифрование, ключ = 81 бит ( тринадцать/четырнадцать букв ). Размер шифрованного файла на 67% больше исходного." :
-      "  --5\tusing five bit encryption, key = 81 bits ( thirteen/fourteen letters ). The encrypted file is 67% larger than the original." ) ;
+      u8"  --5\tиспользовать пяти битное шифрование, ключ = 81 бит ( тринадцать/четырнадцать букв ). Размер шифрованного файла на 67% больше исходного. (экспериментальная версия)" :
+      "  --5\tusing five bit encryption, key = 81 bits ( thirteen/fourteen letters ). The encrypted file is 67% larger than the original. (experimental version)" ) ;
     fputs  ( ns_shifr . localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
@@ -1087,17 +947,17 @@ int main  ( int  argc , char * * argv  )  {
       "Usage example"  ) ;
     puts  ( ns_shifr  . localerus ? u8"  > ./shifr4 --ген-пар"  :
       "  > ./shifr4 --gen-pas"  ) ;
-    puts("  flQO2");
+    puts("  ueKZ9sH4");
     puts  ( ns_shifr  . localerus ?
-      u8"  > ./shifr5 --4 --пароль 'flQO2' > test.e --текст"  :
-      "  > ./shifr5 --4 --pass 'flQO2' > test.e --text"  ) ;
+      u8"  > ./shifr4 --пароль 'ueKZ9sH4' > test.e --текст"  :
+      "  > ./shifr4 --pass 'ueKZ9sH4' > test.e --text"  ) ;
     puts( ns_shifr  . localerus ? u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
       "  2+2 (Press Enter,Ctrl+D)" ) ;
     puts("  > cat test.e");
-    puts("  54b7b40e8481ded5");
+    puts("  c9f29d22e4ef08f2");
     puts( ns_shifr  . localerus ?
-      u8"  > ./shifr5 --4 --пароль 'flQO2' < test.e --текст --расшифр" :
-      "  > ./shifr5 --4 --pass 'flQO2' < test.e --text --decrypt" ) ;
+      u8"  > ./shifr4 --пароль 'ueKZ9sH4' < test.e --текст --расшифр" :
+      "  > ./shifr4 --pass 'ueKZ9sH4' < test.e --text --decrypt" ) ;
     puts("  2+2");
     shifr_destr ( ) ;
     return 0 ; }
@@ -1106,7 +966,6 @@ int main  ( int  argc , char * * argv  )  {
 # endif
   // 31 бит
   srand ( time  ( 0 ) ) ;
-  //raspr4_init ( ) ;
   for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
     if  ( flagreadpasswd  ) {
       if  ( flagpasswd  ) {
@@ -1218,7 +1077,6 @@ int main  ( int  argc , char * * argv  )  {
           flagtext = true  ; }
         else
         if ( strcmp ( argv[argj] , u8"--4" ) ==  0 ){ 
-          //raspr4_init ( ) ;
           ns_shifr . use_version = 4 ; }
         else
         if ( strcmp ( argv[argj] , u8"--5" ) ==  0 ){ 
@@ -1391,7 +1249,7 @@ randok :
   if ( not flagdec  ) flagenc = true  ;
   if ( not flagpasswd )    {
 
-// ! искать в ~/.shifr5/default ?
+// ! искать в ~/.shifr4/default ?
 
     char p [ 26 ] ;
     fputs ( ( ns_shifr . localerus ? u8"введите пароль = " :
@@ -1486,12 +1344,10 @@ randok :
     // 18 .. 1b - варианты секретных кодов для буквы 6
     // 1c .. 1f - варианты секретных кодов для буквы 7
     uint8_t deshi [ shifr_deshi_size5 ] = { } ;
-//fputs(u8"0.",stdout);fflush(stdout);
     if ( ns_shifr . use_version == 4 )  
       password_load ( ns_shifr . raspr4  . password_const  , & shifr , & deshi ) ;
     else
       password_load5 ( & ns_shifr . raspr5  . password_const  , & shifr , & deshi ) ;
-//fputs(u8"1.",stdout);fflush(stdout);
 # ifdef SHIFR_DEBUG    
   printarr  ( & "shifr" , & shifr , shifr_deshi_size5 ) ;
   printarr  ( & "deshi" , & deshi , shifr_deshi_size5 ) ;
