@@ -1,5 +1,6 @@
 // Version 4
 
+// RUS
 // 2 бита соль
 // 2 бита инфа
 // итого 4 бита
@@ -26,8 +27,8 @@
 
 /*
 Соль одного элемента будет ксорить следующий элемент для исчезания повторов.
-Если все элементы будут одного значения, тогда все шифрованные значения будут
-иметь псевдо-случайные шивры. И данные и соль имеют секретность кроме первой нулевой соли.
+Если все элементы будут одного значения, тогда все шифрованные значения будут иметь свойство псевдо-случайности.
+И данные и соль имеют секретность кроме первой нулевой соли.
 Функция Шифр(пары: данные+соль) должна быть случайной неупорядоченной.
 
 Файл с нулевыми данными.
@@ -45,6 +46,55 @@
 Соль   : 00     10        01        11
             \        \         \
 Данные :     00⊻00=00  10⊻10=00  01⊻01=00  ...
+
+*/
+
+// ENG
+// 2 bits salt
+// 2 bits information
+// total 4 bits
+// encryption table: personal 2 bits + salt 2 bits => 4 bits encrypted
+// personal data b00 => can be encrypted in an ordered set 2^2 = 4pcs from
+// b0000 ... b1111 2^4 = 4*4 = 16 pieces
+// different encryption layouts for data
+// b00 = 16*15*14*13 = 43680
+// b01 = 12*11*10*9 = 11880
+// b10 = 8*7*6*5 = 1680
+// b11 = 4*3*2*1 = 24
+// generally = b00 * b01 * b10 * b11 =
+//   = 16! = 20922789888000
+// minimum you can write a password using
+// log(2,20922789888000) ≈ 44.25 bits < 6 bytes
+// the password will have 45 bits size
+// ascii letters 126-32+1 = 95 pcs
+// letter password length : log ( 95 , 20922789888000 ) ≈ 6.735 letters < 7 letters
+//  log ( 62 , 20922789888000 ) ≈ 7.432 letters < 8 letters
+// RAND_MAX size 31 bits
+// first random 22/31 , second 23/31 
+// maximum random < [ 2494190 , 7700480 ] =
+//   2494190 * ( 2 ^ 23 ) + 7700480 == 20922789888000
+
+/*
+The salt of one element will modify (xor) the next element to remove repeats.
+If all elements are of the same value, then all encrypted values will have the property of pseudo-randomness.
+Both data and salt have secrecy apart from the first zero salt.
+Function Shifr(of pair: data+salt)should be randomly disordered.
+
+File with zero data.
+
+Data   :       00⊻00=00 00⊻10=10 00⊻01=01  ...
+           ______/  ______/  ______/  ______/
+Salt   : 00       10       01       11
+    
+Shifr  :       S(0010)  S(1001)  S(0111)
+
+To decrypt, you need to modify (xor) the data with the previous salt.
+
+Shifr  :      R(0010)  R(1001)   R(0111)
+
+Salt   : 00     10        01        11
+            \        \         \
+Data   :     00⊻00=00  10⊻10=00  01⊻01=00  ...
 
 */
 
