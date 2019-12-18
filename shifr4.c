@@ -15,11 +15,11 @@
 // в общем = b00 * b01 * b10 * b11 =
 //   = 16! = 20922789888000
 // минимум можно записать пароль с помощью
-// log(2,20922789888000) ≈ 44.25 бит < 6 байт
+// log(2,20922789888000) ≈ 44.25 бит <= 6 байт
 // пароль будет 45 бит
 // ascii буквы 126-32+1 = 95 шт
-// длина буквенного пароля : log ( 95 , 20922789888000 ) ≈ 6.735 букв < 7 букв
-//  log ( 62 , 20922789888000 ) ≈ 7.432 буквы < 8 букв
+// длина буквенного пароля : log ( 95 , 20922789888000 ) ≈ 6.735 букв <= 7 букв
+//  log ( 62 , 20922789888000 ) ≈ 7.432 буквы <= 8 букв
 // RAND_MAX размер 31 бит
 // первый рандом 22/31 , второй 23/31 
 // максимальный рандом < [ 2494190 , 7700480 ] =
@@ -64,11 +64,11 @@
 // generally = b00 * b01 * b10 * b11 =
 //   = 16! = 20922789888000
 // minimum you can write a password using
-// log(2,20922789888000) ≈ 44.25 bits < 6 bytes
+// log(2,20922789888000) ≈ 44.25 bits <= 6 bytes
 // the password will have 45 bits size
 // ascii letters 126-32+1 = 95 pcs
-// letter password length : log ( 95 , 20922789888000 ) ≈ 6.735 letters < 7 letters
-//  log ( 62 , 20922789888000 ) ≈ 7.432 letters < 8 letters
+// letter password length : log ( 95 , 20922789888000 ) ≈ 6.735 letters <= 7 letters
+//  log ( 62 , 20922789888000 ) ≈ 7.432 letters <= 8 letters
 // RAND_MAX size 31 bits
 // first random 22/31 , second 23/31 
 // maximum random < [ 2494190 , 7700480 ] =
@@ -98,67 +98,46 @@ Data   :     00⊻00=00  10⊻10=00  01⊻01=00  ...
 
 */
 
-// Version 5
-
-// 2 бита соль
-// 3 бита инфа
-// итого 5 бит
-// таблица шифра личные 3 бита <-- 5 бит шифрованные
-// личные данные b000 => могут быть зашифрованы набором 2^2 = 4шт из 
-// b00000 ... b11111 2^5 = 8*4 = 32 штук
-// разные расклады шифрования для данных
-// b000 = ℂ(4,4*8) = 32*31*30*29/2/3/4 = 35960
-// b001 = ℂ(4,4*7) = 28*27*26*25/2/3/4 = 20475
-// b010 = ℂ(4,4*6) = 24*23*22*21/2/3/4 = 10626
-// b011 = ℂ(4,4*5) = 20*19*18*17/2/3/4 = 4845
-// b100 = ℂ(4,4*4) = 16*15*14*13/2/3/4 = 1820
-// b101 = ℂ(4,4*3) = 12*11*10*9/2/3/4 = 495
-// b110 = ℂ(4,4*2) = 8*7*6*5/2/3/4 = 70
-// b111 = ℂ(4,4*1) = 4*3*2*1/2/3/4 = 1
-// разные расклады шифрования = b000 * b001 * b010 * b011 * b100 * b101 * b110 * b111 =
-//  = (4*8)! / ((4!)^8) = 239046182973388791e7 ≈ 2.39*(10^24)
-// минимум можно записать с помощью log(2,2.39*(10^24)) ≈ 80.98 бит < 11 байт
-// пароль будет 81 бит
-// ascii буквы 126-32+1 = 95 шт
-// цифры,буквы,заглавные = 10 + 26 + 26 = 62 шт
-// длина буквенного пароля : log ( 95 , 2.39*(10^24) ) ≈ 12.33 букв < 13 букв
-// log ( 62 , 2.39*(10^24) ) ≈ 13.6 букв < 14 букв
-// три рандома по 31 бит = 93 бит, сдвигаем побитно на 12 бит назад. Получаем 81 бит.
-// проверяем, не превысилили ли максимум, (делаем всё заново если-что).
-// 2.39*(10^24) / (2^64) = 129587
-// 2.39*(10^24) % (2^64) = 3605454088244737408
-// 3605454088244737408 / (2^32) = 839460196
-// 3605454088244737408 % (2^32) = 130987392
-// максимальное число = [ 129587 , 839460196 , 130987392 ] ( строго меньше < )
-
-// Version 6 ?
+// Version 6
 
 // 3 бита соль
 // 3 бита инфа
 // итого 6 бит
-// таблица шифра личные 3 бита <-- 6 бит шифрованные
-// личные данные b000 => могут быть зашифрованы набором 2^3 = 8шт из 
+// таблица шифра: личные 3 бита + соль 3 бита => 6 бита шифрованные
+// личные данные b000 => могут быть зашифрованы упорядоченным набором 2^3 = 8шт из 
 // b000000 ... b111111 2^6 = 8*8 = 64 штук
 // разные расклады шифрования для данных
-// b000 = ℂ(8,8*8) = 64*63*62*61*60*59*58*57/2/3/4/5/6/7/8 = 4426165368
-// b001 = ℂ(8,8*7) = 56*55*54*53*52*51*50*49/2/3/4/5/6/7/8 = 1420494075
-// b010 = ℂ(8,8*6) = 48*47*46*45*44*43*42*41/2/3/4/5/6/7/8 = 377348994
-// b011 = ℂ(8,8*5) = 40*39*38*37*36*35*34*33/2/3/4/5/6/7/8 = 76904685
-// b100 = ℂ(8,8*4) = 32*31*30*29*28*27*26*25/2/3/4/5/6/7/8 = 10518300
-// b101 = ℂ(8,8*3) = 24*23*22*21*20*19*18*17/2/3/4/5/6/7/8 = 735471
-// b110 = ℂ(8,8*2) = 16*15*14*13*12*11*10*9/2/3/4/5/6/7/8 = 12870
-// b111 = ℂ(8,8) = 8*7*6*5*4*3*2*1/2/3/4/5/6/7/8 = 1
-// разные расклады шифрования = b000 * b001 * b010 * b011 * b100 * b101 * b110 * b111 =
-//  = (8*8)! / ((8!)^8) ≈ 1.817*(10^52) = (4 ^ 3)! / (((2 ^ 3)!)^(2 ^ 3))
-// минимум можно записать с помощью log(2,1.817*(10^52)) ≈ 173.6 бит < 22 байта
-// пароль будет 174 бита
+// b000 = 64*63*62*61*60*59*58*57 = 178462987637760
+// b001 = 56*55*54*53*52*51*50*49 = 57274321104000
+// b010 = 48*47*46*45*44*43*42*41 = 15214711438080
+// b011 = 40*39*38*37*36*35*34*33 = 3100796899200
+// b100 = 32*31*30*29*28*27*26*25 = 424097856000
+// b101 = 24*23*22*21*20*19*18*17 = 29654190720
+// b110 = 16*15*14*13*12*11*10*9  = 518918400
+// b111 = 8*7*6*5*4*3*2*1         = 40320
+// в общем = b000 * b001 * b010 * b011 * b100 * b101 * b110 * b111 = 64! =
+// 1268869321858841641034333893351614808028655161745451921988018943752147042304e14
+// ≈ 1.26886932186e89
+// минимум можно записать пароль с помощью
+// log(2,1.26886932186e89) ≈ 296 бит <= 37 байт
+// пароль будет 296 бит
 // ascii буквы 126-32+1 = 95 шт
-// длина буквенного пароля : log ( 95 , 1.817*(10^52) ) ≈ 26.42 букв < 27 букв
-// память = 5.879 GB
-
-// в 8 версии бит будет 976 бит 148.6 букв ? память ?
-// в 10 версии 5004 бит 761.6 букв ? память ?
-// в 12 24307 бит 3700 букв ? память ?
+// длина буквенного пароля : log ( 95 , 1.26886932186e89 ) ≈ 45.05 букв <= 46 букв
+//  log ( 62 , 1.26886932186e89 ) ≈ 49.71 буквы <= 50 букв
+// RAND_MAX размер 31 бит нужно десять рандомов 10*31=310
+// минус 14 бит 10*31-14=296
+// 29/31 29/31 29/31 29/31 30/31 30/31 30/31 30/31 30/31 30/31
+//(nil let ((n (64 !)))
+//   (6 for* i
+//      (cout print n)
+//      (cout print "% = " (n % (2 ^ 30)))
+//      ('n set (n  floor (2 ^ 30))))
+//   (4 for* i
+//      (cout print n)
+//      (cout print "% = "  (n % (2 ^ 29)))
+//      ('n set (n  floor (2 ^ 29)))))
+// максимальный рандом < [ 535066862 , 110135612 , 525642490 , 78362151 , 
+//   851424078 , 36645132 , 465456948 , 371982424 , 0 , 0 ]
 
 # include <locale.h>
 # include <stdio.h>
@@ -172,7 +151,7 @@ Data   :     00⊻00=00  10⊻10=00  01⊻01=00  ...
 # include <termios.h>
 # include <setjmp.h>
 
-//# define  SHIFR_DEBUG
+# define  SHIFR_DEBUG
 
 typedef uint8_t ( * arrp ) [ ] ;
 typedef uint8_t const ( * arrcp ) [ ] ;
@@ -287,6 +266,16 @@ t_number128  password_const  ;
 
 } ;
 
+typedef struct  s_number320 {
+  uint64_t a [ 5 ] ;
+} t_number320 ;
+
+struct  s_raspr6 {
+
+t_number320 password_const  ;
+
+} ;
+
 # define  isLive5namepub gTNb
 # define  isLive5namepri "live is private"
 # define  isLive5name isLive5namepri
@@ -313,8 +302,9 @@ char const (  * string_exception  ) [ ] ;
 
 struct  s_raspr4 raspr4 ;
 struct  s_raspr5 raspr5 ;
+struct  s_raspr6 raspr6 ;
 
-int use_version ; //  4 или 5
+int use_version ; //  4 или 5 или 6
 
 } ;
 
@@ -980,6 +970,9 @@ int main  ( int  argc , char * * argv  )  {
     puts  ( ns_shifr . localerus ? 
       u8"  --5\tиспользовать пяти битное шифрование, ключ = 81 бит ( тринадцать/четырнадцать букв ). Размер шифрованного файла на 67% больше исходного. (экспериментальная версия)" :
       "  --5\tusing five bit encryption, key = 81 bits ( thirteen/fourteen letters ). The encrypted file is 67% larger than the original. (experimental version)" ) ;
+    puts  ( ns_shifr . localerus ?
+      u8"--6\tиспользовать шести битное шифрование, ключ = 296 бит ( 46 - 50 букв )." :
+      "--6\tusing six bit encryption, key = 296 bits ( 46 - 50 letters ).") ;
     fputs  ( ns_shifr . localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
@@ -1133,6 +1126,10 @@ int main  ( int  argc , char * * argv  )  {
           raspr5_init ( ) ;
           ns_shifr . use_version = 5 ; }
         else
+        if ( strcmp ( argv  [ argj  ] , u8"--6" ) ==  0 ) { 
+          raspr5_init ( ) ;
+          ns_shifr . use_version = 6 ; }
+        else
         if (( strcmp ( argv[argj] , u8"--а95" ) ==  0 ) or
           ( strcmp ( argv[argj] , "--a95" ) ==  0 )) { 
           password_alphabet = 95 ; }
@@ -1146,12 +1143,12 @@ int main  ( int  argc , char * * argv  )  {
             "unrecognized option : \'%s\'\n" ) , argv [ argj ] ) ;
           ns_shifr  . string_exception  = ( ns_shifr . localerus ?
             (char const (*)[])& u8"неопознанная опция" :
-            (char const (*)[])& u8"unrecognized option" ) ;
+            (char const (*)[])& "unrecognized option" ) ;
           longjmp(ns_shifr  . jump,1); } } }
   if ( flaggenpasswd ) {
-    srand ( time  ( 0 ) ) ;
-    if ( ns_shifr . use_version == 4 ) {
-      int r1 , r0 ;
+    switch  ( ns_shifr . use_version  ) {
+    case  4 :
+      { int r1 , r0 ;
       // 22 из 31 , 23 из 31
       // максимальный рандом < 2494190 * ( 2 ^ 23 ) + 7700480 == 20922789888000
       // цикл для равномерного рандома
@@ -1167,9 +1164,9 @@ int main  ( int  argc , char * * argv  )  {
         ( ( uint64_t  ) r0 ) ;
 # undef shifrrandmax0
 # undef shifrrandmax1
-      }
-    else {
-      t_number96 ro0 ;
+      break ; }
+    case  5 :
+      { t_number96 ro0 ;
       t_number96 ro ;      
 /*
  сверху 1 бит всегда ноль,
@@ -1226,17 +1223,81 @@ randtry :
 randok :
   ns_shifr . raspr5  . password_const = (  t_number128 ) { {
     [ 1 ] = ro  . a [ 2 ] , [ 0 ] = ( ( ( uint64_t  ) ( ro  . a [ 1 ] ) ) <<  32  )
-    bitor ( ( uint64_t  ) ( ro  . a [ 0 ] ) ) } } ;      }
+    bitor ( ( uint64_t  ) ( ro  . a [ 0 ] ) ) } } ;     
+      break ; }
+    case 6 :
+      { int const rmax  [ 10 ] = { 0 , 0 , 371982424 , 465456948 , 36645132 ,
+          851424078 , 78362151 , 525642490 , 110135612 , 535066862 } ;
+        int r [ 10  ] ;
+        int * ri  ;
+rand6try :
+        ri  = & ( r [ 10  ] ) ;
+        do {
+          -- ri ;
+          ( * ri ) = rand ( ) >> 2 ;
+        } while ( ri not_eq ( & ( r [ 6 ] ) ) ) ;
+        do {
+          -- ri ;
+          ( * ri ) = rand ( ) >> 1 ;
+        } while ( ri not_eq ( & ( r [ 0 ] ) ) ) ;
+        ri =  & ( r [ 10  ] ) ;
+        { int const * rmaxi  = & ( rmax [ 10  ] ) ;
+          do {
+            --  ri  ;
+            --  rmaxi ;
+            if ( ( * ri ) < ( * rmaxi ) ) goto rand6ok ;
+            if ( ( * ri ) > ( * rmaxi ) ) {
+printf  ( u8"большое %x " , * ri  ) ;
+              goto rand6try ; }
+          } while ( ri not_eq ( & ( r [ 2 ] ) ) ) ; }
+        goto  rand6try ;
+rand6ok :
+# ifdef SHIFR_DEBUG
+      fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
+        "inner password = [ " , stdout ) ;
+      for ( int const * i = & ( r [ 10 ] ) ; i not_eq & ( r [ 0 ] ) ;  ) {
+        --  i ;
+        printf ( "%x , " , * i ) ;  }
+      puts  ( "]" ) ;
+# endif
+      //ns_shifr . raspr6  . password_const = r ;
+      break ; }
+    default :
+      fprintf ( stderr , ( ns_shifr . localerus ?
+        u8"неопознанная версия : \'%d\'\n" :
+        "unrecognized version : \'%d\'\n" ) , ns_shifr . use_version ) ;
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        ( char const (  * ) [ ] ) & u8"неопознанная версия" :
+        ( char const (  * ) [ ] ) & "unrecognized version" ) ;
+      longjmp ( ns_shifr  . jump  , 1 ) ; }
   flagpasswd  = true  ;
 # ifdef SHIFR_DEBUG    
-    if ( ns_shifr . use_version == 4 )
-      printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = %lx\n" :
-        "internal password = %lx\n") , ns_shifr . raspr4  . password_const  ) ;
-    else
-      printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = [ %lx , %lx ]\n"  :
-        "inner password = [ %lx , %lx ]\n"  ) ,
-        ns_shifr . raspr5  . password_const . a [ 1 ] ,
-        ns_shifr . raspr5  . password_const . a [ 0 ] ) ;
+  switch ( ns_shifr . use_version ) {
+  case  4 :
+    printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = %lx\n" :
+      "internal password = %lx\n") , ns_shifr . raspr4  . password_const  ) ;
+    break ;
+  case  5 :
+    printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = [ %lx , %lx ]\n"  :
+      "inner password = [ %lx , %lx ]\n"  ) ,
+      ns_shifr . raspr5  . password_const . a [ 1 ] ,
+      ns_shifr . raspr5  . password_const . a [ 0 ] ) ;
+    break ;
+  case  6 :
+/*    fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
+      "inner password = [ " ) ;
+    for ( int const * i = & ( ns_shifr . raspr6  . password_const . a [ 0 ] ) ;
+      i not_eq & ( ns_shifr . raspr6  . password_const . a [ 10 ] ) ;
+      ++  i ) print ( "%x , " , * i ) ;*/
+    break ;
+  default :
+    fprintf ( stderr , ( ns_shifr . localerus ?
+      u8"неопознанная версия : \'%d\'\n" :
+      "unrecognized version : \'%d\'\n" ) , ns_shifr . use_version ) ;
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+      ( char const (  * ) [ ] ) & u8"неопознанная версия" :
+      ( char const (  * ) [ ] ) & "unrecognized version" ) ;
+    longjmp ( ns_shifr  . jump  , 1 ) ; }
 # endif
     char  password_letters [ 20 ] ;
     char  password_letters2 [ 20 ] ;
