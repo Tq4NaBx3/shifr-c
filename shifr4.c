@@ -355,6 +355,44 @@ uint8_t  number128_div8mod  ( t_number128 * restrict const number ,
   return  ost ; }
 
 // number /= div , number := floor [ деление ] , return := остаток
+uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
+  uint8_t const div ) {
+  uint64_t res [ 6 ] ;
+  ldiv_t  ld  ;
+
+  ld  = ldiv  ( number  ->  a [ 4 ] , div ) ;
+  res [ 5 ] =  ld . quot ;
+  
+  ld  = ldiv  ( ( ld . rem <<  56 ) bitor
+    ( number  ->  a [ 3 ] >>  8 ) , div ) ;
+  res [ 4 ] = ld . quot ;
+
+  { int i = 3 ;
+    do {
+      ld  = ldiv  ( ( ld . rem <<  56 ) bitor
+        ( ( ( number  ->  a [ i ] ) << ( ( 4 + i ) << 3 ) ) >> 8 ) bitor
+        ( number  ->  a [ i - 1 ] >> ( ( 5 - i ) << 3 ) ) , div ) ;
+      res [ i ] = ld . quot ;
+      -- i ;
+    } while ( i >= 1 ) ; }
+
+  ld  = ldiv  ( ( ld . rem <<  32 ) bitor
+    ( ( ( number  ->  a [ 0 ] ) << 32 ) >> 32 ) , div ) ;
+
+  number  ->  a [ 0 ] = ld . quot ;
+
+  for ( int i = 1 ; i <= 4 ; ++ i ) {
+    { uint64_t  old = number  ->  a [ i - 1 ] ;
+      number  ->  a [ i - 1 ] +=  ( res [ i ] << ( ( 5 - i ) << 3 ) ) ;
+      if ( number  ->  a [ i - 1 ] < old )  number  ->  a [ i ] = 1 ;
+      else  number  ->  a [ i ] = 0 ; }
+    number  ->  a [ i ] +=  ( res [ i ] >> ( ( 3 + i ) << 3 ) ) ; }
+
+  number  ->  a [ 4 ] +=  res [ 5 ] ;
+
+  return  ld  . rem ; }
+
+// number /= div , number := floor [ деление ] , return := остаток
 uint16_t  number128_div16mod  ( t_number128 * restrict const number ,
   uint16_t const div ) {
   uint16_t ost = number  ->  a  [ 1 ] % ( uint64_t  ) div ;
@@ -378,10 +416,30 @@ static  inline  void  number128dec  ( t_number128 * const restrict number ) {
     return  ; }
   -- (  number->a [ 0 ] )  ;
   -- (  number->a [ 1 ] )  ; }
+
+// --
+static  inline  void  number320dec  ( t_number320 * const restrict number ) {
+  uint64_t  * restrict i = & ( ( number ->  a ) [ 0 ] ) ; 
+  do {
+    if ( ( * i ) == 0 ) -- ( * i ) ;
+    else  {
+      -- ( * i ) ;
+      break ; }
+    ++  i ;
+  } while ( i not_eq & ( ( number ->  a ) [ 5 ] ) ) ; }
   
 static  inline  bool  number128_not0  (
   t_number128 const * const restrict np ) {
   return  ( ( np->a [ 0 ] ) or  ( np->a [ 1 ] ) ) ; }
+
+static  inline  bool  number320_not0  (
+  t_number320 const * const restrict np ) {
+  uint64_t const * i = & ( np -> a [ 5 ] ) ;
+  do {
+    --  i ;
+    if ( * i )  return  true  ;
+  } while ( i not_eq & ( np -> a [ 0 ] ) ) ;
+  return  false ; }
   
 static  void  password_to_string5_uni (
   t_number128 const * const restrict password0 , strp const string ,
@@ -396,6 +454,29 @@ static  void  password_to_string5_uni (
         letterscount ) ] ;
       ++  stringi ;
     } while ( number128_not0 ( & password ) ) ; }
+  ( * stringi ) = '\00' ;  }
+
+static  void  password_to_string6_uni (
+  t_number320 const * const restrict password0 , strp const string ,
+  char (  * letters ) [ ] , uint8_t  letterscount  ) {
+  char * stringi = & ( ( * string )  [ 0 ] ) ;
+  if ( number320_not0 ( password0 ) ) {
+    t_number320 password = * password0  ;
+    do {
+/*
+fputs ( u8"пароль = [ "   , stdout ) ;
+for ( uint64_t const * i = & ( password . a [ 5 ] ) ;
+  i not_eq & ( password . a [ 0 ] ) ;  ) {
+  --  i ;
+  printf ( "%lx , " , * i ) ;  }
+puts  ( "]" ) ;
+*/
+      // здесь предыдущие размеры заняли место паролей
+      number320dec  ( & password  ) ;
+      ( * stringi ) = ( * letters ) [ number320_div8mod  ( & password ,
+        letterscount ) ] ;
+      ++  stringi ;
+    } while ( number320_not0 ( & password ) ) ; }
   ( * stringi ) = '\00' ;  }
 
 static  void  string_to_password_uni ( strcp const string ,
@@ -1070,11 +1151,13 @@ int main  ( int  argc , char * * argv  )  {
         else
           password_to_string5_uni ( & ns_shifr . raspr5  . password_const ,
             & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
+# ifdef SHIFR_DEBUG
         if  ( strcmp ( password_letters , argv  [ argj  ] ) )  
           fprintf  ( stderr , ns_shifr . localerus ?
             u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
             "Warning! Password \'%s\' is very large. Same as \'%s\'\n"
             , argv  [ argj  ] , & ( password_letters  [ 0 ] ) ) ;         
+# endif
         flagpasswd  = true  ;
         flagreadpasswd = false  ; }
       else
@@ -1229,27 +1312,24 @@ randok :
       { int const rmax  [ 10 ] = { 0 , 0 , 371982424 , 465456948 , 36645132 ,
           851424078 , 78362151 , 525642490 , 110135612 , 535066862 } ;
         int r [ 10  ] ;
-        int * ri  ;
 rand6try :
-        ri  = & ( r [ 10  ] ) ;
-        do {
-          -- ri ;
-          ( * ri ) = rand ( ) >> 2 ;
-        } while ( ri not_eq ( & ( r [ 6 ] ) ) ) ;
-        do {
-          -- ri ;
-          ( * ri ) = rand ( ) >> 1 ;
-        } while ( ri not_eq ( & ( r [ 0 ] ) ) ) ;
-        ri =  & ( r [ 10  ] ) ;
-        { int const * rmaxi  = & ( rmax [ 10  ] ) ;
+        { int * ri  = & ( r [ 10  ] ) ;
           do {
-            --  ri  ;
-            --  rmaxi ;
-            if ( ( * ri ) < ( * rmaxi ) ) goto rand6ok ;
-            if ( ( * ri ) > ( * rmaxi ) ) {
-printf  ( u8"большое %x " , * ri  ) ;
-              goto rand6try ; }
-          } while ( ri not_eq ( & ( r [ 2 ] ) ) ) ; }
+            -- ri ;
+            ( * ri ) = rand ( ) >> 2 ;
+          } while ( ri not_eq ( & ( r [ 6 ] ) ) ) ;
+          do {
+            -- ri ;
+            ( * ri ) = rand ( ) >> 1 ;
+          } while ( ri not_eq ( & ( r [ 0 ] ) ) ) ;
+          ri =  & ( r [ 10  ] ) ;
+          { int const * rmaxi  = & ( rmax [ 10  ] ) ;
+            do {
+              --  ri  ;
+              --  rmaxi ;
+              if ( ( * ri ) < ( * rmaxi ) ) goto rand6ok ;
+              if ( ( * ri ) > ( * rmaxi ) ) goto rand6try ; 
+            } while ( ri not_eq ( & ( r [ 2 ] ) ) ) ; } }
         goto  rand6try ;
 rand6ok :
 # ifdef SHIFR_DEBUG
@@ -1260,7 +1340,30 @@ rand6ok :
         printf ( "%x , " , * i ) ;  }
       puts  ( "]" ) ;
 # endif
-      //ns_shifr . raspr6  . password_const = r ;
+      // [ 0  .. 29 , 0 .. 29 , 0 .. 3  ]
+      // [ 4  .. 29 , 0 .. 29 , 0 .. 7  ]
+      // [ 8  .. 29 , 0 .. 29 , 0 .. 11 ]
+      // [ 12 .. 28 , 0 .. 28 , 0 .. 17 ]
+      // [ 18 .. 28 , 0 .. 28 ]
+      ns_shifr . raspr6  . password_const . a [ 0 ] =
+        ((uint64_t)( r [ 0 ] bitand  ( ( 1U <<  30 ) - 1 ) )) bitor 
+        ( ((uint64_t)( r [ 1 ] bitand  ( ( 1U <<  30 ) - 1 ) )) << 30 ) bitor
+        ( ((uint64_t)( r [ 2 ] bitand ( ( 1U << 4 ) - 1 ) )) << 60  ) ;
+      ns_shifr . raspr6  . password_const . a [ 1 ] =
+        ((uint64_t)( ( r [ 2 ] >> 4 ) bitand  ( ( 1U <<  26 ) - 1 ) )) bitor 
+        ( ((uint64_t)( r [ 3 ] bitand  ( ( 1U <<  30 ) - 1 ) )) << 26 ) bitor
+        ( ((uint64_t)( r [ 4 ] bitand ( ( 1U << 8 ) - 1 ) )) << 56  ) ;
+      ns_shifr . raspr6  . password_const . a [ 2 ] =
+        ((uint64_t)( ( r [ 4 ] >> 8 ) bitand  ( ( 1U <<  22 ) - 1 ) )) bitor 
+        ( ((uint64_t)( r [ 5 ] bitand  ( ( 1U <<  30 ) - 1 ) )) << 22 ) bitor
+        ( ((uint64_t)( r [ 6 ] bitand ( ( 1U << 12 ) - 1 ) )) << 52  ) ;
+      ns_shifr . raspr6  . password_const . a [ 3 ] =
+        ((uint64_t)( ( r [ 6 ] >> 12 ) bitand  ( ( 1U <<  17 ) - 1 ) )) bitor 
+        ( ((uint64_t)( r [ 7 ] bitand  ( ( 1U <<  29 ) - 1 ) )) << 17 ) bitor
+        ( ((uint64_t)( r [ 8 ] bitand ( ( 1U << 18 ) - 1 ) )) << 46  ) ;
+      ns_shifr . raspr6  . password_const . a [ 4 ] =
+        ((uint64_t)( ( r [ 8 ] >> 18 ) bitand  ( ( 1U <<  11 ) - 1 ) )) bitor 
+        ( ((uint64_t)( r [ 9 ] bitand  ( ( 1U <<  29 ) - 1 ) )) << 11 ) ;
       break ; }
     default :
       fprintf ( stderr , ( ns_shifr . localerus ?
@@ -1284,11 +1387,15 @@ rand6ok :
       ns_shifr . raspr5  . password_const . a [ 0 ] ) ;
     break ;
   case  6 :
-/*    fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
-      "inner password = [ " ) ;
-    for ( int const * i = & ( ns_shifr . raspr6  . password_const . a [ 0 ] ) ;
-      i not_eq & ( ns_shifr . raspr6  . password_const . a [ 10 ] ) ;
-      ++  i ) print ( "%x , " , * i ) ;*/
+# ifdef SHIFR_DEBUG
+      fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
+        "inner password = [ " , stdout ) ;
+      for ( uint64_t const * i = & (  ns_shifr . raspr6  . password_const . a [ 5 ] ) ;
+        i not_eq & ( ns_shifr . raspr6  . password_const . a [ 0 ] ) ;  ) {
+        --  i ;
+        printf ( "%lx , " , * i ) ;  }
+      puts  ( "]" ) ;
+# endif
     break ;
   default :
     fprintf ( stderr , ( ns_shifr . localerus ?
@@ -1301,27 +1408,48 @@ rand6ok :
 # endif
     char  password_letters [ 20 ] ;
     char  password_letters2 [ 20 ] ;
-    
-    if ( ns_shifr . use_version == 4 ) {
-      password_to_string_uni ( ns_shifr . raspr4  . password_const ,
-        & password_letters , & ns_shifr . letters , letters_count ) ;
-      password_to_string_uni ( ns_shifr . raspr4  . password_const ,
-        & password_letters2 , & ns_shifr . letters2 , letters_count2 ) ; }
-    else {
-      password_to_string5_uni ( & ns_shifr . raspr5  . password_const ,
-        & password_letters , & ns_shifr . letters , letters_count ) ;
-      password_to_string5_uni ( & ns_shifr . raspr5  . password_const ,
-        & password_letters2 , & ns_shifr . letters2 , letters_count2 ) ; }
-# ifdef SHIFR_DEBUG      
-  printf  ( ( ns_shifr . localerus ? u8"--a95\tбуквами между кавычек = \'%s\'\n" : 
-    "--a95\tby letters between quotes = \'%s\'\n"  ) ,
-    & ( password_letters  [ 0 ] ) ) ;
-  printf  ( ( ns_shifr . localerus ?
-    u8"--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
-    "--a62\tby letters between quotes = \'%s\' (by default)\n"  ) ,
-    & ( password_letters2  [ 0 ] ) ) ;
-    if ( ns_shifr . use_version == 4 ) {
-      uint64_t password2 ;
+    char  password_letters61 [ 100 ] ;
+    char  password_letters62 [ 100 ] ;
+    switch  ( ns_shifr . use_version )  {
+    case  4 :
+      { password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+          & password_letters , & ns_shifr . letters , letters_count ) ;
+        password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+          & password_letters2 , & ns_shifr . letters2 , letters_count2 ) ; }
+      break ;
+    case  5 :
+      { password_to_string5_uni ( & ns_shifr . raspr5  . password_const ,
+          & password_letters , & ns_shifr . letters , letters_count ) ;
+        password_to_string5_uni ( & ns_shifr . raspr5  . password_const ,
+          & password_letters2 , & ns_shifr . letters2 , letters_count2 ) ; }
+      break ;
+    case  6 :
+      { password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
+          & password_letters61 , & ns_shifr . letters , letters_count ) ;
+        password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
+          & password_letters62 , & ns_shifr . letters2 , letters_count2 ) ; }
+      break ;
+    default :
+      fprintf ( stderr , ( ns_shifr . localerus ?
+        u8"неопознанная версия : \'%d\'\n" :
+        "unrecognized version : \'%d\'\n" ) , ns_shifr . use_version ) ;
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        ( char const (  * ) [ ] ) & u8"неопознанная версия" :
+        ( char const (  * ) [ ] ) & "unrecognized version" ) ;
+      longjmp ( ns_shifr  . jump  , 1 ) ; }
+# ifdef SHIFR_DEBUG        
+    printf  ( ( ns_shifr . localerus ? u8"--a95\tбуквами между кавычек = \'%s\'\n" : 
+      "--a95\tby letters between quotes = \'%s\'\n"  ) ,
+      & ( ( ( ns_shifr . use_version == 6 ) ? password_letters61 :
+        password_letters ) [ 0 ] ) ) ;
+    printf  ( ( ns_shifr . localerus ?
+      u8"--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
+      "--a62\tby letters between quotes = \'%s\' (by default)\n"  ) ,
+      & ( ( ( ns_shifr . use_version == 6 ) ? password_letters62 :
+        password_letters2 )  [ 0 ] ) ) ;
+    switch  ( ns_shifr . use_version ) {
+    case  4 :
+      { uint64_t password2 ;
       string_to_password_uni ( & password_letters , & password2  ,
         & ns_shifr . letters , letters_count ) ; 
       printf  ( ( ns_shifr . localerus ?
@@ -1332,8 +1460,9 @@ rand6ok :
       printf  ( ( ns_shifr . localerus ?
         u8"из строки62 во внутренний пароль = %lx\n" :
         "from string62 to internal password = %lx\n" ) , password2 ) ; }
-    else  {
-      t_number128 password5 ;
+      break ;
+    case  5 :
+      { t_number128 password5 ;
         string_to_password5_uni ( & password_letters , & password5 , & ns_shifr . letters , letters_count ) ; 
       printf  ( ( ns_shifr . localerus ?
           u8"из строки95 во внутренний пароль = [ %lx , %lx ]\n"  :
@@ -1346,15 +1475,45 @@ rand6ok :
           "from string62 to internal password = [ %lx , %lx ]\n" ) ,
         password5 . a [ 1 ] , 
         password5 . a [ 0 ] ) ;   }
+      break ;
+    case  6 :
+      { t_number320 password6 ;
+        string_to_password6_uni ( & password_letters61 , & password6 ,
+          & ns_shifr . letters , letters_count ) ; 
+      printf  ( ( ns_shifr . localerus ?
+          u8"из строки95 во внутренний пароль = [ %lx , %lx , %lx , %lx , %lx ]\n"  :
+          "from string95 to internal password = [ %lx , %lx , %lx , %lx , %lx ]\n" ) ,
+        password6 . a [ 4 ] , password6 . a [ 3 ] , password6 . a [ 2 ] , 
+        password6 . a [ 1 ] , password6 . a [ 0 ] ) ;
+        string_to_password6_uni ( & password_letters62 , & password6 ,
+          & ns_shifr . letters2 , letters_count2 ) ; 
+      printf  ( ( ns_shifr . localerus ?
+          u8"из строки62 во внутренний пароль = [ %lx , %lx , %lx , %lx , %lx ]\n"  :
+          "from string62 to internal password = [ %lx , %lx , %lx , %lx , %lx ]\n" ) ,
+        password6 . a [ 4 ] , password6 . a [ 3 ] , password6 . a [ 2 ] , 
+        password6 . a [ 1 ] , password6 . a [ 0 ] ) ;   }
+      break ;
+    default :
+      fprintf ( stderr  , ns_shifr . localerus ?
+        u8"неизвестная версия %d\n" : "unknown version %d\n"  ,
+        ns_shifr . use_version ) ;
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        (char const (*)[])& u8"неизвестная версия" :
+        (char const (*)[])& "unknown version" ) ;
+      longjmp(ns_shifr  . jump,1); }
 # else
-  if ( password_alphabet == 95 ) puts  ( & ( password_letters  [ 0 ] ) ) ;
-  else puts  ( & ( password_letters2  [ 0 ] ) ) ;
+  if ( password_alphabet == 95 )
+    puts  ( & ( ( ( ns_shifr . use_version == 6 ) ?
+      password_letters61 : password_letters ) [ 0 ] ) ) ;
+  else
+    puts  ( & ( ( ( ns_shifr . use_version == 6 ) ? password_letters62 :
+      password_letters2 ) [ 0 ] ) ) ;
 # endif    
     if ( not flagoutputtofile ) return  0 ;  }
   if  ( flagenc and flagdec ) {
     ns_shifr  . string_exception  = ( ns_shifr . localerus ?
       (char const (*)[])& u8"так зашифровывать или расшифровывать ?" :
-      (char const (*)[])& u8"so encrypt or decrypt ?" ) ;
+      (char const (*)[])& "so encrypt or decrypt ?" ) ;
     longjmp(ns_shifr  . jump,1); }
   //  по-умолчанию шифруем
   if ( not flagdec  ) flagenc = true  ;
@@ -1407,7 +1566,6 @@ rand6ok :
         else
           password_to_string5_uni ( & ns_shifr . raspr5  . password_const ,
             & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
-           
       if  ( strcmp ( &(password_letters[0]) , &((*res)[0]) ) )  
         fprintf  ( stderr , ( ns_shifr . localerus ?
           u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
