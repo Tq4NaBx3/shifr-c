@@ -269,7 +269,7 @@ int use_version ; //  4 или 6
 } ;
 
 static  struct  s_ns_shifr  ns_shifr = {
-  . use_version  = 4 ,
+  . use_version  = 6 ,
 } ;
 
 static  void  password_to_string_uni ( uint64_t password , strp const string ,
@@ -384,42 +384,39 @@ found :
   ( * password ) = pass ; }
   
 static  inline  void number320_set0  ( t_number320 * const restrict np ) {
-  uint64_t  * i = & ( ( np -> a ) [ 5 ] ) ;
-  do {
-    --  i ;
-    ( * i ) = 0 ; 
-  } while ( i not_eq & ( ( np -> a ) [ 0 ] ) ) ; }
+  memset  ( & ((np -> a)[0]) , 0 , 5 * sizeof(uint64_t) ) ; }
 
 static  inline  void number320_setUInt  ( t_number320 * const restrict np ,
   unsigned int const x ) {
-  uint64_t  * i = & ( ( np -> a ) [ 5 ] ) ;
-  do {
-    --  i ;
-    ( * i ) = 0 ; 
-  } while ( i not_eq & ( ( np -> a ) [ 1 ] ) ) ;
+  memset  ( & ((np -> a)[1]) , 0 , 4 * sizeof(uint64_t) ) ;
   ( np -> a ) [ 0 ] = x ; }
 
-static  inline  void number320_add  (
+void number320_add  (
   t_number320 * const restrict np , t_number320 const * const restrict xp ) {
   if ( np == xp ) {
     t_number320 tmp = * xp ;
     number320_add ( np , & tmp ) ;
     return ; }
-  uint64_t old  ;
   uint64_t pere = 0 ;
   for ( int i = 0 ; i < 5 ; ++ i ) {
-    old = np  ->  a [ i ] ;
-    ( np  ->  a [ i ] ) +=  ( xp  ->  a [ i ] ) + pere ; 
-    if (  np  ->  a [ i ] < old ) pere = 1; 
-    else  pere = 0 ; } }
+    uint64_t pere2  = 0 ;
+    { uint64_t old = np  ->  a [ i ] ;
+      ( np  ->  a [ i ] ) +=  ( xp  ->  a [ i ] ) ; 
+      if (  np  ->  a [ i ] < old ) pere2 = 1; 
+      else  pere2 = 0 ; }
+    uint64_t  old = np  ->  a [ i ] ;
+    ( np  ->  a [ i ] ) +=  pere  ;
+    if ( np  ->  a [ i ] < old ) pere = 1 ;
+    else  pere  = pere2 ; } }
   
 void  number320_mul8  ( t_number320 * const restrict np , uint8_t const m ) {
   uint64_t  r [ 6 ] ;
   r  [ 0 ] = ( ( ( ( np  ->  a [ 0 ] ) << 8 ) >> 8 ) * ( ( uint64_t  ) m ) ) ;
   for ( int i = 1 ; i <= 4 ; ++ i )
-    r  [ i ] = ( ( ( ( np  ->  a [ i - 1 ]  ) >> ( ( 8 - i ) << 3 ) ) bitor
-      ( ( ( np  ->  a [ i ]  ) <<  ( ( 1 + i ) << 3 ) ) >> 8 ) ) * ( ( uint64_t  ) m ) ) ;
-  r  [ 5 ] = ( ( ( np  ->  a [ 4 ]  ) >> 24 ) * ( ( uint64_t  ) m ) ) ;
+    r  [ i ] = ( ( ( np  ->  a [ i - 1 ]  ) >> ( ( 8 - i ) << 3 ) ) bitor
+      ( ( ( np  ->  a [ i ]  ) <<  ( ( 1 + i ) << 3 ) ) >> 8 ) ) *
+      ( ( uint64_t  ) m ) ;
+  r  [ 5 ] = ( ( np  ->  a [ 4 ]  ) >> 24 ) * ( ( uint64_t  ) m ) ;
   np  ->  a [ 0 ] = r [ 0 ] ;
   uint64_t  tmp = np  ->  a [ 0 ] ;
   np  ->  a [ 0 ] += ( r [ 1 ] << 56 ) ;
@@ -611,12 +608,12 @@ void  data_xor6  ( uint8_t * const restrict  old_last_sole ,
     ++  ids ;
   } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
-static  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
+static  inline  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
   unsigned  char c = buf bitand 0xf ;
-  if ( c >= 0 and c <= 9 ) (*buf2)[0] = '0' + c ;
+  if ( c <= 9 ) (*buf2)[0] = '0' + c ;
   else  (*buf2)[0] = 'a' + (c - 10) ;
   c = (buf >> 4) bitand 0xf ;
-  if ( c >= 0 and c <= 9 ) (*buf2)[1] = '0' + c ;
+  if ( c <= 9 ) (*buf2)[1] = '0' + c ;
   else  (*buf2)[1] = 'a' + (c - 10) ; }
 
 // ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
@@ -994,7 +991,7 @@ if ( flagreadpasswdfromfile ) {
     else {
       ns  = 100 ;
       nr = fread  ( & password_letters6 , 1 , ns , f ) ; 
-//fprintf(stderr,u8"пароль = '%s' , nr = %lx \n",password_letters6,nr);
+//fprintf(stderr,u8"пароль = '%s' , nr = %lu \n",password_letters6,nr);
 }
     if ( nr >= ns )  {
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
@@ -1018,18 +1015,20 @@ if ( flagreadpasswdfromfile ) {
   psw_uni [ nr ] = '\00' ;
 
       if ( password_alphabet == 95 )  {
-        for ( int i=0;i<nr;++i)
+        for ( size_t i=0;i<nr;++i)
           if (psw_uni[ i ] < ' ' or psw_uni[ i ] > '~') {
             psw_uni[ i ] = '\00' ;
+            nr = i ;
             break ; } }
         else {
-          for ( int i=0;i<nr;++i)
+          for ( size_t i=0;i<nr;++i)
             if ((psw_uni[ i ] < '0' or psw_uni[ i ] > '9') and
                 (psw_uni[ i ] < 'a' or psw_uni[ i ] > 'z') and
                 (psw_uni[ i ] < 'A' or psw_uni[ i ] > 'Z')) {
               psw_uni[ i ] = '\00' ;
+              nr = i ;
               break ; } }
-    
+//fprintf(stderr,u8"2.пароль = '%s' , nr = %lu \n",password_letters6,nr);    
     switch ( ns_shifr . use_version ) {
     case 4 :
       if ( password_alphabet == 95 )
@@ -1427,8 +1426,6 @@ rand6ok :
   //  по-умолчанию шифруем
   if ( not flagdec  ) flagenc = true  ;
   if ( not flagpasswd )    {
-
-// ! искать в ~/.shifr4/default ?
 
     char p [ 26 ] ;
     char ( * res ) [ 26 ] ;
