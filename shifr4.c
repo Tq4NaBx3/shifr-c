@@ -151,7 +151,7 @@ Data   :     00⊻00=00  10⊻10=00  01⊻01=00  ...
 # include <termios.h>
 # include <setjmp.h>
 
-# define  SHIFR_DEBUG
+//# define  SHIFR_DEBUG
 
 typedef uint8_t ( * arrp ) [ ] ;
 typedef uint8_t const ( * arrcp ) [ ] ;
@@ -177,14 +177,14 @@ static  void  initarr ( arrp  const p , uint8_t const codefree ,
   
 # ifdef SHIFR_DEBUG
 static  void  printarr  ( strcp const  name , arrcp const p ,
-  size_t const arrsize ) {
-  printf  ( u8"%s = [ " , * name  ) ;
+  size_t const arrsize , FILE * f ) {
+  fprintf  ( f,u8"%s = [ " , * name  ) ;
   uint8_t const * i = & ( ( * p ) [ 0 ] ) ;
   do {
-    printf  ( "%x , " , ( int ) ( * i ) ) ; 
+    fprintf  ( f,"%x , " , ( int ) ( * i ) ) ; 
     ++  i ;
   } while ( i not_eq  & ( ( * p ) [ arrsize ] ) ) ;
-  puts ( u8"]" ) ; }
+  fputs ( u8"]\n" ,f) ; }
 # endif
 
 static  void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
@@ -206,6 +206,19 @@ static  void  decrypt_sole ( arrp const datap , arrcp const tablep ,
     { uint8_t const data_sole = ( * tablep ) [ * id ] ;
       ( * ide ) = ( data_sole >>  2 ) xor ( * old_last_sole ) ;
       ( * old_last_sole ) = data_sole bitand  0x3 ; }
+    ++  id  ;
+    ++  ide ;
+  } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
+
+static  void  decrypt_sole6 ( arrp const datap , arrcp const tablep ,
+  arrp const decrp , size_t const data_size ,
+  uint8_t * const restrict old_last_sole ) {
+  uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
+  uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
+  do {
+    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
+      ( * ide ) = ( data_sole >>  3 ) xor ( * old_last_sole ) ;
+      ( * old_last_sole ) = data_sole bitand  0x7 ; }
     ++  id  ;
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
@@ -1359,7 +1372,7 @@ int main  ( int  argc , char * * argv  )  {
             & ns_shifr . raspr4  . password_const , & ns_shifr . letters2 ,
             letters_count2 ) ;
 # ifdef SHIFR_DEBUG
-      printf  ( (ns_shifr . localerus ? u8"из строки во внутренний пароль = %lx\n" :
+      fprintf  ( stderr,(ns_shifr . localerus ? u8"из строки во внутренний пароль = %lx\n" :
         "from string to internal password = %lx\n" ) ,
         ns_shifr . raspr4  . password_const ) ;
 # endif                           
@@ -1382,7 +1395,7 @@ int main  ( int  argc , char * * argv  )  {
             string_to_password5_uni ( (char(*)[])(argv[argj]) , & password5 ,
               & ns_shifr . letters2 , letters_count2 ) ; 
 
-          printf  ( ( ns_shifr . localerus ?
+          fprintf  ( stderr,( ns_shifr . localerus ?
             u8"из строки во внутренний пароль = [ %lx , %lx ]\n"  :
             "from string to internal password = [ %lx , %lx ]\n"  ) ,
           password5 . a [ 1 ] , password5 . a [ 0 ] ) ; }
@@ -1406,7 +1419,7 @@ int main  ( int  argc , char * * argv  )  {
             string_to_password6_uni ( (char(*)[])(argv[argj]) , & password6 ,
               & ns_shifr . letters2 , letters_count2 ) ; 
 
-          printf  ( ( ns_shifr . localerus ?
+          fprintf  ( stderr,( ns_shifr . localerus ?
             u8"из строки во внутренний пароль = [ %lx , %lx , %lx , %lx , %lx ]\n"  :
             "from string to internal password = [ %lx , %lx , %lx , %lx , %lx ]\n"  ) ,
           password6 . a [ 4 ] , password6 . a [ 3 ] , password6 . a [ 2 ] ,
@@ -1626,11 +1639,11 @@ rand6try :
 rand6ok :
 # ifdef SHIFR_DEBUG
       fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
-        "inner password = [ " , stdout ) ;
+        "inner password = [ " , stderr ) ;
       for ( int const * i = & ( r [ 10 ] ) ; i not_eq & ( r [ 0 ] ) ;  ) {
         --  i ;
-        printf ( "%x , " , * i ) ;  }
-      puts  ( "]" ) ;
+        fprintf (stderr, "%x , " , * i ) ;  }
+      fputs  ( "]\n",stderr ) ;
 # endif
       // [ 0  .. 29 , 0 .. 29 , 0 .. 3  ]
       // [ 4  .. 29 , 0 .. 29 , 0 .. 7  ]
@@ -1669,11 +1682,11 @@ rand6ok :
 # ifdef SHIFR_DEBUG    
   switch ( ns_shifr . use_version ) {
   case  4 :
-    printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = %lx\n" :
+    fprintf  ( stderr,( ns_shifr . localerus ? u8"внутренний пароль = %lx\n" :
       "internal password = %lx\n") , ns_shifr . raspr4  . password_const  ) ;
     break ;
   case  5 :
-    printf  ( ( ns_shifr . localerus ? u8"внутренний пароль = [ %lx , %lx ]\n"  :
+    fprintf  ( stderr,( ns_shifr . localerus ? u8"внутренний пароль = [ %lx , %lx ]\n"  :
       "inner password = [ %lx , %lx ]\n"  ) ,
       ns_shifr . raspr5  . password_const . a [ 1 ] ,
       ns_shifr . raspr5  . password_const . a [ 0 ] ) ;
@@ -1681,12 +1694,12 @@ rand6ok :
   case  6 :
 # ifdef SHIFR_DEBUG
       fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
-        "inner password = [ " , stdout ) ;
+        "inner password = [ " , stderr ) ;
       for ( uint64_t const * i = & (  ns_shifr . raspr6  . password_const . a [ 5 ] ) ;
         i not_eq & ( ns_shifr . raspr6  . password_const . a [ 0 ] ) ;  ) {
         --  i ;
-        printf ( "%lx , " , * i ) ;  }
-      puts  ( "]" ) ;
+        fprintf (stderr, "%lx , " , * i ) ;  }
+      fputs  ( "]\n" ,stderr) ;
 # endif
     break ;
   default :
@@ -1980,6 +1993,15 @@ rand6ok :
     // 18 .. 1b - варианты секретных кодов для буквы 6
     // 1c .. 1f - варианты секретных кодов для буквы 7
     uint8_t deshi [ shifr_deshi_size5 ] = { } ;
+    // варианты секретных кодов для буквы
+    // 0 .. 7 -  0
+    // 8 .. f -  1
+    // 10 .. 17 -  2
+    // 18 .. 1f -  3
+    // 20 .. 27 -  4
+    // 28 .. 2f -  5
+    // 30 .. 37 -  6
+    // 38 .. 3f -  7
     uint8_t deshi6 [ shifr_deshi_size6 ] = { } ;
     switch ( ns_shifr . use_version )  {
     case 4 :
@@ -2000,11 +2022,11 @@ rand6ok :
       longjmp(ns_shifr  . jump,1); }
 # ifdef SHIFR_DEBUG    
   if ( ns_shifr . use_version == 6 )  { 
-    printarr  ( & "shifr" , & shifr6 , shifr_deshi_size6 ) ;
-    printarr  ( & "deshi" , & deshi6 , shifr_deshi_size6 ) ;  }
+    printarr  ( & "shifr" , & shifr6 , shifr_deshi_size6 ,stderr) ;
+    printarr  ( & "deshi" , & deshi6 , shifr_deshi_size6 ,stderr) ;  }
   else  {
-    printarr  ( & "shifr" , & shifr , shifr_deshi_size5 ) ;
-    printarr  ( & "deshi" , & deshi , shifr_deshi_size5 ) ; }
+    printarr  ( & "shifr" , & shifr , shifr_deshi_size5 ,stderr) ;
+    printarr  ( & "deshi" , & deshi , shifr_deshi_size5 ,stderr) ; }
 # endif
   if ( flagenc ) {
      // if text / digit
@@ -2170,13 +2192,29 @@ rand6ok :
           secretdata [ 0 ] = secretdata [ 3 ] ;
         else
           secretdata [ 0 ] = secretdata [ 2 ] ;
+fputs(u8"закрытие: secretdata = [ ",stderr);
+{uint8_t const * i = &(secretdata[secretdatasolesize]);
+  do{--i;fprintf(stderr,u8" %x , ",*i);}while(i not_eq &(secretdata[0]));}
+fputs(u8"]",stderr);
         datasole6 ( & secretdata , & secretdatasole , secretdatasolesize )  ;
-
+fprintf(stderr,u8"datesole: old_last_sole = %x ",old_last_sole);
+fputs(u8"secretdatasole = [ ",stderr);
+{uint8_t const * i = &(secretdatasole[secretdatasolesize]);
+  do{--i;fprintf(stderr,u8" %x , ",*i);}while(i not_eq &(secretdatasole[0]));}
+fputs(u8"]",stderr);
         // после подсоления, данные переворачиваем предыдущим ксором
         data_xor6 ( & old_last_sole , & secretdatasole , secretdatasolesize )  ;
-
+fprintf(stderr,u8"xor: old_last_sole = %x ",old_last_sole);
+fputs(u8"secretdatasole = [ ",stderr);
+{uint8_t const * i = &(secretdatasole[secretdatasolesize]);
+  do{--i;fprintf(stderr,u8" %x , ",*i);}while(i not_eq &(secretdatasole[0]));}
+fputs(u8"]",stderr);
         crypt_decrypt ( & secretdatasole , & shifr6 , & encrypteddata ,
           secretdatasolesize ) ;
+fputs(u8"crypt: encrypteddata = [ ",stderr);
+{uint8_t const * i = &(encrypteddata[secretdatasolesize]);
+  do{--i;fprintf(stderr,u8" %x , ",*i);}while(i not_eq &(encrypteddata[0]));}
+fputs(u8"]",stderr);
         streambuf_write6 ( & filebufto , & encrypteddata , secretdatasolesize ,
           flagtext )  ;
         break ; }
@@ -2214,11 +2252,29 @@ rand6ok :
           (char const (*)[]) & u8"неожиданное значение bitscount" :
           (char const (*)[]) & "unexpected value bitscount" ) ;
         longjmp ( ns_shifr  . jump  , 1 ) ; }
+fputs(u8"читаю: secretdata = [ ",stderr);
+{uint8_t const * i = &(secretdata[secretdatasolesize]);
+  do{--i;fprintf(stderr,u8" %x , ",*i);}while(i not_eq &(secretdata[0]));}
+fputs(u8"]",stderr);
       datasole6 ( & secretdata , & secretdatasole , secretdatasolesize )  ;
+fprintf(stderr,u8"datesole: old_last_sole = %x ",old_last_sole);
+fputs(u8"secretdatasole = [ ",stderr);
+{uint8_t const * i = &(secretdatasole[secretdatasolesize]);
+  do{--i;fprintf(stderr,u8" %x , ",*i);}while(i not_eq &(secretdatasole[0]));}
+fputs(u8"]",stderr);
       // после подсоления, данные переворачиваем предыдущим ксором
       data_xor6 ( & old_last_sole , & secretdatasole , secretdatasolesize )  ;
+fprintf(stderr,u8"xor: old_last_sole = %x ",old_last_sole);
+fputs(u8"secretdatasole = [ ",stderr);
+{uint8_t const * i = &(secretdatasole[secretdatasolesize]);
+  do{--i;fprintf(stderr,u8" %x , ",*i);}while(i not_eq &(secretdatasole[0]));}
+fputs(u8"]",stderr);
       crypt_decrypt ( & secretdatasole , & shifr6 , & encrypteddata ,
         secretdatasolesize ) ;
+fputs(u8"crypt: encrypteddata = [ ",stderr);
+{uint8_t const * i = &(encrypteddata[secretdatasolesize]);
+  do{--i;fprintf(stderr,u8" %x , ",*i);}while(i not_eq &(encrypteddata[0]));}
+fputs(u8"]",stderr);
       streambuf_write6 ( & filebufto , & encrypteddata , secretdatasolesize ,
         flagtext )  ;
     } while ( not feof ) ; 
@@ -2322,8 +2378,10 @@ rand6ok :
       while ( not isEOFstreambuf_read6bits ( & filebuffrom ,
         & ( secretdata [ 0 ] ) , flagtext ) ) {
         uint8_t decrypteddata [ 1 ] ;
-        decrypt_sole ( & secretdata , & deshi6 , & decrypteddata , 1 ,
+fprintf(stderr,u8"расшифр: secretdata = [ %x ] , old_last_sole = %x ",secretdata[0],old_last_sole);
+        decrypt_sole6 ( & secretdata , & deshi6 , & decrypteddata , 1 ,
           & old_last_sole ) ;
+fprintf(stderr,u8"расшифр: decrypteddata = [ %x ] , old_last_sole = %x ",decrypteddata[0],old_last_sole);
         streambuf_write3bits ( & filebufto , decrypteddata [ 0 ] ) ; } } // ver 6
     }  //  decode 
   } // shifr deshi
