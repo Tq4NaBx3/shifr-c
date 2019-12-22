@@ -165,8 +165,8 @@ typedef char const ( * strcp ) [ ] ;
 // 8 * 8 = 64
 # define  shifr_deshi_size6  ((size_t)(0x40U))
 
-static  void  initarr ( arrp  const p , uint8_t const codefree ,
-  size_t loc_shifr_deshi_size ) {
+static inline  void  initarr ( arrp  const p , uint8_t const codefree ,
+  size_t const loc_shifr_deshi_size ) {
   uint8_t * i = & ( ( * p ) [ loc_shifr_deshi_size  ] ) ;
   do {
     --  i ;
@@ -185,7 +185,7 @@ static  void  printarr  ( strcp const  name , arrcp const p ,
   fputs ( u8"]\n" ,f) ; }
 # endif
 
-static  void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
+static inline void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
   arrp const encrp , size_t const data_size ) {
   uint8_t const * id = & ( ( * datap ) [ data_size ] ) ;
   uint8_t * ied = & ( ( * encrp ) [ data_size ] ) ;
@@ -195,7 +195,7 @@ static  void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
     ( * ied ) = ( * tablep ) [ * id ] ;
   } while ( id not_eq & ( ( * datap ) [ 0 ] ) ) ; }
   
-static  void  decrypt_sole ( arrp const datap , arrcp const tablep ,
+static inline void  decrypt_sole ( arrp const datap , arrcp const tablep ,
   arrp const decrp , size_t const data_size ,
   uint8_t * const restrict old_last_sole ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
@@ -208,7 +208,7 @@ static  void  decrypt_sole ( arrp const datap , arrcp const tablep ,
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
 
-static  void  decrypt_sole6 ( arrp const datap , arrcp const tablep ,
+static inline void  decrypt_sole6 ( arrp const datap , arrcp const tablep ,
   arrp const decrp , size_t const data_size ,
   uint8_t * const restrict old_last_sole ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
@@ -274,7 +274,7 @@ static  struct  s_ns_shifr  ns_shifr = {
 } ;
 
 static  void  password_to_string_uni ( uint64_t password , strp const string ,
-  char (  * letters ) [ ] , uint8_t  letterscount ) {
+  char (  * letters ) [ ] , uint8_t const letterscount ) {
   char * stringi = & ( ( * string )  [ 0 ] ) ;
   if ( password ) {
     while ( true ) {
@@ -287,7 +287,7 @@ static  void  password_to_string_uni ( uint64_t password , strp const string ,
   ( * stringi ) = '\00' ; }
     
 // number /= div , number := floor [ деление ] , return := остаток
-uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
+static uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
   uint8_t const div ) {
   uint64_t res [ 6 ] ;
   ldiv_t  ld  ;
@@ -314,7 +314,7 @@ uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
   number  ->  a [ 0 ] = ld . quot ;
 
   for ( int i = 1 ; i <= 4 ; ++ i ) {
-    { uint64_t  old = number  ->  a [ i - 1 ] ;
+    { uint64_t const old = number  ->  a [ i - 1 ] ;
       number  ->  a [ i - 1 ] +=  ( res [ i ] << ( ( 5 - i ) << 3 ) ) ;
       if ( number  ->  a [ i - 1 ] < old )  number  ->  a [ i ] = 1 ;
       else  number  ->  a [ i ] = 0 ; }
@@ -346,7 +346,7 @@ static  inline  bool  number320_not0  (
   
 static  void  password_to_string6_uni (
   t_number320 const * const restrict password0 , strp const string ,
-  char (  * letters ) [ ] , uint8_t  letterscount  ) {
+  char (  * letters ) [ ] , uint8_t const letterscount  ) {
   char * stringi = & ( ( * string )  [ 0 ] ) ;
   if ( number320_not0 ( password0 ) ) {
     t_number320 password = * password0  ;
@@ -360,7 +360,8 @@ static  void  password_to_string6_uni (
   ( * stringi ) = '\00' ;  }
 
 static  void  string_to_password_uni ( strcp const string ,
-  uint64_t * const password , char (  * letters ) [ ] , uint8_t  letterscount ) {
+  uint64_t * const password , char (  * letters ) [ ] ,
+  uint8_t const letterscount ) {
   char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
   if  ( ( * stringi ) == '\00' ) {
     ( * password  ) = 0 ;
@@ -392,7 +393,7 @@ static  inline  void number320_setUInt  ( t_number320 * const restrict np ,
   memset  ( & ((np -> a)[1]) , 0 , 4 * sizeof(uint64_t) ) ;
   ( np -> a ) [ 0 ] = x ; }
 
-void number320_add  (
+static  void number320_add  (
   t_number320 * const restrict np , t_number320 const * const restrict xp ) {
   if ( np == xp ) {
     t_number320 tmp = * xp ;
@@ -410,7 +411,7 @@ void number320_add  (
     if ( np  ->  a [ i ] < old ) pere = 1 ;
     else  pere  = pere2 ; } }
   
-void  number320_mul8  ( t_number320 * const restrict np , uint8_t const m ) {
+static void  number320_mul8  ( t_number320 * const restrict np , uint8_t const m ) {
   uint64_t  r [ 6 ] ;
   r  [ 0 ] = ( ( ( ( np  ->  a [ 0 ] ) << 8 ) >> 8 ) * ( ( uint64_t  ) m ) ) ;
   for ( int i = 1 ; i <= 4 ; ++ i )
@@ -429,7 +430,8 @@ void  number320_mul8  ( t_number320 * const restrict np , uint8_t const m ) {
     np  ->  a [ i ] += ( r [ i + 1 ] << ( ( 7 - i ) << 3 ) ) ; } }
 
 static  void  string_to_password6_uni ( strcp const string ,
-  t_number320 * const restrict password , char (  * letters ) [ ] , uint8_t  letterscount ) {
+  t_number320 * const restrict password , char const (  * const letters ) [ ] ,
+    uint8_t const letterscount ) {
   char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
   if  ( ( * stringi ) == '\00' ) {
     number320_set0 ( password  ) ;
@@ -457,7 +459,7 @@ found : ;
   } while ( ( * stringi ) not_eq '\00' ) ;
   ( * password  ) = pass ; }
   
-static  void  shifr_init ( void  ) {
+static inline void  shifr_init ( void  ) {
   { char * j = & ( ns_shifr . letters [ 0 ] ) ;
     for ( uint8_t i = ' ' ; i <= '~' ; ++ i , ++ j ) ( * j ) = i ;  }
   // 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
@@ -472,8 +474,8 @@ static  void  shifr_init ( void  ) {
   // пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
   // секретных кодов для соли+данных 0x1  
 // в deshi нужна соль
-void  password_load ( uint64_t  const password_const  , arrp const shifrp , 
-  arrp const deship ) {
+static inline void  password_load ( uint64_t  const password_const  , 
+  arrp const shifrp , arrp const deship ) {
   uint8_t const codefree = 0xff ;
   initarr ( shifrp , codefree , shifr_deshi_size2 )  ;
   initarr ( deship , codefree , shifr_deshi_size2 )  ;
@@ -504,7 +506,8 @@ void  password_load ( uint64_t  const password_const  , arrp const shifrp ,
   } while ( inde  < 0x10  ) ; }
 
 //  /= 64  или  >>= 6
-void  number320_shift_down  ( t_number320 * const nump , uint8_t const s ) {
+static inline void  number320_shift_down  ( t_number320 * const nump ,
+  uint8_t const s ) {
   uint64_t * p = & ( nump -> a [ 5 ] ) ;
   uint8_t  old6 = 0 ;
   do {
@@ -520,11 +523,12 @@ void  number320_shift_down  ( t_number320 * const nump , uint8_t const s ) {
   // пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
   // секретных кодов для соли+данных 0x1  
 // в deshi нужна соль
-void  password_load6 ( t_number320 const * password_constp , arrp const shifrp , 
-  arrp const deship ) {
-  uint8_t const codefree = 0xff ;
+static inline void  password_load6 ( t_number320 const * const password_constp ,
+  arrp const shifrp , arrp const deship ) {
+# define  codefree ((uint8_t)0xffU)
   initarr ( shifrp , codefree , shifr_deshi_size6 )  ;
   initarr ( deship , codefree , shifr_deshi_size6 )  ;
+# undef codefree
   t_number320  password = * password_constp ;
   uint8_t arrind  [ shifr_deshi_size6 ] ;
   { uint8_t * arrj  = & ( arrind  [ shifr_deshi_size6 ] ) ;
@@ -551,7 +555,7 @@ void  password_load6 ( t_number320 const * password_constp , arrp const shifrp ,
     ++  inde  ;
   } while ( inde  < shifr_deshi_size6  ) ; }
 
-void datasole ( arrcp const secretdata , arrp const secretdatasole ,
+static inline void datasole ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
@@ -566,7 +570,7 @@ void datasole ( arrcp const secretdata , arrp const secretdatasole ,
     ran >>= 2 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
-void datasole6 ( arrcp const secretdata , arrp const secretdatasole ,
+static void datasole6 ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
@@ -581,7 +585,7 @@ void datasole6 ( arrcp const secretdata , arrp const secretdatasole ,
     ran >>= 3 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
-void  data_xor  ( uint8_t * const restrict  old_last_sole ,
+static inline void  data_xor  ( uint8_t * const restrict  old_last_sole ,
   arrp  const secretdatasole  , size_t  const data_size ) {
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
   do {
@@ -595,7 +599,7 @@ void  data_xor  ( uint8_t * const restrict  old_last_sole ,
     ++  ids ;
   } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
-void  data_xor6  ( uint8_t * const restrict  old_last_sole ,
+static inline void  data_xor6  ( uint8_t * const restrict  old_last_sole ,
   arrp  const secretdatasole  , size_t  const data_size ) {
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
   do {
@@ -624,7 +628,7 @@ static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
 static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
   return  letter  - ';' ; }
 
-static  void  hex_to_char ( char const ( * restrict buf2 ) [ 2 ] ,
+static  void  hex_to_char ( char const ( * restrict const buf2 ) [ 2 ] ,
   char * const restrict buf ) {
   if  ((*buf2)[0] >= '0' and (*buf2)[0] <= '9') (* buf) = (*buf2)[0] - '0';
   else
@@ -646,7 +650,7 @@ static  void  hex_to_char ( char const ( * restrict buf2 ) [ 2 ] ,
     longjmp(ns_shifr  . jump,1); } }
     
 // Отключить эхо-вывод и буферизацию ввода
-static  void set_keypress (void) {
+static inline void set_keypress (void) {
   if  ( tcgetattr ( 0 , & ns_shifr  . stored_termios  ) ) {
     char const * const se = strerror ( errno ) ;
     fprintf ( stderr  , ( ns_shifr . localerus ?
@@ -669,7 +673,7 @@ static  void set_keypress (void) {
     longjmp(ns_shifr  . jump,1); } }
  
 // Восстановление дефолтного состояния
-static  void reset_keypress (void) {
+static inline void reset_keypress (void) {
   if  ( tcsetattr ( 0 , TCSANOW , & ns_shifr . stored_termios ) ) {
     char const * const se = strerror ( errno ) ;
     fprintf ( stderr  , ( ns_shifr . localerus ?
@@ -724,7 +728,7 @@ static  inline  uint8_t streambuf_Buf (
   return  streambuf_buf ( me  ) ; }
   
 // читаю 6 бит
-bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  ,
+static inline bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  ,
   uint8_t * const encrypteddata , bool const  flagtext ) {
   if  ( ( not flagtext ) and streambuf_bufbitsize  ( me  ) >= 6 ) {
     streambuf_bufbitsize  ( me  ) -=  6 ;
@@ -769,11 +773,10 @@ bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  ,
 // пишу по шесть бит
 // secretdatasolesize количество шести-битных отделов (2 или 3)
 // encrypteddata массив шести-битных чисел
-void  streambuf_write6 ( t_streambuf * const restrict me  ,
-  uint8_t const (  * encrypteddata ) [ 3 ] , uint8_t secretdatasolesize ,
-  bool const  flagtext ) {
+static void  streambuf_write6 ( t_streambuf * const restrict me  ,
+  uint8_t const (  * const encrypteddata ) [ 3 ] ,
+  uint8_t const secretdatasolesize , bool const  flagtext ) {
   for ( uint8_t i = 0 ; i < secretdatasolesize ; ++  i ) {
-
     if  ( flagtext  ) {
         char  buf2  = bits6_to_letter ( ( * encrypteddata ) [ i ] ) ;
         size_t  writen_count  ;
@@ -815,7 +818,7 @@ void  streambuf_write6 ( t_streambuf * const restrict me  ,
         streambuf_buf ( me  ) = ( ( * encrypteddata ) [ i ] ) >>
           ( 6 - streambuf_bufbitsize  ( me  ) ) ;  } } } }
 
-void  streambuf_writeflushzero ( t_streambuf * const restrict me ,
+static inline void  streambuf_writeflushzero ( t_streambuf * const restrict me ,
   bool const  flagtext ) {
   if  ( streambuf_bufbitsize  ( me  ) ) {
     size_t  writen_count  ;
@@ -842,7 +845,7 @@ void  streambuf_writeflushzero ( t_streambuf * const restrict me ,
       longjmp(ns_shifr  . jump,1); } } }
   
 // версия 6 пишу три бита для расшифровки
-void  streambuf_write3bits ( t_streambuf * const restrict me  ,
+static inline void  streambuf_write3bits ( t_streambuf * const restrict me  ,
   uint8_t const encrypteddata ) {
     if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
       streambuf_buf ( me  ) or_eq (    encrypteddata    <<
@@ -874,7 +877,7 @@ void  streambuf_write3bits ( t_streambuf * const restrict me  ,
 # undef streambuf_bytecount
 # define  streambuf_bytecount  streambuf_bytecount_pri
 
-int main  ( int  argc , char * * argv  )  {
+int main  ( int argc , char * argv [ ] )  {
   char const * const locale = setlocale ( LC_ALL  , ""  ) ;
   ns_shifr . localerus = ( strcmp  ( locale  , "ru_RU.UTF-8" ) ==  0 ) ;
   int exc = setjmp  ( ns_shifr  . jump  ) ;
@@ -971,9 +974,9 @@ int main  ( int  argc , char * * argv  )  {
   srand ( time  ( 0 ) ) ;
   for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
 if ( flagreadpasswdfromfile ) {
-    FILE * f = fopen  ( argv  [ argj  ] , & ( "r" [ 0 ] ) ) ;
+    FILE * const f = fopen  ( argv  [ argj  ] , & ( "r" [ 0 ] ) ) ;
     if  ( f == NULL ) {
-      int e = errno ; 
+      int const e = errno ; 
       fprintf ( stderr  , ( ns_shifr . localerus ?
         u8"Ошибка открытия файла \"%s\" : %s\n" :
         "Error opening file \"%s\" : %s\n" ) , argv  [ argj  ] ,
@@ -1536,9 +1539,9 @@ rand6ok :
   FILE  * filefrom  = stdin ;
   FILE  * fileto  = stdout  ;
   if ( flaginputfromfile ) {
-    FILE * f = fopen(&((*inputfilename)[0]),&("r"[0]));
+    FILE * const f = fopen(&((*inputfilename)[0]),&("r"[0]));
     if(f == NULL) {
-      int e = errno ; 
+      int const e = errno ; 
       fprintf ( stderr  , ( ns_shifr . localerus ?
         u8"Ошибка чтения файла \"%s\" : %s\n" :
         "Error reading file \"%s\" : %s\n" ) , & ( ( * inputfilename ) [ 0 ] ) ,
@@ -1550,9 +1553,9 @@ rand6ok :
     flagclosefilefrom = true ;
     filefrom = f ;    }
   if ( flagoutputtofile ) {
-    FILE * f = fopen(&((*outputfilename)[0]),&("w"[0]));
+    FILE * const f = fopen(&((*outputfilename)[0]),&("w"[0]));
     if(f == NULL) {
-      int e = errno ; 
+      int const e = errno ; 
       fprintf(stderr,( ns_shifr . localerus ? u8"Ошибка записи файла \"%s\" : %s\n":
         "Error writing file \"%s\" : %s\n"),&((*outputfilename)[0]),strerror(e));
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
@@ -1635,7 +1638,7 @@ rand6ok :
         buf = ( encrypteddata [ i ] & 0xf ) bitor
           ( ( encrypteddata [ i + 1 ] & 0xf ) << 4  ) ;
         size_t writecount ;
-        if(flagtext) {
+        if  ( flagtext  ) {
           char buf2[2];
           char_to_hex(buf,&buf2);
           writecount = fwrite ( & buf2 , 2 , 1 , fileto ) ;
@@ -1837,7 +1840,7 @@ out : ;
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
     if  ( fclose  ( fileto  ) ) {
-      int e = errno ;
+      int const e = errno ;
       fprintf  (  stderr, ( ns_shifr . localerus ?
         u8"Ошибка закрытия файла записи \"%s\" : %s\n" :
         "Error closing file to writing \"%s\" : %s\n" ) ,
@@ -1845,7 +1848,7 @@ out : ;
       resulterror = 1 ; } }
   if ( flagclosefilefrom ) {
     if  ( ( not feof ( filefrom ) ) and fclose  ( filefrom ) ) {
-      int e = errno ; 
+      int const e = errno ; 
       fprintf ( stderr  , ( ns_shifr . localerus ?
         u8"Ошибка закрытия файла чтения \"%s\" : %s\n" :
         "Error closing file of reading \"%s\" : %s\n"),
