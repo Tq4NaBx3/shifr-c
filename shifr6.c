@@ -150,6 +150,7 @@ Data   :     00⊻00=00  10⊻10=00  01⊻01=00  ...
 # include <errno.h>
 # include <termios.h>
 # include <setjmp.h>
+# include <sys/time.h>
 
 //# define  SHIFR_DEBUG
 
@@ -927,11 +928,11 @@ int main  ( int  argc , char * * argv  )  {
       u8"  --текст или\n  --text\tшифрованный файл записан текстом ascii" :
       "  --text\tencrypted file written in ascii text"    );
     puts  ( ns_shifr . localerus ? 
-      u8"  --4\tиспользовать четырёх битное шифрование, ключ = 45 бит ( семь/восемь букв ). ( по-умолчанию )" :
-      "  --4\tusing four bit encryption, key = 45 bits ( seven/eight letters ). ( by default )" ) ;
+      u8"  --4\tиспользовать четырёх битное шифрование, ключ = 45 бит ( семь/восемь букв )." :
+      "  --4\tusing four bit encryption, key = 45 bits ( seven/eight letters )." ) ;
     puts  ( ns_shifr . localerus ?
-      u8"  --6\tиспользовать шести битное шифрование, ключ = 296 бит ( 46 - 50 букв )." :
-      "  --6\tusing six bit encryption, key = 296 bits ( 46 - 50 letters ).") ;
+      u8"  --6\tиспользовать шести битное шифрование, ключ = 296 бит ( 46 - 50 букв ). ( по-умолчанию )" :
+      "  --6\tusing six bit encryption, key = 296 bits ( 46 - 50 letters ). ( by default )") ;
     fputs  ( ns_shifr . localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
@@ -947,20 +948,21 @@ int main  ( int  argc , char * * argv  )  {
       "\'\t(by default)\n"  ) , stdout  ) ;
     puts  ( ns_shifr  . localerus ? u8"Пример использования :"  :
       "Usage example"  ) ;
-    puts  ( ns_shifr  . localerus ? u8"  > ./shifr6 --ген-пар"  :
-      "  > ./shifr6 --gen-pas"  ) ;
-    puts("  ueKZ9sH4");
+    puts  ( ns_shifr  . localerus ? u8"  $ ./shifr6 --ген-пар > psw"  :
+      "  $ ./shifr6 --gen-pas > psw"  ) ;
+    puts("  $ cat psw");
+    puts("  n3LTQH4eIicGDNaF8CDVRGdaCEVXxPPgikJ9lbQKW4zs8StkhD");
     puts  ( ns_shifr  . localerus ?
-      u8"  > ./shifr6 --пароль 'ueKZ9sH4' > test.e --текст"  :
-      "  > ./shifr6 --pass 'ueKZ9sH4' > test.e --text"  ) ;
+      u8"  $ ./shifr6 --пар-путь 'psw' > test.e --текст"  :
+      "  $ ./shifr6 --psw-path 'psw' > test.e --text"  ) ;
     puts( ns_shifr  . localerus ? u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
       "  2+2 (Press Enter,Ctrl+D)" ) ;
-    puts("  > cat test.e");
-    puts("  c9f29d22e4ef08f2");
+    puts("  $ cat test.e");
+    puts("  ylQ?ncm;ags");
     puts( ns_shifr  . localerus ?
-      u8"  > ./shifr6 --пароль 'ueKZ9sH4' < test.e --текст --расшифр" :
-      "  > ./shifr6 --pass 'ueKZ9sH4' < test.e --text --decrypt" ) ;
-    puts("  2+2");
+      u8"  $ ./shifr6 --пар-путь 'psw' < test.e --текст --расшифр" :
+      "  $ ./shifr6 --psw-path 'psw' < test.e --text --decrypt" ) ;
+    puts  ( "  2+2" ) ;
     return 0 ; }
 # if  RAND_MAX  !=  0x7fffffff
 # error RAND_MAX  !=  0x7fffffff
@@ -1225,24 +1227,16 @@ if ( flagreadpasswdfromfile ) {
           r1 = rand  ( ) >> 9 ;
         } while ( r1 >  shifrrandmax1  ) ;
         r0 = rand  ( ) >> 8 ;
+        // последний элемент солю микросекундами
+        struct timeval currentTime  ;
+        gettimeofday  ( & currentTime , NULL  ) ;
+        r0 xor_eq ( currentTime . tv_usec ) ;
       } while ( ( r1 ==  shifrrandmax1  ) and ( r0 >= shifrrandmax0 ) ) ;
       ns_shifr . raspr4  . password_const = ( ( ( uint64_t  ) r1  ) <<  23 ) bitor
         ( ( uint64_t  ) r0 ) ;
 # undef shifrrandmax0
 # undef shifrrandmax1
       break ; }
-/*
-#include <sys/time.h>
-
-**
- * Returns the current time in microseconds.
- *
-long getMicrotime(){
-	struct timeval currentTime;
-	gettimeofday(&currentTime, NULL);
-	return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
-}
-*/
     case 6 :
       { int const rmax  [ 10 ] = { 0 , 0 , 371982424 , 465456948 , 36645132 ,
           851424078 , 78362151 , 525642490 , 110135612 , 535066862 } ;
@@ -1253,6 +1247,10 @@ rand6try :
             -- ri ;
             ( * ri ) = rand ( ) >> 2 ;
           } while ( ri not_eq ( & ( r [ 6 ] ) ) ) ;
+          // последний элемент солю микросекундами
+          struct timeval currentTime  ;
+          gettimeofday  ( & currentTime , NULL  ) ;
+          r [ 9 ] xor_eq ( currentTime . tv_usec ) ;
           do {
             -- ri ;
             ( * ri ) = rand ( ) >> 1 ;
