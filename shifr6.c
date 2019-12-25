@@ -563,8 +563,8 @@ static inline void datasole ( arrcp const secretdata , arrp const secretdatasole
   do {
     -- id ;
     --  ids ;
-    // главное данные , хвост - соль : 101 =>
-    //   101_00 или 101_01 или 101_10 или 101_11
+    // главное данные , хвост - соль : 10 =>
+    //   10_00 или 10_01 или 10_10 или 10_11
     // в таблице всё рядом, 4 варианта равномерно распределены
     ( * ids ) = ( ( * id  ) <<  2 ) bitor ( ran bitand  0x3 ) ;
     ran >>= 2 ;
@@ -650,7 +650,7 @@ static  void  hex_to_char ( char const ( * restrict const buf2 ) [ 2 ] ,
     longjmp(ns_shifr  . jump,1); } }
     
 // Отключить эхо-вывод и буферизацию ввода
-static inline void set_keypress (void) {
+static void set_keypress (void) {
   if  ( tcgetattr ( 0 , & ns_shifr  . stored_termios  ) ) {
     char const * const se = strerror ( errno ) ;
     fprintf ( stderr  , ( ns_shifr . localerus ?
@@ -673,7 +673,7 @@ static inline void set_keypress (void) {
     longjmp(ns_shifr  . jump,1); } }
  
 // Восстановление дефолтного состояния
-static inline void reset_keypress (void) {
+static void reset_keypress (void) {
   if  ( tcsetattr ( 0 , TCSANOW , & ns_shifr . stored_termios ) ) {
     char const * const se = strerror ( errno ) ;
     fprintf ( stderr  , ( ns_shifr . localerus ?
@@ -788,7 +788,7 @@ static void  streambuf_write6 ( t_streambuf * const restrict me  ,
             ( char  const ( * ) [ ] ) & "streambuf_write6: byte write error" ) ;
           longjmp ( ns_shifr  . jump  , 1 ) ; }
         ++  streambuf_bytecount ( me  ) ;
-        if  ( streambuf_bytecount ( me  ) >=  36  ) {
+        if  ( streambuf_bytecount ( me  ) >=  60  ) {
           streambuf_bytecount ( me  ) = 0 ;
           buf2  = '\n'  ;
           writen_count  = fwrite  ( & buf2  , 1 , 1 ,
@@ -876,6 +876,78 @@ static inline void  streambuf_write3bits ( t_streambuf * const restrict me  ,
 # define  streambuf_bufbitsize  streambuf_bufbitsize_pri
 # undef streambuf_bytecount
 # define  streambuf_bytecount  streambuf_bytecount_pri
+
+static  inline  void  enter_password4 ( int const password_alphabet ) {
+  char p40 [ 20 ] ;
+  set_keypress  ( ) ;
+  char ( * const p4 ) [ 20 ] = (char(*const)[20])
+    fgets ( & ( p40 [ 0 ] ) , 20 , stdin ) ;
+  reset_keypress ( ) ;
+  char * j = & ( ( * p4 ) [ 0 ]  ) ;
+  while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and
+    ( j < ( & ( * p4 ) [ 20 ] ) ) )
+    ++ j ;  
+  if ( j < ( & ( ( * p4 ) [ 20 ] ) ) )
+    ( * j ) = '\00' ;
+  else  {
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+      (char const (*)[]) & u8"в пароле нет конца строки" :
+      (char const (*)[]) & "there is no end of line in the password" ) ;
+    longjmp(ns_shifr  . jump,1); }
+  if ( password_alphabet == 95 )
+    string_to_password_uni ( p4 , & ns_shifr . raspr4  . password_const ,
+      & ns_shifr . letters ,  letters_count ) ;
+  else
+    string_to_password_uni ( p4 , & ns_shifr . raspr4  . password_const ,
+      & ns_shifr . letters2 , letters_count2 ) ;
+  char  password_letters [ 20 ] ;
+  if ( password_alphabet == 95 )
+    password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+      & password_letters , & ns_shifr . letters , letters_count ) ;
+  else
+    password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+      & password_letters , & ns_shifr . letters2 , letters_count2 ) ;
+  if  ( strcmp ( &(password_letters[0]) , &((*p4)[0]) ) )  
+    fprintf  ( stderr , ( ns_shifr . localerus ?
+      u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
+      "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
+      , &((*p4)[0]) , & ( password_letters [ 0 ] ) ) ; }
+
+static  inline  void  enter_password6 ( int const password_alphabet ) {
+  char p60 [ 100 ] ;
+  set_keypress  ( ) ;
+  char ( * const p6 ) [ 100 ] = (char(*const)[100])
+    fgets ( & ( p60 [ 0 ] ) , 100 , stdin ) ;
+  reset_keypress ( ) ;
+  char * j = & ( ( * p6 ) [ 0 ]  ) ;
+  while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and
+    ( j < ( & ( * p6 ) [ 100 ] ) ) )
+    ++ j ;  
+  if ( j < ( & ( ( * p6 ) [ 100 ] ) ) )
+    ( * j ) = '\00' ;
+  else  {
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+      (char const (*)[]) & u8"в пароле нет конца строки" :
+      (char const (*)[]) & "there is no end of line in the password" ) ;
+    longjmp(ns_shifr  . jump,1); }
+  if ( password_alphabet == 95 )
+    string_to_password6_uni ( p6 , & ns_shifr . raspr6  . password_const ,
+      & ns_shifr . letters ,  letters_count ) ;
+  else
+    string_to_password6_uni ( p6 , & ns_shifr . raspr6  . password_const ,
+      & ns_shifr . letters2 , letters_count2 ) ;
+  char  password_letters6 [ 100 ] ;
+  if ( password_alphabet == 95 )
+    password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
+      & password_letters6 , & ns_shifr . letters , letters_count ) ;
+  else
+    password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
+      & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ;
+  if  ( strcmp ( &(password_letters6[0]) , &((*p6)[0]) ) )  
+    fprintf  ( stderr , ( ns_shifr . localerus ?
+      u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'.\n" :
+      "Warning! Password \'%s\' is very large. Same as \'%s\'.\n" )
+      , &((*p6)[0]) , & ( password_letters6  [ 0 ] ) ) ; }
 
 int main  ( int argc , char * argv [ ] )  {
   char const * const locale = setlocale ( LC_ALL  , ""  ) ;
@@ -995,9 +1067,7 @@ if ( flagreadpasswdfromfile ) {
       nr = fread  ( & password_letters , 1 , ns , f ) ; }
     else {
       ns  = 100 ;
-      nr = fread  ( & password_letters6 , 1 , ns , f ) ; 
-//fprintf(stderr,u8"пароль = '%s' , nr = %lu \n",password_letters6,nr);
-}
+      nr = fread  ( & password_letters6 , 1 , ns , f ) ; }
     if ( nr >= ns )  {
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
         ( char const (  * ) [ ] ) & u8"Файл пароля очень большой" :
@@ -1427,115 +1497,23 @@ rand6ok :
   //  по-умолчанию шифруем
   if ( not flagdec  ) flagenc = true  ;
   if ( not flagpasswd )    {
-
-    char p [ 26 ] ;
-    char ( * res ) [ 26 ] ;
-
     fputs ( ( ns_shifr . localerus ? u8"введите пароль = " :
       "enter the password = " ) , stdout  ) ;
-    set_keypress  ( ) ;
-  
-    char p6 [ 100 ] ;
-    char ( * res6 ) [ 100 ] ;
-
-    if ( ns_shifr . use_version == 6 )
-      res6 = ( char ( * ) [ 100 ] )
-        fgets ( & ( p6 [ 0 ] ) , 100 , stdin ) ;
-    else  
-      res = ( char ( * ) [ 26 ] )
-        fgets ( & ( p [ 0 ] ) , 26 , stdin ) ;
-
-    reset_keypress ( ) ;
-    char * j ;
-    if ( ns_shifr . use_version == 6 )
-      j = & ( ( * res6 ) [ 0 ]  ) ;
-    else  j = & ( ( * res ) [ 0 ]  ) ;
-    if ( ns_shifr . use_version == 6 ) {
-      while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and
-        ( j < ( & ( * res6 ) [ 100 ] ) ) )
-        ++ j ; }
-    else {
-      while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and
-        ( j < ( & ( * res ) [ 26 ] ) ) )
-        ++ j ; }
-    if ( ns_shifr . use_version == 6 ) {
-      if ( j < ( & ( ( * res6 ) [ 100 ] ) ) )
-        ( * j ) = '\00' ;
-      else  {
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-          (char const (*)[]) & u8"в пароле нет конца строки" :
-          (char const (*)[]) & "there is no end of line in the password" ) ;
-        longjmp(ns_shifr  . jump,1); } }
-    else {
-      if ( j < ( & ( ( * res ) [ 26 ] ) ) )
-        ( * j ) = '\00' ;
-      else  {
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-          (char const (*)[]) & u8"в пароле нет конца строки" :
-          (char const (*)[]) & "there is no end of line in the password" ) ;
-        longjmp(ns_shifr  . jump,1); } }
     switch ( ns_shifr . use_version ) {
+    case  6 :
+      enter_password6  ( password_alphabet ) ;
+      break ;
     case 4 :
-      if ( password_alphabet == 95 )
-        string_to_password_uni ( res , & ns_shifr . raspr4  . password_const ,
-          & ns_shifr . letters ,  letters_count ) ;
-      else
-        string_to_password_uni ( res , & ns_shifr . raspr4  . password_const ,
-          & ns_shifr . letters2 , letters_count2 ) ;
-      break ;
-    case 6 : {
-      if ( password_alphabet == 95 )
-        string_to_password6_uni ( res , & ns_shifr . raspr6  . password_const ,
-          & ns_shifr . letters ,  letters_count ) ;
-      else
-        string_to_password6_uni ( res , & ns_shifr . raspr6  . password_const ,
-          & ns_shifr . letters2 , letters_count2 ) ; }
+      enter_password4  ( password_alphabet ) ;
       break ;
     default :
-      fprintf ( stderr  , ( ns_shifr . localerus ? u8"версия %d не поддерживается\n" :
-        "version %d is not supported" ) , ns_shifr . use_version )  ;
+      fprintf(stderr,( ns_shifr . localerus ?
+        u8"Неизвестная версия %d\n" :
+        "Unknown version %d\n" ),ns_shifr . use_version);
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        (char const (*)[]) & u8"версия не поддерживается" :
-        (char const (*)[]) & "version is not supported" ) ;
-      longjmp(ns_shifr  . jump,1); }
-    char  password_letters [ 20 ] ;
-    char  password_letters6 [ 100 ] ;
-    switch ( ns_shifr . use_version ) {
-    case 4 :  {
-      if ( password_alphabet == 95 )
-        password_to_string_uni ( ns_shifr . raspr4  . password_const ,
-          & password_letters , & ns_shifr . letters , letters_count ) ;
-      else
-        password_to_string_uni ( ns_shifr . raspr4  . password_const ,
-          & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
-      break ;
-    case 6 :  {
-        if ( password_alphabet == 95 )
-          password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
-            & password_letters6 , & ns_shifr . letters , letters_count ) ;
-        else
-          password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
-            & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ; }
-      break ;
-    default :
-      fprintf ( stderr  , ( ns_shifr . localerus ? u8"версия %d не поддерживается\n" :
-        "version %d is not supported" ) , ns_shifr . use_version )  ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        (char const (*)[]) & u8"версия не поддерживается" :
-        (char const (*)[]) & "version is not supported" ) ;
-      longjmp(ns_shifr  . jump,1); }
-      if ( ns_shifr . use_version == 6 ) {
-        if  ( strcmp ( &(password_letters6[0]) , &((*res)[0]) ) )  
-        fprintf  ( stderr , ( ns_shifr . localerus ?
-          u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
-          "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
-          , &((*res)[0]) , & ( password_letters6  [ 0 ] ) ) ; }
-      else {
-      if  ( strcmp ( &(password_letters[0]) , &((*res)[0]) ) )  
-        fprintf  ( stderr , ( ns_shifr . localerus ?
-          u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
-          "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
-          , &((*res)[0]) , & ( password_letters  [ 0 ] ) ) ; } }
+        (char const (*)[]) & u8"Неизвестная версия" :
+        (char const (*)[]) & "Unknown version" ) ;
+      longjmp(ns_shifr  . jump,1); } }
   FILE  * filefrom  = stdin ;
   FILE  * fileto  = stdout  ;
   if ( flaginputfromfile ) {
@@ -1643,7 +1621,7 @@ rand6ok :
           char_to_hex(buf,&buf2);
           writecount = fwrite ( & buf2 , 2 , 1 , fileto ) ;
           ++ bytecount ;
-          if ( bytecount == 24 )  {
+          if ( bytecount == 30 )  {
             bytecount = 0 ;
             buf2[0] = '\n' ;
             fwrite ( & (buf2[0]) , 1 , 1 , fileto ) ; }      }
