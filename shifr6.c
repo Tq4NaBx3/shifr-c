@@ -26,7 +26,16 @@
 //   2494190 * ( 2 ^ 23 ) + 7700480 == 20922789888000
 
 /*
+OrigData   : 01 11 11
+RandomSalt : 10 11 10
+
+Data 01---\/---10⊻11=01---\/---11⊻11=00
+Salt 10___/\___01⊻11=10___/\___11⊻10=01  
+Pair 0110      0110            0001
+Secr xxxx      xxxx            yyyy
+
 Соль одного элемента будет ксорить следующий элемент для исчезания повторов.
+Данные первого элемента будут ксорить соль второго элемента.
 Если все элементы будут одного значения, тогда все шифрованные значения будут иметь свойство псевдо-случайности.
 И данные и соль имеют секретность кроме первой нулевой соли.
 Функция Шифр(пары: данные+соль) должна быть случайной неупорядоченной.
@@ -75,7 +84,16 @@
 //   2494190 * ( 2 ^ 23 ) + 7700480 == 20922789888000
 
 /*
+OrigData   : 01 11 11
+RandomSalt : 10 11 10
+
+Data 01---\/---10⊻11=01---\/---11⊻11=00
+Salt 10___/\___01⊻11=10___/\___11⊻10=01  
+Pair 0110      0110            0001
+Secr xxxx      xxxx            yyyy
+
 The salt of one element will modify (xor) the next element to remove repeats.
+The data of the first element will modify (xor) the second element salt.
 If all elements are of the same value, then all encrypted values will have the property of pseudo-randomness.
 Both data and salt have secrecy apart from the first zero salt.
 Function Shifr(of pair: data+salt)should be randomly disordered.
@@ -197,26 +215,30 @@ static inline void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
   
 static inline void  decrypt_sole ( arrp const datap , arrcp const tablep ,
   arrp const decrp , size_t const data_size ,
-  uint8_t * const restrict old_last_sole ) {
+  uint8_t * const restrict old_last_sole , uint8_t * const restrict old_last_data ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
   uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
   do {
     { uint8_t const data_sole = ( * tablep ) [ * id ] ;
       ( * ide ) = ( data_sole >>  2 ) xor ( * old_last_sole ) ;
-      ( * old_last_sole ) = data_sole bitand  0x3 ; }
+      uint8_t const new_sole = (data_sole bitand  0x3)xor ( * old_last_data ) ;
+      ( * old_last_data ) = ( * ide ) ;
+      ( * old_last_sole ) = new_sole ; }
     ++  id  ;
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
 
 static inline void  decrypt_sole6 ( arrp const datap , arrcp const tablep ,
   arrp const decrp , size_t const data_size ,
-  uint8_t * const restrict old_last_sole ) {
+  uint8_t * const restrict old_last_sole , uint8_t * const restrict old_last_data ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
   uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
   do {
     { uint8_t const data_sole = ( * tablep ) [ * id ] ;
       ( * ide ) = ( data_sole >>  3 ) xor ( * old_last_sole ) ;
-      ( * old_last_sole ) = data_sole bitand  0x7 ; }
+      uint8_t const new_sole = (data_sole bitand  0x7)xor ( * old_last_data ) ;
+      ( * old_last_data ) = ( * ide ) ;
+      ( * old_last_sole ) = new_sole ; }
     ++  id  ;
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
@@ -585,31 +607,41 @@ static void datasole6 ( arrcp const secretdata , arrp const secretdatasole ,
     ran >>= 3 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
-static inline void  data_xor  ( uint8_t * const restrict  old_last_sole ,
+static inline void  data_xor  ( uint8_t * const restrict  old_last_data ,
+  uint8_t * const restrict  old_last_sole ,
   arrp  const secretdatasole  , size_t  const data_size ) {
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
   do {
+    uint8_t const cur_data = ( * ids ) >> 2 ;
+    uint8_t const cur_sole = ( * ids ) bitand 0x3 ;
     // главное данные , хвост - соль : 01 =>
     //   01_00 или 01_01 или 01_10 или 01_11
     // в таблице всё рядом, 4 варианта равномерно распределены
     // данные сыпью предыдущей солью
     ( * ids ) xor_eq  ( ( * old_last_sole ) << 2  ) ;
+    ( * ids ) xor_eq  ( * old_last_data ) ;
     // берю свежую соль
-    ( * old_last_sole ) = ( * ids ) bitand  0x3 ;
+    ( * old_last_sole ) = cur_sole ;
+    ( * old_last_data ) = cur_data ;
     ++  ids ;
   } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
-static inline void  data_xor6  ( uint8_t * const restrict  old_last_sole ,
+static inline void  data_xor6  ( uint8_t * const restrict  old_last_data ,
+  uint8_t * const restrict  old_last_sole ,
   arrp  const secretdatasole  , size_t  const data_size ) {
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
   do {
+    uint8_t const cur_data = ( * ids ) >> 3 ;
+    uint8_t const cur_sole = ( * ids ) bitand 0x7 ;
     // главное данные , хвост - соль : 101 =>
     //   101_000 или 101_001 или ... или 101_111
     // в таблице всё рядом, 8 вариантов равномерно распределены
     // данные сыпью предыдущей солью
     ( * ids ) xor_eq  ( ( * old_last_sole ) << 3  ) ;
+    ( * ids ) xor_eq  ( * old_last_data ) ;
     // берю свежую соль
-    ( * old_last_sole ) = ( * ids ) bitand  0x7 ;
+    ( * old_last_sole ) = cur_sole ;
+    ( * old_last_data ) = cur_data ;
     ++  ids ;
   } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
@@ -1387,15 +1419,13 @@ rand6ok :
       "internal password = %lx\n") , ns_shifr . raspr4  . password_const  ) ;
     break ;
   case  6 :
-# ifdef SHIFR_DEBUG
-      fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
-        "inner password = [ " , stderr ) ;
-      for ( uint64_t const * i = & (  ns_shifr . raspr6  . password_const . a [ 5 ] ) ;
-        i not_eq & ( ns_shifr . raspr6  . password_const . a [ 0 ] ) ;  ) {
-        --  i ;
-        fprintf (stderr, "%lx , " , * i ) ;  }
-      fputs  ( "]\n" ,stderr) ;
-# endif
+    fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
+      "inner password = [ " , stderr ) ;
+    for ( uint64_t const * i = & (  ns_shifr . raspr6  . password_const . a [ 5 ] ) ;
+      i not_eq & ( ns_shifr . raspr6  . password_const . a [ 0 ] ) ;  ) {
+      --  i ;
+      fprintf (stderr, "%lx , " , * i ) ;  }
+    fputs  ( "]\n" ,stderr) ;
     break ;
   default :
     fprintf ( stderr , ( ns_shifr . localerus ?
@@ -1590,6 +1620,7 @@ rand6ok :
      // if text / digit
     if ( ns_shifr . use_version == 4 )  {
     int bytecount = 0 ;
+    uint8_t old_last_data = 0 ;
     uint8_t old_last_sole = 0 ;
     do {
       char buf ;
@@ -1608,7 +1639,7 @@ rand6ok :
       uint8_t secretdatasole  [ 4 ] ;
       datasole ( & secretdata , & secretdatasole , 4 )  ;
       // после подсоления, данные переворачиваем предыдущим ксором
-      data_xor ( & old_last_sole , & secretdatasole , 4 )  ;
+      data_xor ( & old_last_data , & old_last_sole , & secretdatasole , 4 )  ;
       uint8_t encrypteddata [ 4 ] ;
       crypt_decrypt ( & secretdatasole , & shifr , & encrypteddata , 4 ) ;
             
@@ -1647,6 +1678,7 @@ rand6ok :
       uint8_t secretdatasolesize  ;
       uint8_t encrypteddata [ 3 ] ;
       bool  feof  = false ;
+      uint8_t old_last_data = 0 ;
       uint8_t old_last_sole = 0 ;
     do {
       unsigned  char buf ;
@@ -1670,7 +1702,7 @@ rand6ok :
           secretdata [ 0 ] = secretdata [ 2 ] ;
         datasole6 ( & secretdata , & secretdatasole , secretdatasolesize )  ;
         // после подсоления, данные переворачиваем предыдущим ксором
-        data_xor6 ( & old_last_sole , & secretdatasole , secretdatasolesize )  ;
+        data_xor6 ( & old_last_data , & old_last_sole , & secretdatasole , secretdatasolesize )  ;
         crypt_decrypt ( & secretdatasole , & shifr6 , & encrypteddata ,
           secretdatasolesize ) ;
         streambuf_write6 ( & filebufto , & encrypteddata , secretdatasolesize ,
@@ -1712,7 +1744,7 @@ rand6ok :
         longjmp ( ns_shifr  . jump  , 1 ) ; }
       datasole6 ( & secretdata , & secretdatasole , secretdatasolesize )  ;
       // после подсоления, данные переворачиваем предыдущим ксором
-      data_xor6 ( & old_last_sole , & secretdatasole , secretdatasolesize )  ;
+      data_xor6 ( & old_last_data , & old_last_sole , & secretdatasole , secretdatasolesize )  ;
       crypt_decrypt ( & secretdatasole , & shifr6 , & encrypteddata ,
         secretdatasolesize ) ;
       streambuf_write6 ( & filebufto , & encrypteddata , secretdatasolesize ,
@@ -1722,6 +1754,7 @@ rand6ok :
     } // кодировали
   else  { // декодируем
     if ( ns_shifr . use_version == 4 ) {
+      uint8_t old_last_data = 0 ;
       uint8_t old_last_sole = 0 ;
     do {
       char buf [ 2 ] ;
@@ -1788,7 +1821,7 @@ rand6ok :
         [ 3 ] = ( buf [ 1 ] >>  4 ) bitand  0xf  } ;
       uint8_t decrypteddata [ 4 ] ;
       decrypt_sole ( & secretdata , & deshi , & decrypteddata , 4 ,
-        & old_last_sole ) ;
+        & old_last_sole , & old_last_data ) ;
       buf [ 0 ] = ( decrypteddata [ 0 ] bitand 0x3  ) bitor
         ( ( decrypteddata [ 1 ] bitand 0x3  ) << 2  )
         bitor ( ( decrypteddata [ 2 ] bitand 0x3  ) <<  4 ) bitor
@@ -1805,12 +1838,13 @@ rand6ok :
     } while ( true ) ; } // ver4
     if ( ns_shifr . use_version == 6 )  {
       uint8_t secretdata [ 1 ] ;
+      uint8_t old_last_data = 0 ;
       uint8_t old_last_sole = 0 ;
       while ( not isEOFstreambuf_read6bits ( & filebuffrom ,
         & ( secretdata [ 0 ] ) , flagtext ) ) {
         uint8_t decrypteddata [ 1 ] ;
         decrypt_sole6 ( & secretdata , & deshi6 , & decrypteddata , 1 ,
-          & old_last_sole ) ;
+          & old_last_sole , & old_last_data ) ;
         streambuf_write3bits ( & filebufto , decrypteddata [ 0 ] ) ; } } // ver 6
     }  //  decode 
   } // shifr deshi
