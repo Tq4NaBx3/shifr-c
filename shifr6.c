@@ -36,25 +36,10 @@ Secr xxxx      xxxx            yyyy
 
 Соль одного элемента будет ксорить следующий элемент для исчезания повторов.
 Данные первого элемента будут ксорить соль второго элемента.
-Если все элементы будут одного значения, тогда все шифрованные значения будут иметь свойство псевдо-случайности.
+Если все элементы будут одного значения, тогда все
+ шифрованные значения будут иметь свойство псевдо-случайности.
 И данные и соль имеют секретность кроме первой нулевой соли.
 Функция Шифр(пары: данные+соль) должна быть случайной неупорядоченной.
-
-Файл с нулевыми данными.
-
-Данные :       00⊻00=00 00⊻10=10 00⊻01=01  ...
-           ______/  ______/  ______/  ______/
-Соль   : 00       10       01       11
-    
-Шифр   :       S(0010)  S(1001)  S(0111)
-
-Для расшифровки требуется ксорить данные с предыдущей солью.
-
-Шифр   :      R(0010)  R(1001)   R(0111)
-
-Соль   : 00     10        01        11
-            \        \         \
-Данные :     00⊻00=00  10⊻10=00  01⊻01=00  ...
 
 */
 
@@ -94,25 +79,10 @@ Secr xxxx      xxxx            yyyy
 
 The salt of one element will modify (xor) the next element to remove repeats.
 The data of the first element will modify (xor) the second element salt.
-If all elements are of the same value, then all encrypted values will have the property of pseudo-randomness.
+If all elements are of the same value, then all encrypted 
+ values will have the property of pseudo-randomness.
 Both data and salt have secrecy apart from the first zero salt.
 Function Shifr(of pair: data+salt)should be randomly disordered.
-
-File with zero data.
-
-Data   :       00⊻00=00 00⊻10=10 00⊻01=01  ...
-           ______/  ______/  ______/  ______/
-Salt   : 00       10       01       11
-    
-Shifr  :       S(0010)  S(1001)  S(0111)
-
-To decrypt, you need to modify (xor) the data with the previous salt.
-
-Shifr  :      R(0010)  R(1001)   R(0111)
-
-Salt   : 00     10        01        11
-            \        \         \
-Data   :     00⊻00=00  10⊻10=00  01⊻01=00  ...
 
 */
 
