@@ -140,7 +140,7 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 # include <setjmp.h>
 # include <sys/time.h>
 
-# define  SHIFR_DEBUG
+//# define  SHIFR_DEBUG
 
 # define  arrp  shifr_arrp
 typedef uint8_t ( * arrp ) [ ] ;
@@ -200,9 +200,8 @@ static inline void  decrypt_sole ( arrp const datap , arrcp const tablep ,
   do {
     { uint8_t const data_sole = ( * tablep ) [ * id ] ;
       ( * ide ) = ( data_sole >>  2 ) xor ( * old_last_sole ) ;
-      uint8_t const new_sole = (  data_sole bitand  0x3 ) xor ( * old_last_data ) ;
-      ( * old_last_data ) = ( * ide ) ;
-      ( * old_last_sole ) = new_sole ; }
+      ( * old_last_sole ) = (  data_sole bitand  0x3 ) xor ( * old_last_data ) ;
+      ( * old_last_data ) = ( * ide ) ; }
     ++  id  ;
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
@@ -217,9 +216,8 @@ static inline void  decrypt_sole6 ( arrp const datap , arrcp const tablep ,
   do {
     { uint8_t const data_sole = ( * tablep ) [ * id ] ;
       ( * ide ) = ( data_sole >>  3 ) xor ( * old_last_sole ) ;
-      uint8_t const new_sole = (  data_sole bitand  0x7 ) xor ( * old_last_data ) ;
-      ( * old_last_data ) = ( * ide ) ;
-      ( * old_last_sole ) = new_sole ; }
+      ( * old_last_sole ) = (  data_sole bitand  0x7 ) xor ( * old_last_data ) ;
+      ( * old_last_data ) = ( * ide ) ; }
     ++  id  ;
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
@@ -479,38 +477,36 @@ static inline void  shifr_init ( void  ) {
   // пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
   // секретных кодов для соли+данных 0x1  
 // в deshi нужна соль
-static inline void  password_load ( uint64_t  const password_const  , 
+static inline void  password_load ( uint64_t password , 
   arrp const shifrp , arrp const deship ) {
 # define  codefree  ((uint8_t)0xff)
   initarr ( shifrp , codefree , shifr_deshi_size2 )  ;
   initarr ( deship , codefree , shifr_deshi_size2 )  ;
 # undef codefree
-  uint64_t  password = password_const ;
-  uint8_t arrind  [ 0x10  ] ;
-  { uint8_t * arrj  = & ( arrind  [ 0x10  ] ) ;
-    uint8_t j = 0x10  ;
+  uint8_t arrind  [ shifr_deshi_size2  ] ;
+  { uint8_t * arrj  = & ( arrind  [ shifr_deshi_size2  ] ) ;
+    uint8_t j = shifr_deshi_size2  ;
     do  {
       --  arrj  ;
       --  j ;
       ( * arrj )  = j ;
     } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ;  }
   // 0 .. 15
-  uint8_t cindex  = password  bitand  0xf ; //  % 16
-  password  >>= 4 ; //  /= 16
-  ( * shifrp  ) [ 0 ] = cindex  ;
-  ( * deship  ) [ cindex  ] = 0 ;
-  uint8_t inde  = 1 ;
+  uint8_t inde  = 0 ;
   do  {
-    memmove ( & ( arrind  [ cindex  ] ) , & ( arrind  [ cindex  + 1 ] ) ,
-      0x10  - inde  - cindex  ) ;
-    { ldiv_t di = ldiv ( password  , 0x10  - inde ) ;
-      cindex  = di . rem ;
-      password  = di  . quot  ; 
-      ( * shifrp  ) [ inde ] = arrind [ di . rem ] ;
-      ( * deship  ) [ arrind [ di . rem ]  ] = inde ; }
+    { uint8_t cindex  ;
+      { ldiv_t di = ldiv ( password  , shifr_deshi_size2  - inde ) ;
+        cindex  = di . rem ;
+        password  = di  . quot  ; }
+      uint8_t * arrind_cindexp = & (  arrind [ cindex ] ) ;
+      ( * shifrp  ) [ inde ] = ( * arrind_cindexp ) ;
+      ( * deship  ) [ * arrind_cindexp ] = inde ;
+      memmove ( arrind_cindexp , arrind_cindexp + 1 ,
+        shifr_deshi_size2  - inde  - cindex - 1 ) ; }
     ++  inde  ;
-  } while ( inde  < 0x10  ) ; }
+  } while ( inde  < shifr_deshi_size2  ) ; }
 
+# ifdef SHIFR_DEBUG
 //  /= 64  или  >>= 6
 static inline void  number320_shift_down  ( t_number320 * const nump ,
   uint8_t const s ) {
@@ -522,6 +518,7 @@ static inline void  number320_shift_down  ( t_number320 * const nump ,
     ( * p ) = ( ((uint64_t)old6) << ( 64  - s ) ) bitor ( ( * p ) >> s ) ;
     old6 = new6 ;
   } while ( p not_eq & ( nump -> a [ 0 ] ) ) ;  }
+# endif
 
 // пароль раскладываем в таблицу шифровки , дешифровки
   // пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
@@ -545,19 +542,14 @@ static inline void  password_load6 ( t_number320 const * const password_constp ,
       ( * arrj )  = j ;
     } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; }
   // 0 .. 63
-  //  % 64
-  uint8_t cindex  = ( password . a [ 0 ] ) bitand  ( shifr_deshi_size6 - 1 ) ;
-  //  /= 64  или  >>= 6
-  number320_shift_down  ( & password  , 6 ) ;
-  ( * shifrp  ) [ 0 ] = cindex  ;
-  ( * deship  ) [ cindex  ] = 0 ;
-  uint8_t inde  = 1 ;
+  uint8_t inde  = 0 ;
   do  {
-    memmove ( & ( arrind  [ cindex  ] ) , & ( arrind  [ cindex  + 1 ] ) ,
-      shifr_deshi_size6  - inde  - cindex  ) ;
-    cindex  = number320_div8mod  ( & password , shifr_deshi_size6  - inde ) ;
-    ( * shifrp  ) [ inde ] = arrind [ cindex ] ;
-    ( * deship  ) [ arrind [ cindex ]  ] = inde ;
+    uint8_t cindex  = number320_div8mod  ( & password , shifr_deshi_size6  - inde ) ;
+    uint8_t * arrind_cindexp = & (  arrind [ cindex ] ) ;
+    ( * shifrp  ) [ inde ] = (  * arrind_cindexp  ) ;
+    ( * deship  ) [ * arrind_cindexp ] = inde ;
+    memmove ( arrind_cindexp , arrind_cindexp + 1 ,
+      shifr_deshi_size6  - inde  - cindex - 1 ) ;
     ++  inde  ;
   } while ( inde  < shifr_deshi_size6  ) ; }
 
@@ -631,11 +623,11 @@ static inline void  data_xor6  ( uint8_t * const restrict  old_last_data ,
 
 static  inline  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
   unsigned  char c = buf bitand 0xf ;
-  if ( c <= 9 ) (*buf2)[0] = '0' + c ;
-  else  (*buf2)[0] = 'a' + (c - 10) ;
-  c = (buf >> 4) bitand 0xf ;
-  if ( c <= 9 ) (*buf2)[1] = '0' + c ;
-  else  (*buf2)[1] = 'a' + (c - 10) ; }
+  if ( c <= 9 ) ( * buf2  ) [ 0 ] = '0' + c ;
+  else  ( * buf2  ) [ 0 ] = 'a' + ( c - 10  ) ;
+  c = ( buf >> 4  ) bitand 0xf ;
+  if ( c <= 9 ) ( * buf2  ) [ 1 ] = '0' + c ;
+  else  ( * buf2  ) [ 1 ] = 'a' + ( c - 10  ) ; }
 
 // ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
 static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
@@ -1015,11 +1007,11 @@ int main  ( int argc , char * argv [ ] )  {
     puts  (ns_shifr . localerus ? u8"  --расшифр или\n  --decrypt\tрасшифровать" :
       "  --decrypt" );
     puts  (ns_shifr . localerus ?
-      u8"  --пароль или\n  --pass 'строка_пароля'\tиспользовать данный пароль" :
-      "  --pass 'password_string'\tuse this password" );
+      u8"  --пар или\n  --pas 'строка_пароля'\tиспользовать данный пароль" :
+      "  --pas 'password_string'\tuse this password" );
     puts  ( ns_shifr . localerus ?
-      u8"  --пар-путь или\n  --psw-path 'путь_к_файлу_с_паролем'\tиспользовать пароль в файле" :
-      "  --psw-path 'path_to_password_file'\tuse password in file" );
+      u8"  --пар-путь или\n  --pas-path 'путь_к_файлу_с_паролем'\tиспользовать пароль в файле" :
+      "  --pas-path 'path_to_password_file'\tuse password in file" );
     puts  (ns_shifr . localerus ?
       u8"  --вход или\n  --input 'имя_файла'\tчитать из файла (без данной опции читаются данные со стандартного входа)" :
       "  --input 'file_name'\tread from file (without this option data reads from standard input)");
@@ -1057,7 +1049,7 @@ int main  ( int argc , char * argv [ ] )  {
       "  n3LTQH4eIicGDNaF8CDVRGdaCEVXxPPgikJ9lbQKW4zs8StkhD"  ) ;
     puts  ( ns_shifr  . localerus ?
       u8"  $ ./shifr6 --пар-путь 'psw' > test.e --текст"  :
-      "  $ ./shifr6 --psw-path 'psw' > test.e --text"  ) ;
+      "  $ ./shifr6 --pas-path 'psw' > test.e --text"  ) ;
     puts( ns_shifr  . localerus ? u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
       "  2+2 (Press Enter,Ctrl+D)" ) ;
     puts  ( 
@@ -1065,7 +1057,7 @@ int main  ( int argc , char * argv [ ] )  {
       "  ylQ?ncm;ags" ) ;
     puts( ns_shifr  . localerus ?
       u8"  $ ./shifr6 --пар-путь 'psw' < test.e --текст --расшифр" :
-      "  $ ./shifr6 --psw-path 'psw' < test.e --text --decrypt" ) ;
+      "  $ ./shifr6 --pas-path 'psw' < test.e --text --decrypt" ) ;
     puts  ( "  2+2" ) ;
     return 0 ; }
 # if  RAND_MAX  !=  0x7fffffff
@@ -1279,12 +1271,12 @@ if ( flagreadpasswdfromfile ) {
           flagdec = true ;
           flagenc = false ; }
         else
-        if (( strcmp ( argv[argj] , u8"--пароль" ) ==  0 )or
-          ( strcmp ( argv[argj] , "--pass" ) ==  0 )) { 
+        if (( strcmp ( argv[argj] , u8"--пар" ) ==  0 )or
+          ( strcmp ( argv[argj] , "--pas" ) ==  0 )) { 
           flagreadpasswd  = true  ; }
         else
         if (( strcmp ( argv[argj] , u8"--пар-путь" ) ==  0 )or
-          ( strcmp ( argv[argj] , "--psw-path" ) ==  0 )) { 
+          ( strcmp ( argv[argj] , "--pas-path" ) ==  0 )) { 
           flagreadpasswdfromfile  = true  ; }
         else
         if (( strcmp ( argv[argj] , u8"--вход" ) ==  0 )or
@@ -1521,11 +1513,13 @@ rand6ok :
       password_letters2 ) [ 0 ] ) ) ;
 # endif    
     if ( not flagoutputtofile ) return  0 ;  }
+# ifdef SHIFR_DEBUG        
   if  ( flagenc and flagdec ) {
     ns_shifr  . string_exception  = ( ns_shifr . localerus ?
       (char const (*)[])& u8"так зашифровывать или расшифровывать ?" :
       (char const (*)[])& "so encrypt or decrypt ?" ) ;
     longjmp(ns_shifr  . jump,1); }
+# endif
   //  по-умолчанию шифруем
   if ( not flagdec  ) flagenc = true  ;
   if ( not flagpasswd )    {
@@ -1637,7 +1631,7 @@ rand6ok :
           ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
             (char const (*)[]) & u8"ошибка чтения файла" :
             (char const (*)[]) & "error reading file" ) ;
-          longjmp(ns_shifr  . jump,1); }
+          longjmp ( ns_shifr  . jump  , 1 ) ; }
         break ; }
       uint8_t const secretdata  [ 4 ] = { [ 0 ]  = buf  bitand 0x3 ,
         [ 1 ] = ( buf >>  2 ) bitand 0x3 , [ 2 ] = ( buf >>  4 ) bitand 0x3 ,
@@ -1654,8 +1648,8 @@ rand6ok :
           ( ( encrypteddata [ i + 1 ] & 0xf ) << 4  ) ;
         size_t writecount ;
         if  ( flagtext  ) {
-          char buf2[2];
-          char_to_hex(buf,&buf2);
+          char buf2 [ 2 ] ;
+          char_to_hex ( buf , & buf2  ) ;
           writecount = fwrite ( & buf2 , 2 , 1 , fileto ) ;
           ++ bytecount ;
           if ( bytecount == 30 )  {
