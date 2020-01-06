@@ -1330,18 +1330,18 @@ int main  ( int argc , char * argv [ ] )  {
   shifr_init  ( ) ;
   if  ( argc  <=  1  ) {
     puts ( ns_shifr . localerus ?
-      u8"Шифр6 ©2020 Глебов А.Н.\n"
+      u8"Шифр ©2020 Глебов А.Н.\n"
       u8"Симметричное поточное шифрование с 'солью'.\n"
       u8"'Соль' генерируется постоянно, что даёт хорошую стойкость.\n"
       u8"Размер данных увеличивается в два раза.\n"
       u8"Нет диагностики неправильного пароля.\n"
-      u8"Синтаксис : shifr6 [параметры]" :
-      "Shifr6 ©2020 Glebe A.N.\n"
+      u8"Синтаксис : shifr [параметры]" :
+      "Shifr ©2020 Glebe A.N.\n"
       "Symmetric stream encryption with 'salt'.\n"
       "'Salt' is constantly generated, which gives good durability.\n"
       "Data size doubles.\n"
       "There is no diagnosis of the wrong password.\n"
-      "Syntax : shifr6 [options]" ) ;
+      "Syntax : shifr [options]" ) ;
     puts  ( ns_shifr . localerus ? u8"Параметры :" : "Options :"  ) ;
     puts  (ns_shifr . localerus ?
       u8"  --ген-пар или\n  --gen-pas\tгенерировать пароль" :
@@ -1387,22 +1387,22 @@ int main  ( int argc , char * argv [ ] )  {
       "\'\t(by default)\n"  ) , stdout  ) ;
     puts  ( ns_shifr  . localerus ? u8"Пример использования :"  :
       "Usage example"  ) ;
-    puts  ( ns_shifr  . localerus ? u8"  $ ./shifr6 --ген-пар > psw"  :
-      "  $ ./shifr6 --gen-pas > psw"  ) ;
+    puts  ( ns_shifr  . localerus ? u8"  $ ./shifr --ген-пар > psw"  :
+      "  $ ./shifr --gen-pas > psw"  ) ;
     puts  ( 
       "  $ cat psw\n"
       "  n3LTQH4eIicGDNaF8CDVRGdaCEVXxPPgikJ9lbQKW4zs8StkhD"  ) ;
     puts  ( ns_shifr  . localerus ?
-      u8"  $ ./shifr6 --пар-путь 'psw' > test.e --текст"  :
-      "  $ ./shifr6 --pas-path 'psw' > test.e --text"  ) ;
+      u8"  $ ./shifr --пар-путь 'psw' > test.e --текст"  :
+      "  $ ./shifr --pas-path 'psw' > test.e --text"  ) ;
     puts( ns_shifr  . localerus ? u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
       "  2+2 (Press Enter,Ctrl+D)" ) ;
     puts  ( 
       "  $ cat test.e\n"
       "  ylQ?ncm;ags" ) ;
     puts( ns_shifr  . localerus ?
-      u8"  $ ./shifr6 --пар-путь 'psw' < test.e --текст --расшифр" :
-      "  $ ./shifr6 --pas-path 'psw' < test.e --text --decrypt" ) ;
+      u8"  $ ./shifr --пар-путь 'psw' < test.e --текст --расшифр" :
+      "  $ ./shifr --pas-path 'psw' < test.e --text --decrypt" ) ;
     puts  ( "  2+2" ) ;
     return 0 ; }
 # if  RAND_MAX  !=  0x7fffffff

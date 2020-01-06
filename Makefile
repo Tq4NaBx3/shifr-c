@@ -1,13 +1,13 @@
 GCC = gcc
 #GCC = gcc-8
-shifr6: shifr6.c
-	@$(GCC) $(SHDE) -Wall -Wextra -Winline -Wno-clobbered -std=c11 -Os shifr6.c -o shifr6
+shifr: shifr.c
+	@$(GCC) $(SHDE) -Wall -Wextra -Winline -Wno-clobbered -std=c11 -Os shifr.c -o shifr
 clean:
-	@rm -f shifr6
-	@rm -f shifr6.s
+	@rm -f shifr
+	@rm -f shifr.s
 debug asmdebug: SHDE = -DSHIFR_DEBUG
-debug: shifr6
+debug: shifr
 asmdebug: asm
-asm: shifr6.s
-shifr6.s: shifr6.c
-	@$(GCC) $(SHDE) -Wall -Wextra -Winline -Wno-clobbered -std=c11 -Os shifr6.c -S
+asm: shifr.s
+shifr.s: shifr.c
+	@$(GCC) $(SHDE) -Wall -Wextra -Winline -Wno-clobbered -std=c11 -Os shifr.c -S
