@@ -988,10 +988,10 @@ static  inline  void  enter_password6 ( int const password_alphabet ) {
       , &((*p6)[0]) , & ( password_letters6  [ 0 ] ) ) ; }
 
 void  shifr_encode4 ( void ) {
-  int bytecount = 0 ;
+  int bytecount = 0 ; // for text mode
   uint8_t old_last_data = 0 ;
   uint8_t old_last_sole = 0 ;
-  size_t readcount  = 0 ; // to fread
+  size_t readcount  = 0 ; // for fread
   char  abuf [ 2 ] ;
   char  * bufp  ;
   do {
@@ -1002,8 +1002,8 @@ void  shifr_encode4 ( void ) {
       bufp  = & ( abuf [ 0 ] ) ;
       readcount = fread ( bufp , 1 , 2 , ns_shifr  . filefrom ) ; }
     if ( readcount == 0 ) {
-      if ( ferror ( ns_shifr  . filefrom ) ) {
-        clearerr ( ns_shifr  . filefrom ) ;
+      if  ( ferror  ( ns_shifr  . filefrom  ) ) {
+        clearerr  ( ns_shifr  . filefrom  ) ;
         ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
           (char const (*)[]) & u8"ошибка чтения файла" :
           (char const (*)[]) & "error reading file" ) ;
