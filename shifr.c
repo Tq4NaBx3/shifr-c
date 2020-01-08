@@ -650,41 +650,12 @@ static inline void  data_xor6  ( uint8_t * const restrict  old_last_data ,
     ++  ids ;
   } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
-static  inline  void  char_to_hex ( char  buf , char ( * const buf2 ) [ 2 ] ) {
-  unsigned  char c = buf bitand 0xf ;
-  if ( c <= 9 ) ( * buf2  ) [ 0 ] = '0' + c ;
-  else  ( * buf2  ) [ 0 ] = 'a' + ( c - 10  ) ;
-  c = ( buf >> 4  ) bitand 0xf ;
-  if ( c <= 9 ) ( * buf2  ) [ 1 ] = '0' + c ;
-  else  ( * buf2  ) [ 1 ] = 'a' + ( c - 10  ) ; }
-
 // ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
 static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
   return  ';'  + bits6  ; }
 
 static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
   return  letter  - ';' ; }
-
-static  void  hex_to_char ( char const ( * restrict const buf2 ) [ 2 ] ,
-  char * const restrict buf ) {
-  if  ((*buf2)[0] >= '0' and (*buf2)[0] <= '9') (* buf) = (*buf2)[0] - '0';
-  else
-    if((*buf2)[0] >= 'a' and (*buf2)[0] <= 'f') (* buf) = 10 + ((*buf2)[0] - 'a');
-  else  {
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-      (char const (*)[]) & u8"плохая hex буква" :
-      (char const (*)[])& "bad hex letter" ) ;
-    longjmp(ns_shifr  . jump,1); }
-  if  ((*buf2)[1] >= '0' and (*buf2)[1] <= '9')
-    (* buf) or_eq (((*buf2)[1] - '0')<<4);
-  else
-    if((*buf2)[1] >= 'a' and (*buf2)[1] <= 'f')
-      (* buf) or_eq ((10 + ((*buf2)[1] - 'a'))<<4);
-  else  {
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-      (char const (*)[]) & u8"плохая hex буква" :
-      (char const (*)[]) & "bad hex letter" ) ;
-    longjmp(ns_shifr  . jump,1); } }
     
 // Отключить эхо-вывод и буферизацию ввода
 static void set_keypress (void) {
@@ -988,65 +959,77 @@ static  inline  void  enter_password6 ( int const password_alphabet ) {
       , &((*p6)[0]) , & ( password_letters6  [ 0 ] ) ) ; }
 
 void  shifr_encode4 ( void ) {
-  int bytecount = 0 ; // for text mode
-  uint8_t old_last_data = 0 ;
-  uint8_t old_last_sole = 0 ;
-  size_t readcount  = 0 ; // for fread
-  char  abuf [ 2 ] ;
-  char  * bufp  ;
-  do {
-    if ( readcount == 2 ) {
-      ++  bufp  ;
-      readcount = 1 ; }
-    else {
-      bufp  = & ( abuf [ 0 ] ) ;
-      readcount = fread ( bufp , 1 , 2 , ns_shifr  . filefrom ) ; }
-    if ( readcount == 0 ) {
-      if  ( ferror  ( ns_shifr  . filefrom  ) ) {
-        clearerr  ( ns_shifr  . filefrom  ) ;
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
-          (char const (*)[]) & u8"ошибка чтения файла" :
-          (char const (*)[]) & "error reading file" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; }
-      break ; }
-    uint8_t const secretdata  [ 4 ] = {
-      [ 0 ] = ( * bufp ) bitand 0x3 ,
-      [ 1 ] = ( ( * bufp ) >>  2 ) bitand 0x3 ,
-      [ 2 ] = ( ( * bufp ) >>  4 ) bitand 0x3 ,
-      [ 3 ] = ( ( * bufp ) >>  6 ) bitand 0x3 } ;
-    uint8_t secretdatasole  [ 4 ] ;
-    datasole ( & secretdata , & secretdatasole , 4 )  ;
-    // после подсоления, данные переворачиваем предыдущим ксором
-    data_xor ( & old_last_data , & old_last_sole , & secretdatasole , 4 )  ;
-    uint8_t encrypteddata [ 4 ] ;
-    crypt_decrypt ( & secretdatasole , & ns_shifr  . shifr , & encrypteddata , 4 ) ;
-    for ( int i = 0 ; i < 4 ; i +=  2 ) {
-      char  cbuf  = ( encrypteddata [ i ] & 0xf ) bitor
-        ( ( encrypteddata [ i + 1 ] & 0xf ) << 4  ) ;
+    int charcount = 0 ;
+    uint8_t old_last_data = 0 ;
+    uint8_t old_last_sole = 0 ;
+    do {
+      char buf ;
+      size_t readcount = fread ( & buf , 1 , 1 , ns_shifr  . filefrom ) ;
+      if ( readcount == 0 ) {
+        if ( ferror ( ns_shifr  . filefrom ) ) {
+          clearerr ( ns_shifr  . filefrom ) ;
+          ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+            (char const (*)[]) & u8"ошибка чтения файла" :
+            (char const (*)[]) & "error reading file" ) ;
+          longjmp ( ns_shifr  . jump  , 1 ) ; }
+        break ; }
+      uint8_t const secretdata  [ 4 ] = { [ 0 ]  = buf  bitand 0x3 ,
+        [ 1 ] = ( buf >>  2 ) bitand 0x3 , [ 2 ] = ( buf >>  4 ) bitand 0x3 ,
+        [ 3 ] = ( buf >>  6 ) bitand 0x3 } ;
+      uint8_t secretdatasole  [ 4 ] ;
+      datasole ( & secretdata , & secretdatasole , 4 )  ;
+      // после подсоления, данные переворачиваем предыдущим ксором
+      data_xor ( & old_last_data , & old_last_sole , & secretdatasole , 4 )  ;
+      uint8_t encrypteddata [ 4 ] ;
+      crypt_decrypt ( & secretdatasole , & ns_shifr  . shifr , & encrypteddata , 4 ) ;
+// 2^16 ^ 1/3 = 40.32
+// 2^16 % 40 = 0 .. 39
+// 2^16 / 40 = 1638.4
+// 1639 ^ 1/2 = 40.48
+// 1639 % 40 = 0 .. 39
+// 1639 / 40 = 40.97
+// делаем [0] % 40 , [1] % 40 , [2] % 41
+// 'R' = 82 .. 'z' = 122
       size_t writecount ;
       if  ( ns_shifr  . flagtext  ) {
-        char buf2 [ 2 ] ;
-        char_to_hex ( cbuf  , & buf2  ) ;
-        writecount = fwrite ( & buf2 , 2 , 1 , ns_shifr  . fileto ) ;
-        ++ bytecount ;
-        if ( bytecount == 30 )  {
-          bytecount = 0 ;
-          buf2[0] = '\n' ;
-          fwrite ( & (buf2[0]) , 1 , 1 , ns_shifr  . fileto ) ; }      }
-      else
-        writecount = fwrite ( & cbuf  , 1 , 1 , ns_shifr  . fileto ) ;
+        uint16_t buf16 = ((uint16_t)( encrypteddata [ 0 ] & 0xf )) bitor
+          ( ((uint16_t)( encrypteddata [ 1 ] & 0xf )) << 4  )  bitor
+          ( ((uint16_t)( encrypteddata [ 2 ] & 0xf )) << 8  )  bitor
+          ( ((uint16_t)( encrypteddata [ 3 ] & 0xf )) << 12  ) ;
+        char buf3 [ 4 ] ;
+        buf3 [ 0 ] = 'R' + ( buf16 % 40 ) ;
+        buf16 /= 40 ;
+        buf3 [ 1 ] = 'R' + ( buf16 % 40 ) ;
+        buf16 /= 40 ;
+        buf3 [ 2 ] = 'R' + buf16 ;
+        charcount += 3 ;
+        if ( charcount == 60 )  {
+          charcount = 0 ;
+          buf3  [ 3 ] = '\n' ;
+          writecount = fwrite ( & ( buf3 [ 0 ] ) , 4 , 1 , ns_shifr  . fileto ) ; }
+        else
+          writecount = fwrite ( & ( buf3 [ 0 ] ) , 3 , 1 , ns_shifr  . fileto ) ; }
+      else {
+        char buf2 [ 2 ] = {
+          [ 0 ] = ((uint16_t)( encrypteddata [ 0 ] & 0xf )) bitor
+            ( ((uint16_t)( encrypteddata [ 1 ] & 0xf )) << 4  ) ,
+          [ 1 ] = ((uint16_t)( encrypteddata [ 2 ] & 0xf )) bitor
+            ( ((uint16_t)( encrypteddata [ 3 ] & 0xf )) << 4 ) } ;
+        writecount = fwrite ( & (buf2[0]) , 2 , 1 , ns_shifr  . fileto ) ; }
       if ( writecount == 0 ) {
-        if ( ferror ( ns_shifr  . fileto ) ) {
-          clearerr ( ns_shifr  . fileto ) ;
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-            (char const (*)[]) & u8"ошибка записи в файл" :
-            (char const (*)[]) & "error writing to file" ) ;
-          longjmp(ns_shifr  . jump,1); }
-        break ; } }
-  } while ( true ) ; 
-  if ( ns_shifr  . flagtext and bytecount ) {
-    char  cbuf  = '\n'  ;
-    fwrite  ( & cbuf  , 1 , 1 , ns_shifr  . fileto ) ; } }
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          (char const (*)[]) & u8"ошибка записи в файл" :
+          (char const (*)[]) & "error writing to file" ) ;
+        longjmp(ns_shifr  . jump,1); }
+    } while ( true ) ; 
+    if ( ns_shifr  . flagtext and charcount ) {
+      char buf = '\n' ;
+      size_t  writecount = fwrite ( & buf , 1 , 1 , ns_shifr  . fileto ) ;
+      if ( writecount == 0 ) {
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          (char const (*)[]) & u8"ошибка записи в файл" :
+          (char const (*)[]) & "error writing to file" ) ;
+        longjmp(ns_shifr  . jump,1); } } }
 
 t_streambuf shifr_filebuffrom ;
 t_streambuf shifr_filebufto ;
@@ -1141,50 +1124,42 @@ void shifr_decode4  ( void  ) {
       char buf [ 2 ] ;
       size_t readcount ;
       if  ( ns_shifr  . flagtext  ) {
-        char buf4 [ 4 ] ;
-        // читаем четыре буквы '0a1b' -> декодируем в два байта "XY"
+// 2^16 ^ 1/3 = 40.32
+// 2^16 % 40 = 0 .. 39
+// 2^16 / 40 = 1638.4
+// 1639 ^ 1/2 = 40.48
+// 1639 % 40 = 0 .. 39
+// 1639 / 40 = 40.97
+// делаем [0] % 40 , [1] % 40 , [2] % 41
+// 'R' = 82 .. 'z' = 122
+
+        char buf3 [ 3 ] ;
+        // читаем три буквы 'a1b' -> декодируем в два байта "XY"
         do {
-          readcount = fread ( & (buf4[0]) , 1 , 1 , ns_shifr  . filefrom ) ;
+          readcount = fread ( & (buf3[0]) , 1 , 1 , ns_shifr  . filefrom ) ;
           if ( readcount == 0 ) {
             if ( feof ( ns_shifr  . filefrom ) ) return ;
-            if ( ferror ( ns_shifr  . filefrom ) ) {
-              clearerr ( ns_shifr  . filefrom ) ;
-              ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-                (char const (*)[]) & u8"ошибка чтения файла" :
-                (char const (*)[]) & "error reading file" ) ;
-              longjmp(ns_shifr  . jump,1); }
-            return ; }
-          // если это НЕ цифра и НЕ буква
-        } while ( ( buf4[0] < '0' or buf4[0] > '9') and
-            ( buf4[0] < 'a' or buf4[0] > 'f') ) ;
-        readcount = fread ( & (buf4[1]) , 1 , 3 , ns_shifr  . filefrom ) ;
-        if ( readcount < 3 ) {
-          if ( feof ( ns_shifr  . filefrom ) )
             ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-              (char const (*)[]) & u8"ошибка hex данных" :
-              (char const (*)[]) & "error hex data" ) ;
-          else
-            if ( ferror ( ns_shifr  . filefrom ) ) {
-              clearerr ( ns_shifr  . filefrom ) ;
-              ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-                (char const (*)[]) & u8"ошибка чтения файла" :
-                (char const (*)[]) & "error reading file" ) ; }
-            else
-              ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-                (char const (*)[]) & u8"ошибка hex данных" :
-                (char const (*)[]) & "error hex data" ) ;
-          longjmp(ns_shifr  . jump,1);  }
-        for ( char const * i = &(buf4[1]); i <= &(buf4[3]) ; ++ i ) {
-          if (  not ( ( ( * i ) >= '0' and (  * i ) <= '9'  ) or
-              ( ( * i ) >= 'a' and (  * i ) <= 'f'  ) ) ) {
+              (char const (*)[]) & u8"ошибка чтения данных" :
+              (char const (*)[]) & "error data reading" ) ;
+            longjmp(ns_shifr  . jump,1); }
+        } while ( buf3[0] < 'R' or buf3[0] > 'z' ) ;
+        readcount = fread ( & (buf3[1]) , 1 , 2 , ns_shifr  . filefrom ) ;
+        if ( readcount < 2 ) {
+          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+            (char const (*)[]) & u8"ошибка чтения данных" :
+            (char const (*)[]) & "error data reading" ) ;
+          longjmp(ns_shifr  . jump,1); }
+        for ( char const * i = &(buf3[1]); i <= &(buf3[2]) ; ++ i ) {
+          if ( (*i) < 'R' or (*i) > 'z' ) {
             ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-              (char const (*)[]) & u8"ошибка hex данных" :
-              (char const (*)[]) & "error hex data" ) ;
+              (char const (*)[]) & u8"неправильные буквы" :
+              (char const (*)[]) & "wrong letters" ) ;
             longjmp(ns_shifr  . jump,1); } }
-        hex_to_char ( ( char const ( * ) [ 2 ] ) ( & buf4 ) ,
-          & ( buf [ 0 ] ) ) ;  
-        hex_to_char ( ( char const ( * ) [ 2 ] ) ( & ( buf4 [ 2 ] ) ) ,
-          & ( buf [ 1 ] ) ) ; }
+        uint16_t u16 = ((uint16_t)(buf3[0] - 'R')) + 40U * ( ((uint16_t)(buf3[1] - 'R')) +
+          40U * ((uint16_t)( buf3[2] - 'R' )) ) ;
+        buf [ 0 ] = u16 bitand 0xff ;
+        buf [ 1 ] = u16 >> 8 ; }
       else {
         readcount = fread ( & ( buf [ 0 ] ) , 1 , 2 , ns_shifr  . filefrom ) ;
         if ( readcount < 2 ) {
