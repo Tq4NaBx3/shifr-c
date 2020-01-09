@@ -233,9 +233,152 @@ static inline void  decrypt_sole6 ( arrp const datap , arrcp const tablep ,
 
 # define  t_raspr4  shifr_t_raspr4
 
+# define  shifr_number_def( N ) \
+  typedef struct  shifr_s_number##N { \
+    /* array */ \
+    uint8_t HRDG [ N ] ; \
+  } shifr_t_number##N ;  
+
+# define  number_def  shifr_number_def
+
+# define  shifr_number_array_pub( M ) ((M)->HRDG)
+# define  shifr_number_array_pri( M ) number::array is private
+# define  shifr_number_array  shifr_number_array_pub
+# define  number_array  shifr_number_array
+
+# define  shifr_number_type( N ) shifr_t_number##N
+# define  number_type shifr_number_type
+
+# define  shifr_number_def_set0( N ) \
+void shifr_number##N##_set0  ( number_type  ( N ) * const restrict np ) { \
+  memset  ( & ( ( number_array  ( np  ) ) [ 0 ] ) , 0 , N ) ; }
+# define  number_def_set0 shifr_number_def_set0
+
+# define  shifr_number_set0( N ) shifr_number##N##_set0
+# define  number_set0 shifr_number_set0
+
+# define  shifr_number_def_set_byte(  N ) \
+void  shifr_number##N##_set_byte  ( number_type ( N ) * const restrict np , \
+  uint8_t const x ) { \
+  memset  ( & ( ( number_array ( np ) ) [ 1 ] ) , 0 , N - 1 ) ; \
+  ( number_array ( np ) ) [ 0 ] = x ; }
+# define  number_def_set_byte shifr_number_def_set_byte
+
+# define  shifr_number_set_byte( N ) shifr_number##N##_set_byte
+# define  number_set_byte shifr_number_set_byte
+
+# define  shifr_number_def_elt_copy( N ) \
+uint8_t shifr_number##N##_elt_copy  ( \
+  number_type ( N ) const * const restrict  np  , uint8_t const i ) { \
+  return  number_array  ( np  ) [ i ] ; }
+# define  number_def_elt_copy shifr_number_def_elt_copy
+
+# define  shifr_number_elt_copy( N ) shifr_number##N##_elt_copy
+# define  number_elt_copy shifr_number_elt_copy
+
+# define  shifr_number_def_mul_byte(  N ) \
+void  shifr_number##N##_mul_byte ( number_type ( N ) * const restrict  np  , \
+  uint8_t const byte ) {  \
+  if ( byte == 0 ) {  \
+    number_set0 ( N ) ( np  ) ; \
+    return  ; } \
+  if ( byte == 1 ) return ; \
+  uint8_t per = 0 ; \
+  for ( uint8_t i = 0 ; i < N ; ++ i )  { \
+    uint16_t  x = ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) * \
+      ( ( uint16_t  ) byte  ) + ( ( uint16_t  ) per ) ; \
+    number_array  ( np  ) [ i ] = x bitand 0xff ; \
+    per = x >>  8 ; } }
+# define  number_def_mul_byte shifr_number_def_mul_byte
+
+# define  shifr_number_mul_byte( N ) shifr_number##N##_mul_byte
+# define  number_mul_byte shifr_number_mul_byte
+
+# define  shifr_number_def_add(  N ) \
+void  shifr_number##N##_add  ( number_type ( N ) * const restrict  np  ,  \
+  number_type ( N ) const * const restrict  xp ) {  \
+  uint8_t per = 0 ; \
+  for ( uint8_t i = 0 ; i < N ; ++ i )  { \
+    uint16_t  s = ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) + \
+      ( ( uint16_t  ) number_elt_copy ( N ) ( xp  , i ) ) + \
+      ( ( uint16_t  ) per ) ; \
+    if ( s >= 0x100  ) {  \
+      number_array  ( np  ) [ i ] = s - 0x100 ; \
+      per = 1 ; } \
+    else  { \
+      number_array  ( np  ) [ i ] = s  ;  \
+      per = 0 ;  } } }
+# define  number_def_add shifr_number_def_add
+
+# define  shifr_number_add( N ) shifr_number##N##_add
+# define  number_add shifr_number_add
+
+# define  shifr_number_def_not_zero(  N ) \
+bool  shifr_number##N##_not_zero  ( \
+  number_type ( N ) const * const restrict  np  ) { \
+  uint8_t const * i = & ( number_array  ( np  ) [ N ] ) ; \
+  do {  \
+    --  i ; \
+    if ( * i )  return  true  ; \
+  } while ( i not_eq & ( number_array  ( np  ) [ 0 ] ) ) ;  \
+  return  false ; }
+# define  number_def_not_zero shifr_number_def_not_zero
+
+# define  shifr_number_not_zero( N ) shifr_number##N##_not_zero
+# define  number_not_zero shifr_number_not_zero
+
+# define  shifr_number_def_dec(  N ) \
+void  shifr_number##N##_dec ( \
+  number_type ( N ) * const restrict  np  ) { \
+  uint8_t  * restrict i = & ( number_array  ( np  ) [ 0 ] ) ; \
+  do {  \
+    if ( ( * i ) == 0 ) -- ( * i ) ;  \
+    else  { \
+      -- ( * i ) ;  \
+      break ; } \
+    ++  i ; \
+  } while ( i not_eq & ( number_array  ( np  ) [ N ] ) ) ; }
+# define  number_def_dec shifr_number_def_dec
+
+# define  shifr_number_dec( N ) shifr_number##N##_dec
+# define  number_dec shifr_number_dec
+
+# define  shifr_number_def_div_mod(  N ) \
+uint8_t shifr_number##N##_div_mod ( \
+  number_type ( N ) * const restrict  np , uint8_t const div ) { \
+  uint8_t modi  = 0 ; \
+  for ( uint8_t i = N ; i > 0 ; )  {  \
+    -- i ;  \
+    uint16_t  x = ( ( ( uint16_t  ) modi  ) <<  8 ) bitor  \
+      ( ( uint16_t  ) ( number_array  ( np  ) [ i ] ) ) ; \
+    modi  = x % div ; \
+    number_array  ( np  ) [ i ] = x / div ;  }  \
+  return  modi ; }
+# define  number_def_div_mod shifr_number_def_div_mod
+
+# define  shifr_number_div_mod( N ) shifr_number##N##_div_mod
+# define  number_div_mod shifr_number_div_mod
+
+number_def  ( 6 )
+static  inline  number_def_set0 ( 6 )
+static  inline  number_def_set_byte ( 6 )
+static  inline  number_def_elt_copy ( 6 )
+static  inline  number_def_mul_byte ( 6 )
+static  inline  number_def_add  ( 6 )
+static  inline  number_def_not_zero ( 6 )
+static  inline  number_def_dec  ( 6 )
+static  inline  number_def_div_mod  ( 6 )
+
+# undef shifr_number_array
+# define  shifr_number_array  shifr_number_array_pri
+
 typedef struct  s_raspr4 {
 
 uint64_t  password_const  ;
+// 16 - 1 = 15
+uint8_t dice  [ 15  ] ;
+// log(2,16!) ceil 8 = 6
+number_type ( 6 ) pass  ;
 
 } t_raspr4  ;
 
@@ -316,6 +459,26 @@ static  void  password_to_string_uni ( uint64_t password , strp const string ,
       password /= (uint64_t)letterscount ; } }
   ( * stringi ) = '\00' ; }
     
+# define  shifr_password_to_string_templ_def( N ) \
+void  shifr_password##N##_to_string_templ ( \
+  number_type ( N ) const * const restrict password0 , strp const string ,  \
+  strp letters , uint8_t const letterscount  ) {  \
+  char * stringi = & ( ( * string )  [ 0 ] ) ;  \
+  if ( number_not_zero  ( N ) ( password0 ) ) { \
+    number_type ( N ) password = * password0  ; \
+    do {  \
+      /* здесь предыдущие размеры заняли место паролей */ \
+      number_dec ( N ) ( & password  ) ;  \
+      ( * stringi ) = ( * letters ) [ number_div_mod ( N ) ( & password , \
+        letterscount ) ] ;  \
+      ++  stringi ; \
+    } while ( number_not_zero ( N ) ( & password ) ) ; }  \
+  ( * stringi ) = '\00' ;  }
+# define  password_to_string_templ_def  shifr_password_to_string_templ_def
+static  password_to_string_templ_def  ( 6 )
+# define  shifr_password_to_string_templ( N ) shifr_password##N##_to_string_templ
+# define  password_to_string_templ  shifr_password_to_string_templ
+
 // number /= div , number := floor [ деление ] , return := остаток
 static uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
   uint8_t const div ) {
@@ -992,10 +1155,10 @@ void  shifr_encode4 ( void ) {
 // 'R' = 82 .. 'z' = 122
       size_t writecount ;
       if  ( ns_shifr  . flagtext  ) {
-        uint16_t buf16 = ((uint16_t)( encrypteddata [ 0 ] & 0xf )) bitor
-          ( ((uint16_t)( encrypteddata [ 1 ] & 0xf )) << 4  )  bitor
-          ( ((uint16_t)( encrypteddata [ 2 ] & 0xf )) << 8  )  bitor
-          ( ((uint16_t)( encrypteddata [ 3 ] & 0xf )) << 12  ) ;
+        uint16_t buf16 = ((uint16_t)( encrypteddata [ 0 ] bitand 0xf )) bitor
+          ( ((uint16_t)( encrypteddata [ 1 ] bitand 0xf )) << 4  )  bitor
+          ( ((uint16_t)( encrypteddata [ 2 ] bitand 0xf )) << 8  )  bitor
+          ( ((uint16_t)( encrypteddata [ 3 ] bitand 0xf )) << 12  ) ;
         char buf3 [ 4 ] ;
         buf3 [ 0 ] = 'R' + ( buf16 % 40 ) ;
         buf16 /= 40 ;
@@ -1203,6 +1366,30 @@ void shifr_decode6 ( void ) {
         decrypt_sole6 ( & secretdata , & ns_shifr  . deshi6 , & decrypteddata , 1 ,
           & old_last_sole , & old_last_data ) ;
         streambuf_write3bits ( & shifr_filebufto , decrypteddata [ 0 ] ) ; } }
+
+// inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
+void  shifr_generate_pass4 ( void ) {
+  uint8_t * j = & ( ns_shifr . raspr4  . dice [ 0 ] ) ;
+  for ( uint8_t i  = 16 ; i >= 2 ; -- i , ++ j )
+    ( * j ) = rand  ( ) % i ; }
+
+// [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
+// = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
+void  shifr_pass_to_array4 ( void ) {
+  number_set0 ( 6 ) ( & ns_shifr . raspr4  . pass  ) ;
+  number_type ( 6 ) mu  ;
+  number_set_byte ( 6 ) ( & mu , 1 ) ;
+  uint8_t in = 0 ;
+  do {
+    { number_type ( 6 ) mux = mu ;
+      // re += pass [ in ] * mu ;
+      number_mul_byte ( 6 ) ( & mux  ,
+        number_elt_copy ( 6 ) ( & ns_shifr . raspr4  . pass , in )  ) ;
+      number_add  ( 6 ) ( & ns_shifr . raspr4  . pass , & mux ) ; }
+    //$mu *=  16 - $in ;
+    number_mul_byte ( 6 ) ( & mu , 16 - in  ) ;
+    ++  in ;
+  } while ( in < 15 ) ; }
 
 void  shifr_password_generate4 ( void ) {
   int r1 , r0 ;
@@ -1643,7 +1830,14 @@ if ( flagreadpasswdfromfile ) {
   if ( flaggenpasswd ) {
     switch  ( ns_shifr . use_version  ) {
     case  4 : 
+
+// old
       shifr_password_generate4 ( ) ;
+
+      shifr_generate_pass4  ( ) ;
+      shifr_pass_to_array4  ( ) ;
+      /*password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
+        & password_letters , & ns_shifr . letters , letters_count ) ;*/
       break ;
     case 6 :
       shifr_password_generate6 ( ) ;
