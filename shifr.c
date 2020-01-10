@@ -355,26 +355,40 @@ uint8_t shifr_number##N##_div_mod ( \
     number_array  ( np  ) [ i ] = x / div ;  }  \
   return  modi ; }
 # define  number_def_div_mod shifr_number_def_div_mod
-
 # define  shifr_number_div_mod( N ) shifr_number##N##_div_mod
 # define  number_div_mod shifr_number_div_mod
 
+# define  shifr_number_def_princ( N ) \
+void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  \
+  FILE * const fs ) { \
+  fputs ( "[ " , fs ) ; \
+  for ( int8_t i = N ; i ; ) {  \
+    -- i ;  \
+    fprintf ( fs  , "%d , " , number_elt_copy ( N ) ( np , i ) ) ; }  \
+  fputs ( "]" , fs ) ; }
+# define  number_def_princ shifr_number_def_princ
+# define  shifr_number_princ( N ) shifr_number##N##_princ
+# define  number_princ shifr_number_princ
+
 number_def  ( 6 )
-static  inline  number_def_set0 ( 6 )
+static  number_def_set0 ( 6 )
 static  inline  number_def_set_byte ( 6 )
 static  inline  number_def_elt_copy ( 6 )
-static  inline  number_def_mul_byte ( 6 )
+static  number_def_mul_byte ( 6 )
 static  inline  number_def_add  ( 6 )
 static  inline  number_def_not_zero ( 6 )
 static  inline  number_def_dec  ( 6 )
 static  inline  number_def_div_mod  ( 6 )
+# ifdef SHIFR_DEBUG
+static  shifr_number_def_princ  ( 6 )
+# endif
 
 # undef shifr_number_array
 # define  shifr_number_array  shifr_number_array_pri
 
 typedef struct  s_raspr4 {
 
-uint64_t  password_const  ;
+//uint64_t  password_const  ;
 // 16 - 1 = 15
 uint8_t dice  [ 15  ] ;
 // log(2,16!) ceil 8 = 6
@@ -445,7 +459,7 @@ static  t_ns_shifr  ns_shifr = {
   . shifr6 = { } ,
   . deshi6 = { } ,
 } ;
-
+/*
 static  void  password_to_string_uni ( uint64_t password , strp const string ,
   strp letters , uint8_t const letterscount ) {
   char * stringi = & ( ( * string )  [ 0 ] ) ;
@@ -457,7 +471,7 @@ static  void  password_to_string_uni ( uint64_t password , strp const string ,
       ++  stringi ;
       if ( password < (uint64_t)letterscount ) break ;
       password /= (uint64_t)letterscount ; } }
-  ( * stringi ) = '\00' ; }
+  ( * stringi ) = '\00' ; }*/
     
 # define  shifr_password_to_string_templ_def( N ) \
 void  shifr_password##N##_to_string_templ ( \
@@ -478,6 +492,41 @@ void  shifr_password##N##_to_string_templ ( \
 static  password_to_string_templ_def  ( 6 )
 # define  shifr_password_to_string_templ( N ) shifr_password##N##_to_string_templ
 # define  password_to_string_templ  shifr_password_to_string_templ
+
+# define  shifr_string_to_password_templ_def( N ) \
+void  shifr_string_to_password##N##_templ ( strcp const string , \
+  number_type ( N ) * const restrict password ,  \
+  strcp const letters , uint8_t const letterscount  ) { \
+  char const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
+  if  ( ( * stringi ) == '\00' ) { \
+    number_set0 ( N ) ( password  ) ; \
+    return ; } \
+  number_type ( N ) pass ; \
+  number_set0 ( N ) ( & pass  ) ; \
+  number_type ( N ) mult ;  \
+  number_set_byte ( N ) ( & mult , 1 ) ;  \
+  do  { \
+    uint8_t i = letterscount ;  \
+    do {  \
+      -- i ;  \
+      if ( ( * stringi ) == ( * letters ) [ i ] ) goto found ; \
+    } while ( i ) ; \
+    ns_shifr  . string_exception  = ( ns_shifr . localerus ?  \
+      ( strcp ) & u8"неправильная буква в пароле" : \
+      ( strcp ) & "wrong letter in password" ) ;  \
+    longjmp ( ns_shifr  . jump  , 1 ) ; \
+found : ; \
+    { number_type ( N ) tmp = mult ;  \
+      number_mul_byte ( N ) ( & tmp , i + 1 ) ; \
+      number_add ( N ) ( &  pass  , & tmp )  ; }  \
+    number_mul_byte ( N ) ( & mult , letterscount ) ; \
+    ++  stringi ; \
+  } while ( ( * stringi ) not_eq '\00' ) ;  \
+  ( * password  ) = pass ; }
+# define  string_to_password_templ_def  shifr_string_to_password_templ_def
+static  string_to_password_templ_def  ( 6 )
+# define  shifr_string_to_password_templ( N ) shifr_string_to_password##N##_templ
+# define  string_to_password_templ  shifr_string_to_password_templ
 
 // number /= div , number := floor [ деление ] , return := остаток
 static uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
@@ -551,7 +600,7 @@ static  void  password_to_string6_uni (
       ++  stringi ;
     } while ( number320_not0 ( & password ) ) ; }
   ( * stringi ) = '\00' ;  }
-
+/*
 static  void  string_to_password_uni ( strcp const string ,
   uint64_t * const password , strp letters ,
   uint8_t const letterscount ) {
@@ -576,7 +625,7 @@ found :
     mult  *=  ( uint64_t  ) letterscount ;
     ++  stringi ;
   } while ( * stringi ) ;
-  ( * password ) = pass ; }
+  ( * password ) = pass ; }*/
   
 static  inline  void number320_set0  ( t_number320 * const restrict np ) {
   memset  ( & ( ( np -> a ) [ 0 ] ) , 0 , 5 * sizeof  ( uint64_t  ) ) ; }
@@ -669,6 +718,7 @@ static inline void  shifr_init ( void  ) {
   // пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
   // секретных кодов для соли+данных 0x1  
 // в deshi нужна соль
+/*
 static inline void  password_load ( uint64_t password , 
   arrp const shifrp , arrp const deship ) {
 # define  codefree  ((uint8_t)0xff)
@@ -696,7 +746,36 @@ static inline void  password_load ( uint64_t password ,
       memmove ( arrind_cindexp , arrind_cindexp + 1 ,
         shifr_deshi_size2  - inde  - cindex - 1 ) ; }
     ++  inde  ;
-  } while ( inde  < shifr_deshi_size2  ) ; }
+  } while ( inde  < shifr_deshi_size2  ) ; }*/
+
+# define  shifr_password_load_def(  N ) \
+void  shifr_password##N##_load  ( number_type ( N ) const * const password0 , \
+  arrp const shifrp , arrp const deship ) { \
+  initarr ( shifrp , 0xff , shifr_deshi_size2 )  ;  \
+  initarr ( deship , 0xff , shifr_deshi_size2 )  ;  \
+  uint8_t arrind  [ shifr_deshi_size2  ] ;  \
+  { uint8_t * arrj  = & ( arrind  [ shifr_deshi_size2  ] ) ;  \
+    uint8_t j = shifr_deshi_size2  ;  \
+    do  { \
+      --  arrj  ; \
+      --  j ; \
+      ( * arrj )  = j ; \
+    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ;  } \
+  uint8_t inde  = 0 ; \
+  number_type ( N ) password = * password0 ; \
+  do {  \
+    { uint8_t cindex = number_div_mod ( N ) ( & password ,  \
+        shifr_deshi_size2 - inde ) ;  \
+      uint8_t * arrind_cindexp = & (  arrind [ cindex ] ) ; \
+      ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
+      ( * deship ) [ * arrind_cindexp ] = inde ;  \
+      memmove ( arrind_cindexp , arrind_cindexp + 1 , \
+        shifr_deshi_size2  - inde  - cindex - 1 ) ; } \
+    ++ inde  ;  \
+  } while ( inde < shifr_deshi_size2 ) ; }
+static  inline  shifr_password_load_def (  6 )
+# define  shifr_password_load( N ) shifr_password##N##_load
+# define  password_load shifr_password_load
 
 # ifdef SHIFR_DEBUG
 //  /= 64  или  >>= 6
@@ -1067,18 +1146,26 @@ static  inline  void  enter_password4 ( int const password_alphabet ) {
       (char const (*)[]) & "there is no end of line in the password" ) ;
     longjmp(ns_shifr  . jump,1); }
   if ( password_alphabet == 95 )
-    string_to_password_uni ( p4 , & ns_shifr . raspr4  . password_const ,
+    string_to_password_templ  ( 6 ) ( p4 , & ns_shifr . raspr4  . pass ,
       & ns_shifr . letters ,  letters_count ) ;
+    /*string_to_password_uni ( p4 , & ns_shifr . raspr4  . password_const ,
+      & ns_shifr . letters ,  letters_count ) ;*/
   else
-    string_to_password_uni ( p4 , & ns_shifr . raspr4  . password_const ,
-      & ns_shifr . letters2 , letters_count2 ) ;
+    string_to_password_templ  ( 6 ) ( p4 , & ns_shifr . raspr4  . pass ,
+      & ns_shifr . letters2 ,  letters_count2 ) ;
+    /*string_to_password_uni ( p4 , & ns_shifr . raspr4  . password_const ,
+      & ns_shifr . letters2 , letters_count2 ) ;*/
   char  password_letters [ 20 ] ;
   if ( password_alphabet == 95 )
-    password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+    password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
       & password_letters , & ns_shifr . letters , letters_count ) ;
+    /*password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+      & password_letters , & ns_shifr . letters , letters_count ) ;*/
   else
-    password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+    password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
       & password_letters , & ns_shifr . letters2 , letters_count2 ) ;
+    /*password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+      & password_letters , & ns_shifr . letters2 , letters_count2 ) ;*/
   if  ( strcmp ( &(password_letters[0]) , &((*p4)[0]) ) )  
     fprintf  ( stderr , ( ns_shifr . localerus ?
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
@@ -1382,15 +1469,14 @@ void  shifr_pass_to_array4 ( void ) {
   uint8_t in = 0 ;
   do {
     { number_type ( 6 ) mux = mu ;
-      // re += pass [ in ] * mu ;
-      number_mul_byte ( 6 ) ( & mux  ,
-        number_elt_copy ( 6 ) ( & ns_shifr . raspr4  . pass , in )  ) ;
+      // re += dice [ in ] * mu ;
+      number_mul_byte ( 6 ) ( & mux  ,  ns_shifr . raspr4  . dice [ in ] ) ;
       number_add  ( 6 ) ( & ns_shifr . raspr4  . pass , & mux ) ; }
     //$mu *=  16 - $in ;
     number_mul_byte ( 6 ) ( & mu , 16 - in  ) ;
     ++  in ;
   } while ( in < 15 ) ; }
-
+/*
 void  shifr_password_generate4 ( void ) {
   int r1 , r0 ;
       // 22 из 31 , 23 из 31
@@ -1412,7 +1498,7 @@ void  shifr_password_generate4 ( void ) {
         ( ( uint64_t  ) r0 ) ;
 # undef shifrrandmax0
 # undef shifrrandmax1
-  }
+  }*/
 
 void  shifr_password_generate6 ( void ) {
   int const rmax  [ 10 ] = { 0 , 0 , 371982424 , 465456948 , 36645132 ,
@@ -1643,13 +1729,19 @@ if ( flagreadpasswdfromfile ) {
     switch ( ns_shifr . use_version ) {
     case 4 :
       if ( password_alphabet == 95 )
-        string_to_password_uni ( & password_letters ,
-          & ns_shifr . raspr4  . password_const ,
+        string_to_password_templ  ( 6 ) ( & password_letters ,
+          & ns_shifr . raspr4  . pass ,
           & ns_shifr . letters ,  letters_count ) ;
-      else
-        string_to_password_uni ( & password_letters ,
+        /*string_to_password_uni ( & password_letters ,
           & ns_shifr . raspr4  . password_const ,
+          & ns_shifr . letters ,  letters_count ) ;*/
+      else
+        string_to_password_templ  ( 6 ) ( & password_letters ,
+          & ns_shifr . raspr4  . pass ,
           & ns_shifr . letters2 , letters_count2 ) ;
+        /*string_to_password_uni ( & password_letters ,
+          & ns_shifr . raspr4  . password_const ,
+          & ns_shifr . letters2 , letters_count2 ) ;*/
       break ;
     case 6 : {
       if ( password_alphabet == 95 )
@@ -1690,18 +1782,25 @@ if ( flagreadpasswdfromfile ) {
         longjmp(ns_shifr  . jump,1); }
       if ( ns_shifr . use_version == 4 ) {
         if ( password_alphabet == 95 )
-          string_to_password_uni ( (  char  ( * ) [ ] ) ( argv  [ argj  ] ) ,
-            & ns_shifr . raspr4  . password_const , & ns_shifr . letters ,
+          string_to_password_templ  ( 6 ) ( ( strcp ) ( argv  [ argj  ] ) ,
+            & ns_shifr . raspr4  . pass , & ns_shifr . letters ,
             letters_count ) ; 
+          /*string_to_password_uni ( (  char  ( * ) [ ] ) ( argv  [ argj  ] ) ,
+            & ns_shifr . raspr4  . password_const , & ns_shifr . letters ,
+            letters_count ) ; */
         else
-          string_to_password_uni ( (  char  ( * ) [ ] ) ( argv  [ argj  ] ) ,
-            & ns_shifr . raspr4  . password_const , & ns_shifr . letters2 ,
+          string_to_password_templ  ( 6 ) ( ( strcp ) ( argv  [ argj  ] ) ,
+            & ns_shifr . raspr4  . pass , & ns_shifr . letters2 ,
             letters_count2 ) ;
+          /*string_to_password_uni ( (  char  ( * ) [ ] ) ( argv  [ argj  ] ) ,
+            & ns_shifr . raspr4  . password_const , & ns_shifr . letters2 ,
+            letters_count2 ) ;*/
 # ifdef SHIFR_DEBUG
-      fprintf  ( stderr,(ns_shifr . localerus ?
-        u8"из строки во внутренний пароль = %lx\n" :
-        "from string to internal password = %lx\n" ) ,
-        ns_shifr . raspr4  . password_const ) ;
+      fputs ( ( ns_shifr . localerus ?
+        u8"из строки во внутренний пароль = " :
+        "from string to internal password = " ) , stderr ) ;
+number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
+fputs ( "\n" , stderr ) ;
 # endif                           
         }
       if ( ns_shifr . use_version == 6 ) {
@@ -1733,11 +1832,15 @@ if ( flagreadpasswdfromfile ) {
       char  password_letters6 [ 100 ] ;
       if ( ns_shifr . use_version == 4 ) {
         if ( password_alphabet == 95 )
-          password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+          password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
             & password_letters , & ns_shifr . letters , letters_count ) ;
+          /*password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+            & password_letters , & ns_shifr . letters , letters_count ) ;*/
         else
-          password_to_string_uni ( ns_shifr . raspr4  . password_const ,
-            & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
+          password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
+            & password_letters , & ns_shifr . letters2 , letters_count2 ) ;
+          /*password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+            & password_letters , & ns_shifr . letters2 , letters_count2 ) ;*/ }
       if ( ns_shifr . use_version == 6 ) {
         if ( password_alphabet == 95 )
           password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
@@ -1832,10 +1935,18 @@ if ( flagreadpasswdfromfile ) {
     case  4 : 
 
 // old
-      shifr_password_generate4 ( ) ;
+      //shifr_password_generate4 ( ) ;
 
       shifr_generate_pass4  ( ) ;
       shifr_pass_to_array4  ( ) ;
+# ifdef SHIFR_DEBUG
+fputs ( ( ns_shifr . localerus ?
+        u8"внутренний пароль = " :
+        "internal password = " ) , stderr ) ;
+number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
+fputs ( "\n" , stderr ) ;
+
+# endif
       /*password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
         & password_letters , & ns_shifr . letters , letters_count ) ;*/
       break ;
@@ -1854,8 +1965,14 @@ if ( flagreadpasswdfromfile ) {
 # ifdef SHIFR_DEBUG    
   switch ( ns_shifr . use_version ) {
   case  4 :
-    fprintf  ( stderr,( ns_shifr . localerus ? u8"внутренний пароль = %lx\n" :
-      "internal password = %lx\n") , ns_shifr . raspr4  . password_const  ) ;
+    /*fprintf  ( stderr,( ns_shifr . localerus ? u8"внутренний пароль = %lx\n" :
+      "internal password = %lx\n") , ns_shifr . raspr4  . password_const  ) ;*/
+    fputs ( ( ns_shifr . localerus ?
+        u8"внутренний пароль = " :
+        "internal password = " ) , stderr ) ;
+number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
+fputs ( "\n" , stderr ) ;
+      
     break ;
   case  6 :
     fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
@@ -1881,10 +1998,14 @@ if ( flagreadpasswdfromfile ) {
     char  password_letters62 [ 100 ] ;
     switch  ( ns_shifr . use_version )  {
     case  4 :
-      { password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+      { password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
           & password_letters , & ns_shifr . letters , letters_count ) ;
-        password_to_string_uni ( ns_shifr . raspr4  . password_const ,
-          & password_letters2 , & ns_shifr . letters2 , letters_count2 ) ; }
+        /*password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+          & password_letters , & ns_shifr . letters , letters_count ) ;*/
+        password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
+          & password_letters2 , & ns_shifr . letters2 , letters_count2 ) ;
+        /*password_to_string_uni ( ns_shifr . raspr4  . password_const ,
+          & password_letters2 , & ns_shifr . letters2 , letters_count2 ) ;*/ }
       break ;
     case  6 :
       { password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
@@ -1912,17 +2033,38 @@ if ( flagreadpasswdfromfile ) {
         password_letters2 )  [ 0 ] ) ) ;
     switch  ( ns_shifr . use_version ) {
     case  4 :
-      { uint64_t password2 ;
+      { number_type ( 6 ) password2 ;
+        string_to_password_templ  ( 6 ) ( & password_letters ,
+          & password2 , & ns_shifr . letters ,
+          letters_count ) ; 
+fputs ( ( ns_shifr . localerus ?
+        u8"из строки95 во внутренний пароль = " :
+        "from string95 to internal password = " ) , stderr ) ;
+number_princ  ( 6 ) ( & password2 , stderr  ) ;
+fputs ( "\n" , stderr ) ;
+        /*printf  ( ( ns_shifr . localerus ?
+          u8"из строки95 во внутренний пароль = %lx\n" :
+          "from string95 to internal password = %lx\n" ) , password2 ) ;*/
+        string_to_password_templ  ( 6 ) ( & password_letters2 ,
+          & password2 , & ns_shifr . letters2 ,
+          letters_count2 ) ;
+
+/*uint64_t password2 ;
       string_to_password_uni ( & password_letters , & password2  ,
-        & ns_shifr . letters , letters_count ) ; 
-      printf  ( ( ns_shifr . localerus ?
-        u8"из строки95 во внутренний пароль = %lx\n" :
-        "from string95 to internal password = %lx\n" ) , password2 ) ;
-      string_to_password_uni ( & password_letters2 , & password2  ,
-        & ns_shifr . letters2 , letters_count2 ) ; 
-      printf  ( ( ns_shifr . localerus ?
+        & ns_shifr . letters , letters_count ) ; */
+      
+      /*string_to_password_uni ( & password_letters2 , & password2  ,
+        & ns_shifr . letters2 , letters_count2 ) ; */
+      /*printf  ( ( ns_shifr . localerus ?
         u8"из строки62 во внутренний пароль = %lx\n" :
-        "from string62 to internal password = %lx\n" ) , password2 ) ; }
+        "from string62 to internal password = %lx\n" ) , password2 ) ;*/
+fputs ( ( ns_shifr . localerus ?
+        u8"из строки62 во внутренний пароль = " :
+        "from string62 to internal password = " ) , stderr ) ;
+number_princ  ( 6 ) ( & password2 , stderr  ) ;
+fputs ( "\n" , stderr ) ; 
+
+ }
       break ;
     case  6 :
       { t_number320 password6 ;
@@ -2017,7 +2159,9 @@ if ( flagreadpasswdfromfile ) {
   streambuf_init  ( & shifr_filebufto , ns_shifr  . fileto )  ;
     switch ( ns_shifr . use_version )  {
     case 4 :
-      password_load ( ns_shifr . raspr4  . password_const  , & ns_shifr  . shifr , & ns_shifr  . deshi ) ;
+      //password_load ( ns_shifr . raspr4  . password_const  , & ns_shifr  . shifr , & ns_shifr  . deshi ) ;
+      password_load ( 6 ) ( & ns_shifr . raspr4  . pass , & ns_shifr  . shifr ,
+        & ns_shifr  . deshi ) ;
       break ;
     case 6 :
       password_load6 ( & ns_shifr . raspr6  . password_const  , & ns_shifr  . shifr6 , 
