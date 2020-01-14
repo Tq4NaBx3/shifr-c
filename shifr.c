@@ -20,10 +20,6 @@
 // ascii буквы 126-32+1 = 95 шт
 // длина буквенного пароля : log ( 95 , 20922789888000 ) ≈ 6.735 букв <= 7 букв
 //  log ( 62 , 20922789888000 ) ≈ 7.432 буквы <= 8 букв
-// RAND_MAX размер 31 бит
-// первый рандом 22/31 , второй 23/31 
-// максимальный рандом < [ 2494190 , 7700480 ] =
-//   2494190 * ( 2 ^ 23 ) + 7700480 == 20922789888000
 
 /*
 OrigData   : 01 11 11
@@ -63,10 +59,6 @@ Secr xxxx      xxxx            yyyy
 // ascii letters 126-32+1 = 95 pcs
 // letter password length : log ( 95 , 20922789888000 ) ≈ 6.735 letters <= 7 letters
 //  log ( 62 , 20922789888000 ) ≈ 7.432 letters <= 8 letters
-// RAND_MAX size 31 bits
-// first random 22/31 , second 23/31 
-// maximum random < [ 2494190 , 7700480 ] =
-//   2494190 * ( 2 ^ 23 ) + 7700480 == 20922789888000
 
 /*
 OrigData   : 01 11 11
@@ -1504,13 +1496,13 @@ int main  ( int argc , char * argv [ ] )  {
       u8"Шифр ©2020 Глебов А.Н.\n"
       u8"Симметричное поточное шифрование с 'солью'.\n"
       u8"'Соль' генерируется постоянно, что даёт хорошую стойкость.\n"
-      u8"Размер данных увеличивается в два раза.\n"
+      u8"Размер данных увеличивается в два раза. В три раза в текстовом режиме.\n"
       u8"Нет диагностики неправильного пароля.\n"
       u8"Синтаксис : shifr [параметры]" :
       "Shifr ©2020 Glebe A.N.\n"
       "Symmetric stream encryption with 'salt'.\n"
       "'Salt' is constantly generated, which gives good durability.\n"
-      "Data size doubles.\n"
+      "Data size doubles. Tripled in text mode.\n"
       "There is no diagnosis of the wrong password.\n"
       "Syntax : shifr [options]" ) ;
     puts  ( ns_shifr . localerus ? u8"Параметры :" : "Options :"  ) ;
