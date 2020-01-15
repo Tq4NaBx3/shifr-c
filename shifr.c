@@ -441,7 +441,7 @@ uint8_t shifr [ shifr_deshi_size2 ] ;
     // 28 .. 2f -  5
     // 30 .. 37 -  6
     // 38 .. 3f -  7
-    uint8_t deshi6 [ shifr_deshi_size6 ] ;
+  uint8_t deshi6 [ shifr_deshi_size6 ] ;
 } t_ns_shifr ;
 
 static  t_ns_shifr  ns_shifr = {
@@ -1290,12 +1290,12 @@ sole_xor_crypt_write  :
   goto  addr_sole_xor_crypt_write1  ; }
 
 void shifr_decode4  ( void  ) {
-      uint8_t old_last_data = 0 ;
-      uint8_t old_last_sole = 0 ;
-    do {
-      char buf [ 2 ] ;
-      size_t readcount ;
-      if  ( ns_shifr  . flagtext  ) {
+  uint8_t old_last_data = 0 ;
+  uint8_t old_last_sole = 0 ;
+  do {
+    char buf [ 2 ] ;
+    size_t readcount ;
+    if  ( ns_shifr  . flagtext  ) {
 // 2^16 ^ 1/3 = 40.32
 // 2^16 % 40 = 0 .. 39
 // 2^16 / 40 = 1638.4
@@ -1304,36 +1304,30 @@ void shifr_decode4  ( void  ) {
 // 1639 / 40 = 40.97
 // делаем [0] % 40 , [1] % 40 , [2] % 41
 // 'R' = 82 .. 'z' = 122
-
-        char buf3 [ 3 ] ;
-        // читаем три буквы 'a1b' -> декодируем в два байта "XY"
+      // читаем три буквы ' a 1 b' -> декодируем в два байта "XY"
+      // reads three letters ' a 1 b' -> decode to two bytes "XY"
+      char  buf3  [ 3 ] ;
+      uint8_t buf3index = 0 ;
+      do {
         do {
-          readcount = fread ( & (buf3[0]) , 1 , 1 , ns_shifr  . filefrom ) ;
+          readcount = fread ( & ( buf3 [ buf3index ] ) , 1 , 1 ,
+            ns_shifr  . filefrom ) ;
           if ( readcount == 0 ) {
             if ( feof ( ns_shifr  . filefrom ) ) return ;
             ns_shifr  . string_exception  = ( ns_shifr . localerus ?
               ( strcp ) & u8"ошибка чтения данных" :
               ( strcp ) & "error data reading" ) ;
-            longjmp(ns_shifr  . jump,1); }
-        } while ( buf3[0] < 'R' or buf3[0] > 'z' ) ;
-        readcount = fread ( & (buf3[1]) , 1 , 2 , ns_shifr  . filefrom ) ;
-        if ( readcount < 2 ) {
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-            ( strcp ) & u8"ошибка чтения данных" :
-            ( strcp ) & "error data reading" ) ;
-          longjmp(ns_shifr  . jump,1); }
-        for ( char const * i = &(buf3[1]); i <= &(buf3[2]) ; ++ i ) {
-          if ( (*i) < 'R' or (*i) > 'z' ) {
-            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-              ( strcp ) & u8"неправильные буквы" :
-              ( strcp ) & "wrong letters" ) ;
-            longjmp(ns_shifr  . jump,1); } }
-        uint16_t u16 = (  ( uint16_t  ) ( buf3  [ 0 ] - 'R' ) ) +
-          40U * ( ( ( uint16_t  ) ( buf3  [ 1 ] - 'R' ) ) +
-          40U * ( ( uint16_t  ) ( buf3  [ 2 ] - 'R' ) ) ) ;
-        buf [ 0 ] = u16 bitand 0xff ;
-        buf [ 1 ] = u16 >> 8 ; }
-      else {
+            longjmp ( ns_shifr  . jump  , 1 ) ; }
+        } while ( buf3  [ buf3index ] < 'R' or
+          buf3  [ buf3index ] > 'z' ) ;
+        ++  buf3index ;
+      } while ( buf3index < 3 ) ;
+      uint16_t u16 = (  ( uint16_t  ) ( buf3  [ 0 ] - 'R' ) ) +
+        40U * ( ( ( uint16_t  ) ( buf3  [ 1 ] - 'R' ) ) +
+        40U * ( ( uint16_t  ) ( buf3  [ 2 ] - 'R' ) ) ) ;
+      buf [ 0 ] = u16 bitand 0xff ;
+      buf [ 1 ] = u16 >> 8 ; }
+    else {
         readcount = fread ( & ( buf [ 0 ] ) , 1 , 2 , ns_shifr  . filefrom ) ;
         if ( readcount < 2 ) {
           if ( feof ( ns_shifr  . filefrom  ) ) break ;
@@ -1556,16 +1550,16 @@ int main  ( int argc , char * argv [ ] )  {
       "  $ cat psw\n"
       "  n3LTQH4eIicGDNaF8CDVRGdaCEVXxPPgikJ9lbQKW4zs8StkhD"  ) ;
     puts  ( ns_shifr  . localerus ?
-      u8"  $ ./shifr --пар-путь 'psw' > test.e --текст"  :
-      "  $ ./shifr --pas-path 'psw' > test.e --text"  ) ;
+      u8"  $ ./shifr --пар-путь 'psw' > test.shi --текст"  :
+      "  $ ./shifr --pas-path 'psw' > test.shi --text"  ) ;
     puts( ns_shifr  . localerus ? u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
       "  2+2 (Press Enter,Ctrl+D)" ) ;
     puts  ( 
-      "  $ cat test.e\n"
+      "  $ cat test.shi\n"
       "  ylQ?ncm;ags" ) ;
     puts( ns_shifr  . localerus ?
-      u8"  $ ./shifr --пар-путь 'psw' < test.e --текст --расшифр" :
-      "  $ ./shifr --pas-path 'psw' < test.e --text --decrypt" ) ;
+      u8"  $ ./shifr --пар-путь 'psw' < test.shi --текст --расшифр" :
+      "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;
     puts  ( "  2+2" ) ;
     return 0 ; }
 # if  RAND_MAX  !=  0x7fffffff
@@ -1693,8 +1687,8 @@ if ( flagreadpasswdfromfile ) {
       fputs ( ( ns_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
-number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
-fputs ( "\n" , stderr ) ;
+      number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
+      fputs ( "\n" , stderr ) ;
 # endif                           
         }
       if ( ns_shifr . use_version == 6 ) {
@@ -1826,12 +1820,11 @@ fputs ( "\n" , stderr ) ;
       shifr_generate_pass4  ( ) ;
       shifr_pass_to_array4  ( ) ;
 # ifdef SHIFR_DEBUG
-fputs ( ( ns_shifr . localerus ?
+      fputs ( ( ns_shifr . localerus ?
         u8"внутренний пароль = " :
         "internal password = " ) , stderr ) ;
-number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
-fputs ( "\n" , stderr ) ;
-
+      number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
+      fputs ( "\n" , stderr ) ;
 # endif
       break ;
     case 6 :
@@ -1850,11 +1843,10 @@ fputs ( "\n" , stderr ) ;
   switch ( ns_shifr . use_version ) {
   case  4 :
     fputs ( ( ns_shifr . localerus ?
-        u8"внутренний пароль = " :
-        "internal password = " ) , stderr ) ;
-number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
-fputs ( "\n" , stderr ) ;
-      
+      u8"внутренний пароль = " :
+      "internal password = " ) , stderr ) ;
+    number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
+    fputs ( "\n" , stderr ) ;
     break ;
   case  6 :
     fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
@@ -1915,19 +1907,19 @@ fputs ( "\n" , stderr ) ;
         string_to_password_templ  ( 6 ) ( & password_letters ,
           & password2 , & ns_shifr . letters ,
           letters_count ) ; 
-fputs ( ( ns_shifr . localerus ?
-        u8"из строки95 во внутренний пароль = " :
-        "from string95 to internal password = " ) , stderr ) ;
-number_princ  ( 6 ) ( & password2 , stderr  ) ;
-fputs ( "\n" , stderr ) ;
+        fputs ( ( ns_shifr . localerus ?
+          u8"из строки95 во внутренний пароль = " :
+          "from string95 to internal password = " ) , stderr ) ;
+        number_princ  ( 6 ) ( & password2 , stderr  ) ;
+        fputs ( "\n" , stderr ) ;
         string_to_password_templ  ( 6 ) ( & password_letters2 ,
           & password2 , & ns_shifr . letters2 ,
           letters_count2 ) ;
-fputs ( ( ns_shifr . localerus ?
-        u8"из строки62 во внутренний пароль = " :
-        "from string62 to internal password = " ) , stderr ) ;
-number_princ  ( 6 ) ( & password2 , stderr  ) ;
-fputs ( "\n" , stderr ) ;  }
+        fputs ( ( ns_shifr . localerus ?
+          u8"из строки62 во внутренний пароль = " :
+          "from string62 to internal password = " ) , stderr ) ;
+        number_princ  ( 6 ) ( & password2 , stderr  ) ;
+        fputs ( "\n" , stderr ) ;  }
       break ;
     case  6 :
       { t_number320 password6 ;
