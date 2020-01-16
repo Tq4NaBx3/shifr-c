@@ -143,6 +143,7 @@ typedef char ( * strp ) [ ] ;
 # define  strcp  shifr_strcp
 typedef char const ( * strcp ) [ ] ;
 
+// 4 * 4 = 16
 // четыре * четыре = шестнадцать
 # define  shifr_deshi_size2  ((size_t)(0x10U))
 
@@ -442,6 +443,7 @@ uint8_t shifr [ shifr_deshi_size2 ] ;
     // 30 .. 37 -  6
     // 38 .. 3f -  7
   uint8_t deshi6 [ shifr_deshi_size6 ] ;
+  int password_alphabet ; // 62 or 95 // алфавит пароля 62 или 95
 } t_ns_shifr ;
 
 static  t_ns_shifr  ns_shifr = {
@@ -451,6 +453,7 @@ static  t_ns_shifr  ns_shifr = {
   . deshi = { } ,
   . shifr6 = { } ,
   . deshi6 = { } ,
+  . password_alphabet = 62 ,
 } ;
     
 # define  shifr_password_to_string_templ_def( N ) \
@@ -669,9 +672,16 @@ static inline void  shifr_init ( void  ) {
 // пароль раскладываем в таблицу шифровки , дешифровки
   // пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
   // пароль делим на 16, остаются 15! вариантов пароля
-  // пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
-  // секретных кодов для соли+данных 0x1  
+// пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
+//  секретных кодов для соли+данных 0x1  
 // в deshi нужна соль
+
+// we lay out the password in the table of encryption, decryption
+// password % 0x10 = 0xa means that 0xa is the encrypted code for salt + data 0x0
+// divide the password by 16, 15! remain password options
+// password % 0xf = 0xa is the sequence number for the remaining NOT occupied from
+//  0xff secret codes for salt + data 0x1
+// deshi needs salt
 
 # define  shifr_password_load_def(  N ) \
 void  shifr_password##N##_load  ( number_type ( N ) const * const password0 , \
@@ -1053,7 +1063,7 @@ static inline void  streambuf_write3bits ( t_streambuf * const restrict me  ,
 # undef streambuf_bytecount
 # define  streambuf_bytecount  streambuf_bytecount_pri
 
-static  inline  void  enter_password4 ( int const password_alphabet ) {
+static  inline  void  enter_password4 ( void ) {
   char p40 [ 20 ] ;
   set_keypress  ( ) ;
   char ( * const p4 ) [ 20 ] = (char(*const)[20])
@@ -1070,14 +1080,14 @@ static  inline  void  enter_password4 ( int const password_alphabet ) {
       ( strcp ) & u8"в пароле нет конца строки" :
       ( strcp ) & "there is no end of line in the password" ) ;
     longjmp(ns_shifr  . jump,1); }
-  if ( password_alphabet == 95 )
+  if ( ns_shifr . password_alphabet == 95 )
     string_to_password_templ  ( 6 ) ( p4 , & ns_shifr . raspr4  . pass ,
       & ns_shifr . letters ,  letters_count ) ;
   else
     string_to_password_templ  ( 6 ) ( p4 , & ns_shifr . raspr4  . pass ,
       & ns_shifr . letters2 ,  letters_count2 ) ;
   char  password_letters [ 20 ] ;
-  if ( password_alphabet == 95 )
+  if ( ns_shifr . password_alphabet == 95 )
     password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
       & password_letters , & ns_shifr . letters , letters_count ) ;
   else
@@ -1089,7 +1099,7 @@ static  inline  void  enter_password4 ( int const password_alphabet ) {
       "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
       , &((*p4)[0]) , & ( password_letters [ 0 ] ) ) ; }
 
-static  inline  void  enter_password6 ( int const password_alphabet ) {
+static  inline  void  enter_password6 ( void ) {
   char p60 [ 100 ] ;
   set_keypress  ( ) ;
   char ( * const p6 ) [ 100 ] = (char(*const)[100])
@@ -1106,14 +1116,14 @@ static  inline  void  enter_password6 ( int const password_alphabet ) {
       ( strcp ) & u8"в пароле нет конца строки" :
       ( strcp ) & "there is no end of line in the password" ) ;
     longjmp(ns_shifr  . jump,1); }
-  if ( password_alphabet == 95 )
+  if ( ns_shifr . password_alphabet == 95 )
     string_to_password6_uni ( p6 , & ns_shifr . raspr6  . password_const ,
       & ns_shifr . letters ,  letters_count ) ;
   else
     string_to_password6_uni ( p6 , & ns_shifr . raspr6  . password_const ,
       & ns_shifr . letters2 , letters_count2 ) ;
   char  password_letters6 [ 100 ] ;
-  if ( password_alphabet == 95 )
+  if ( ns_shifr . password_alphabet == 95 )
     password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
       & password_letters6 , & ns_shifr . letters , letters_count ) ;
   else
@@ -1483,7 +1493,6 @@ int main  ( int argc , char * argv [ ] )  {
   bool  flagoutputtofile  = false ;
   bool  flagclosefilefrom = false ;
   bool  flagclosefileto = false ;
-  int password_alphabet = 62 ;
   shifr_init  ( ) ;
   if  ( argc  <=  1  ) {
     puts ( ns_shifr . localerus ?
@@ -1515,11 +1524,11 @@ int main  ( int argc , char * argv [ ] )  {
       u8"  --пар-путь или\n  --pas-path 'путь_к_файлу_с_паролем'\tиспользовать пароль в файле" :
       "  --pas-path 'path_to_password_file'\tuse password in file" );
     puts  (ns_shifr . localerus ?
-      u8"  --вход или\n  --input 'имя_файла'\tчитать из файла (без данной опции читаются данные со стандартного входа)" :
-      "  --input 'file_name'\tread from file (without this option data reads from standard input)");
+      u8"  --вход или < или \n  --input 'имя_файла'\tчитать из файла (без данной опции читаются данные со стандартного входа)" :
+      "  --input or < 'file_name'\tread from file (without this option data reads from standard input)");
     puts  (ns_shifr . localerus ? 
-      u8"  --выход или\n  --output 'имя_файла'\tзаписывать в файл (без данной опции записываются данные в стандартный выход)" :
-      "  --output 'file_name'\twrite to file (without this option data writes to standard output)"    );
+      u8"  --выход или > или \n  --output 'имя_файла'\tзаписывать в файл (без данной опции записываются данные в стандартный выход)" :
+      "  --output or > 'file_name'\twrite to file (without this option data writes to standard output)"    );
     puts  (ns_shifr . localerus ? 
       u8"  --текст или\n  --text\tшифрованный файл записан текстом ascii" :
       "  --text\tencrypted file written in ascii text"    );
@@ -1612,7 +1621,7 @@ if ( flagreadpasswdfromfile ) {
     psw_uni = password_letters6 ;
   psw_uni [ nr ] = '\00' ;
 
-      if ( password_alphabet == 95 )  {
+      if ( ns_shifr . password_alphabet == 95 )  {
         for ( size_t i  = 0 ; i < nr  ; ++  i )
           if (  psw_uni [ i ] < ' ' or psw_uni  [ i ] > '~' ) {
             psw_uni [ i ] = '\00' ;
@@ -1628,7 +1637,7 @@ if ( flagreadpasswdfromfile ) {
               break ; } }
     switch ( ns_shifr . use_version ) {
     case 4 :
-      if ( password_alphabet == 95 )
+      if ( ns_shifr . password_alphabet == 95 )
         string_to_password_templ  ( 6 ) ( & password_letters ,
           & ns_shifr . raspr4  . pass ,
           & ns_shifr . letters ,  letters_count ) ;
@@ -1638,7 +1647,7 @@ if ( flagreadpasswdfromfile ) {
           & ns_shifr . letters2 , letters_count2 ) ;
       break ;
     case 6 : {
-      if ( password_alphabet == 95 )
+      if ( ns_shifr . password_alphabet == 95 )
         string_to_password6_uni ( & password_letters6 ,
           & ns_shifr . raspr6  . password_const ,
           & ns_shifr . letters ,  letters_count ) ;
@@ -1675,7 +1684,7 @@ if ( flagreadpasswdfromfile ) {
           ( strcp ) & "password already set" );
         longjmp(ns_shifr  . jump,1); }
       if ( ns_shifr . use_version == 4 ) {
-        if ( password_alphabet == 95 )
+        if ( ns_shifr . password_alphabet == 95 )
           string_to_password_templ  ( 6 ) ( ( strcp ) ( argv  [ argj  ] ) ,
             & ns_shifr . raspr4  . pass , & ns_shifr . letters ,
             letters_count ) ; 
@@ -1692,7 +1701,7 @@ if ( flagreadpasswdfromfile ) {
 # endif                           
         }
       if ( ns_shifr . use_version == 6 ) {
-        if ( password_alphabet == 95 )
+        if ( ns_shifr . password_alphabet == 95 )
           string_to_password6_uni ( (char(*)[])(argv[argj]) ,
             & ns_shifr . raspr6  . password_const , & ns_shifr . letters ,
             letters_count ) ;
@@ -1702,7 +1711,7 @@ if ( flagreadpasswdfromfile ) {
             letters_count2 ) ; 
 # ifdef SHIFR_DEBUG                           
         { t_number320 password6 ;
-          if ( password_alphabet == 95 )
+          if ( ns_shifr . password_alphabet == 95 )
             string_to_password6_uni ( (char(*)[])(argv[argj]) , & password6 ,
               & ns_shifr . letters , letters_count ) ; 
           else
@@ -1719,14 +1728,14 @@ if ( flagreadpasswdfromfile ) {
       char  password_letters [ 20 ] ;
       char  password_letters6 [ 100 ] ;
       if ( ns_shifr . use_version == 4 ) {
-        if ( password_alphabet == 95 )
+        if ( ns_shifr . password_alphabet == 95 )
           password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
             & password_letters , & ns_shifr . letters , letters_count ) ;
         else
           password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
             & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
       if ( ns_shifr . use_version == 6 ) {
-        if ( password_alphabet == 95 )
+        if ( ns_shifr . password_alphabet == 95 )
           password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
             & password_letters6 , & ns_shifr . letters , letters_count ) ;
         else
@@ -1801,11 +1810,11 @@ if ( flagreadpasswdfromfile ) {
         else
         if (( strcmp ( argv[argj] , u8"--а95" ) ==  0 ) or
           ( strcmp ( argv[argj] , "--a95" ) ==  0 )) { 
-          password_alphabet = 95 ; }
+          ns_shifr . password_alphabet = 95 ; }
         else
         if (( strcmp ( argv[argj] , u8"--а62" ) ==  0 ) or
           ( strcmp ( argv[argj] , "--a62" ) ==  0 )) { 
-          password_alphabet = 62 ; }
+          ns_shifr . password_alphabet = 62 ; }
         else {
           fprintf ( stderr , ( ns_shifr . localerus ?
             u8"неопознанная опция : \'%s\'\n" :
@@ -1947,7 +1956,7 @@ if ( flagreadpasswdfromfile ) {
         ( strcp ) & "unknown version" ) ;
       longjmp(ns_shifr  . jump,1); }
 # else
-  if ( password_alphabet == 95 )
+  if ( ns_shifr . password_alphabet == 95 )
     puts  ( & ( ( ( ns_shifr . use_version == 6 ) ?
       password_letters61 : password_letters ) [ 0 ] ) ) ;
   else
@@ -1963,16 +1972,17 @@ if ( flagreadpasswdfromfile ) {
     longjmp(ns_shifr  . jump,1); }
 # endif
   //  по-умолчанию шифруем
+  // encrypted by default
   if ( not flagdec  ) flagenc = true  ;
   if ( not flagpasswd )    {
     fputs ( ( ns_shifr . localerus ? u8"введите пароль = " :
       "enter the password = " ) , stdout  ) ;
     switch ( ns_shifr . use_version ) {
     case  6 :
-      enter_password6  ( password_alphabet ) ;
+      enter_password6  ( ) ;
       break ;
     case 4 :
-      enter_password4  ( password_alphabet ) ;
+      enter_password4  ( ) ;
       break ;
     default :
       fprintf(stderr,( ns_shifr . localerus ?
