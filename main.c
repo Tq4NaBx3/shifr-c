@@ -1,4 +1,13 @@
+// Шифр ©2020 Глебов А.Н.
+// Shifr ©2020 Glebe A.N.
+
+# include <locale.h>
+# include <stdio.h>
+# include <stdlib.h>
+# include <time.h>
+# include <errno.h>
 # include "shifr.h"
+
 int main  ( int argc , char * argv [ ] )  {
   char const * const locale = setlocale ( LC_ALL  , ""  ) ;
   ns_shifr . localerus = ( strcmp  ( locale  , "ru_RU.UTF-8" ) ==  0 ) ;
