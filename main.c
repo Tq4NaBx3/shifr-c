@@ -587,11 +587,11 @@ if ( flagreadpasswdfromfile ) {
   if ( flagenc ) {
     if ( ns_shifr . use_version == 4 ) shifr_encode4 ( ) ;
     else
-    if ( ns_shifr . use_version == 6 ) shifr_encode6 ( ) ; }
+      if ( ns_shifr . use_version == 6 ) shifr_encode6 ( ) ; }
   else  {
     if ( ns_shifr . use_version == 4 ) shifr_decode4 ( ) ;
     else
-    if ( ns_shifr . use_version == 6 ) shifr_decode6 ( ) ; }
+      if ( ns_shifr . use_version == 6 ) shifr_decode6 ( ) ; }
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
     if  ( fclose  ( ns_shifr  . fileto  ) ) {

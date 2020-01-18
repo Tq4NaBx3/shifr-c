@@ -299,6 +299,13 @@ static  inline  number_def_div_mod  ( 6 )
 shifr_number_dec_princ  ( 6 )
 # endif
 
+number_def  ( 37 )
+number_dec_set0 ( 37 )
+static  inline  number_def_set_byte ( 37 )
+number_dec_mul_byte ( 37 )
+static  inline  number_def_elt_copy ( 37 )
+static  inline  number_def_add  ( 37 )
+
 # undef shifr_number_array
 # define  shifr_number_array  shifr_number_array_pri
 
@@ -320,10 +327,12 @@ typedef struct  s_number320 {
 # define  t_raspr6  shifr_t_raspr6
 
 typedef struct  s_raspr6 {
-
+  
   t_number320 password_const  ;
   // 64 - 1 = 63
   uint8_t dice  [ 63  ] ;
+  // log(2,64!) ceil 8 = 37
+  number_type ( 37 ) pass  ;
 
 } t_raspr6 ;
 

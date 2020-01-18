@@ -12,6 +12,8 @@
 # define  shifr_number_array  shifr_number_array_pub
 number_def_set0 ( 6 )
 number_def_mul_byte ( 6 )
+number_def_set0 ( 37 )
+number_def_mul_byte ( 37 )
 # undef shifr_number_array
 # define  shifr_number_array  shifr_number_array_pri
   
@@ -464,8 +466,11 @@ static inline bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  
   return  false ; }
         
 // пишу по шесть бит
-// secretdatasolesize количество шести-битных отделов (2 или 3)
-// encrypteddata массив шести-битных чисел
+// secretdatasolesize - количество шести-битных отделов (2 или 3)
+// encrypteddata - массив шести-битных чисел
+// I write in six bits
+// secretdatasolesize - the number of six-bit divisions (2 or 3)
+// encrypteddata - array of six-bit numbers
 static void  streambuf_write6 ( t_streambuf * const restrict me  ,
   uint8_t const (  * const encrypteddata ) [ 3 ] ,
   uint8_t const secretdatasolesize , bool const  flagtext ) {
@@ -843,6 +848,23 @@ void  shifr_pass_to_array4 ( void ) {
     number_mul_byte ( 6 ) ( & mu , 16 - in  ) ;
     ++  in ;
   } while ( in < 15 ) ; }
+
+// [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
+// = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
+void  shifr_pass_to_array6 ( void ) {
+  number_set0 ( 37 ) ( & ns_shifr . raspr6  . pass  ) ;
+  number_type ( 37 ) mu  ;
+  number_set_byte ( 37 ) ( & mu , 1 ) ;
+  uint8_t in = 0 ;
+  do {
+    { number_type ( 37 ) mux = mu ;
+      // re += dice [ in ] * mu ;
+      number_mul_byte ( 37 ) ( & mux  ,  ns_shifr . raspr6  . dice [ in ] ) ;
+      number_add  ( 37 ) ( & ns_shifr . raspr6  . pass , & mux ) ; }
+    //$mu *=  16 - $in ;
+    number_mul_byte ( 37 ) ( & mu , 64 - in  ) ;
+    ++  in ;
+  } while ( in < 63 ) ; }
 
 void  shifr_password_generate6 ( void ) {
   int const rmax  [ 10 ] = { 0 , 0 , 371982424 , 465456948 , 36645132 ,
