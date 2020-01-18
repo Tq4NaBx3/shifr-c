@@ -73,8 +73,8 @@ int main  ( int argc , char * argv [ ] )  {
       u8"  --4\tиспользовать четырёх битное шифрование, ключ = 45 бит ( семь/восемь букв )." :
       "  --4\tusing four bit encryption, key = 45 bits ( seven/eight letters )." ) ;
     puts  ( ns_shifr . localerus ?
-      u8"  --6\tиспользовать шести битное шифрование, ключ = 296 бит ( 46 - 50 букв ). ( по-умолчанию )" :
-      "  --6\tusing six bit encryption, key = 296 bits ( 46 - 50 letters ). ( by default )") ;
+      u8"  --6\tиспользовать шести битное шифрование, ключ = 296 бит ( 45 - 50 букв ). ( по-умолчанию )" :
+      "  --6\tusing six bit encryption, key = 296 bits ( 45 - 50 letters ). ( by default )") ;
     fputs  ( ns_shifr . localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
@@ -239,15 +239,28 @@ if ( flagreadpasswdfromfile ) {
         }
       if ( ns_shifr . use_version == 6 ) {
         if ( ns_shifr . password_alphabet == 95 )
-          string_to_password6_uni ( (char(*)[])(argv[argj]) ,
+          string_to_password_templ  ( 37 ) ( ( strcp ) ( argv  [ argj  ] ) ,
+            & ns_shifr . raspr6  . pass , & ns_shifr . letters ,
+            letters_count ) ; 
+          /*string_to_password6_uni ( (char(*)[])(argv[argj]) ,
             & ns_shifr . raspr6  . password_const , & ns_shifr . letters ,
-            letters_count ) ;
+            letters_count ) ;*/
         else
-          string_to_password6_uni ( (char(*)[])(argv[argj]) ,
+          string_to_password_templ  ( 37 ) ( ( strcp ) ( argv  [ argj  ] ) ,
+            & ns_shifr . raspr6  . pass , & ns_shifr . letters2 ,
+            letters_count2 ) ;
+          /*string_to_password6_uni ( (char(*)[])(argv[argj]) ,
             & ns_shifr . raspr6  . password_const , & ns_shifr . letters2 ,
-            letters_count2 ) ; 
+            letters_count2 ) ; */
 # ifdef SHIFR_DEBUG                           
-        { t_number320 password6 ;
+
+      fputs ( ( ns_shifr . localerus ?
+        u8"из строки во внутренний пароль = " :
+        "from string to internal password = " ) , stderr ) ;
+      number_princ  ( 37 ) ( & ns_shifr . raspr6  . pass , stderr  ) ;
+      fputs ( "\n" , stderr ) ;
+
+        /*{ t_number320 password6 ;
           if ( ns_shifr . password_alphabet == 95 )
             string_to_password6_uni ( (char(*)[])(argv[argj]) , & password6 ,
               & ns_shifr . letters , letters_count ) ; 
@@ -259,7 +272,7 @@ if ( flagreadpasswdfromfile ) {
             u8"из строки во внутренний пароль = [ %lx , %lx , %lx , %lx , %lx ]\n"  :
             "from string to internal password = [ %lx , %lx , %lx , %lx , %lx ]\n"  ) ,
           password6 . a [ 4 ] , password6 . a [ 3 ] , password6 . a [ 2 ] ,
-          password6 . a [ 1 ] , password6 . a [ 0 ] ) ; }
+          password6 . a [ 1 ] , password6 . a [ 0 ] ) ; }*/
 # endif            
       }
       char  password_letters [ 20 ] ;
@@ -273,11 +286,16 @@ if ( flagreadpasswdfromfile ) {
             & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
       if ( ns_shifr . use_version == 6 ) {
         if ( ns_shifr . password_alphabet == 95 )
-          password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
+          /*password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
+            & password_letters6 , & ns_shifr . letters , letters_count ) ;*/
+          password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
             & password_letters6 , & ns_shifr . letters , letters_count ) ;
         else
-          password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
-            & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ; }
+          password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
+            & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ;
+          /*password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
+            & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ;*/
+          }
 # ifdef SHIFR_DEBUG
       if ( ns_shifr . use_version == 6 ) {
         if  ( strcmp ( password_letters6 , argv  [ argj  ] ) )  
@@ -374,7 +392,16 @@ if ( flagreadpasswdfromfile ) {
 # endif
       break ;
     case 6 :
-      shifr_password_generate6 ( ) ;
+      //shifr_password_generate6 ( ) ;
+      shifr_generate_pass6  ( ) ;
+      shifr_pass_to_array6  ( ) ;
+# ifdef SHIFR_DEBUG
+      fputs ( ( ns_shifr . localerus ?
+        u8"внутренний пароль = " :
+        "internal password = " ) , stderr ) ;
+      number_princ  ( 37 ) ( & ns_shifr . raspr6  . pass , stderr  ) ;
+      fputs ( "\n" , stderr ) ;
+# endif
       break ;
     default :
       fprintf ( stderr , ( ns_shifr . localerus ?
@@ -395,13 +422,18 @@ if ( flagreadpasswdfromfile ) {
     fputs ( "\n" , stderr ) ;
     break ;
   case  6 :
-    fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
-      "inner password = [ " , stderr ) ;
-    for ( uint64_t const * i = & (  ns_shifr . raspr6  . password_const . a [ 5 ] ) ;
+    /*fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
+      "inner password = [ " , stderr ) ;*/
+    fputs ( ( ns_shifr . localerus ?
+      u8"внутренний пароль = " :
+      "internal password = " ) , stderr ) ;
+    number_princ  ( 37 ) ( & ns_shifr . raspr6  . pass , stderr  ) ;
+    /*for ( uint64_t const * i = & (  ns_shifr . raspr6  . password_const . a [ 5 ] ) ;
       i not_eq & ( ns_shifr . raspr6  . password_const . a [ 0 ] ) ;  ) {
       --  i ;
       fprintf (stderr, "%lx , " , * i ) ;  }
-    fputs  ( "]\n" ,stderr) ;
+    fputs  ( "]\n" ,stderr) ;*/
+    fputs ( "\n" , stderr ) ;
     break ;
   default :
     fprintf ( stderr , ( ns_shifr . localerus ?
@@ -424,10 +456,14 @@ if ( flagreadpasswdfromfile ) {
         & password_letters2 , & ns_shifr . letters2 , letters_count2 ) ; 
       break ;
     case  6 :
-      password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
+      password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
+        & password_letters61 , & ns_shifr . letters , letters_count ) ;
+      password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
+        & password_letters62 , & ns_shifr . letters2 , letters_count2 ) ; 
+      /*password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
         & password_letters61 , & ns_shifr . letters , letters_count ) ;
       password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
-        & password_letters62 , & ns_shifr . letters2 , letters_count2 ) ;
+        & password_letters62 , & ns_shifr . letters2 , letters_count2 ) ;*/
       break ;
     default :
       fprintf ( stderr , ( ns_shifr . localerus ?
@@ -468,7 +504,24 @@ if ( flagreadpasswdfromfile ) {
         fputs ( "\n" , stderr ) ;  }
       break ;
     case  6 :
-      { t_number320 password6 ;
+      { number_type ( 37 ) password2 ;
+        string_to_password_templ  ( 37 ) ( & password_letters61 ,
+          & password2 , & ns_shifr . letters ,
+          letters_count ) ; 
+        fputs ( ( ns_shifr . localerus ?
+          u8"из строки95 во внутренний пароль = " :
+          "from string95 to internal password = " ) , stderr ) ;
+        number_princ  ( 37 ) ( & password2 , stderr  ) ;
+        fputs ( "\n" , stderr ) ;
+        string_to_password_templ  ( 37 ) ( & password_letters62 ,
+          & password2 , & ns_shifr . letters2 ,
+          letters_count2 ) ;
+        fputs ( ( ns_shifr . localerus ?
+          u8"из строки62 во внутренний пароль = " :
+          "from string62 to internal password = " ) , stderr ) ;
+        number_princ  ( 37 ) ( & password2 , stderr  ) ;
+        fputs ( "\n" , stderr ) ;  }
+      /*{ t_number320 password6 ;
         string_to_password6_uni ( & password_letters61 , & password6 ,
           & ns_shifr . letters , letters_count ) ; 
       printf  ( ( ns_shifr . localerus ?
@@ -482,7 +535,7 @@ if ( flagreadpasswdfromfile ) {
           u8"из строки62 во внутренний пароль = [ %lx , %lx , %lx , %lx , %lx ]\n"  :
           "from string62 to internal password = [ %lx , %lx , %lx , %lx , %lx ]\n" ) ,
         password6 . a [ 4 ] , password6 . a [ 3 ] , password6 . a [ 2 ] , 
-        password6 . a [ 1 ] , password6 . a [ 0 ] ) ;   }
+        password6 . a [ 1 ] , password6 . a [ 0 ] ) ;   }*/
       break ;
     default :
       fprintf ( stderr  , ns_shifr . localerus ?
@@ -565,8 +618,10 @@ if ( flagreadpasswdfromfile ) {
         & ns_shifr  . deshi ) ;
       break ;
     case 6 :
-      password_load6 ( & ns_shifr . raspr6  . password_const  ,
-        & ns_shifr  . shifr6 , & ns_shifr  . deshi6 ) ;
+      password_load ( 37 ) ( & ns_shifr . raspr6  . pass , & ns_shifr  . shifr6 ,
+        & ns_shifr  . deshi6 ) ;
+      /*password_load6 ( & ns_shifr . raspr6  . password_const  ,
+        & ns_shifr  . shifr6 , & ns_shifr  . deshi6 ) ;*/
       break ;
     default :
       fprintf ( stderr  , ( ns_shifr . localerus ?

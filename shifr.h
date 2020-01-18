@@ -305,6 +305,13 @@ static  inline  number_def_set_byte ( 37 )
 number_dec_mul_byte ( 37 )
 static  inline  number_def_elt_copy ( 37 )
 static  inline  number_def_add  ( 37 )
+static  inline  number_def_not_zero ( 37 )
+static  inline  number_def_dec  ( 37 )
+static  inline  number_def_div_mod  ( 37 )
+
+# ifdef SHIFR_DEBUG
+shifr_number_dec_princ  ( 37 )
+# endif
 
 # undef shifr_number_array
 # define  shifr_number_array  shifr_number_array_pri
@@ -313,8 +320,7 @@ static  inline  number_def_add  ( 37 )
 
 typedef struct  s_raspr4 {
 
-// 16 - 1 = 15
-uint8_t dice  [ 15  ] ;
+uint8_t dice  [ 16 - 1  ] ;
 // log(2,16!) ceil 8 = 6
 number_type ( 6 ) pass  ;
 
@@ -329,8 +335,7 @@ typedef struct  s_number320 {
 typedef struct  s_raspr6 {
   
   t_number320 password_const  ;
-  // 64 - 1 = 63
-  uint8_t dice  [ 63  ] ;
+  uint8_t dice  [ 64 - 1 ] ;
   // log(2,64!) ceil 8 = 37
   number_type ( 37 ) pass  ;
 
@@ -408,6 +413,7 @@ void  shifr_string_to_password##N##_templ ( strcp string , \
   strcp letters , uint8_t letterscount  ) ;
 # define  string_to_password_templ_dec  shifr_string_to_password_templ_dec
 string_to_password_templ_dec  ( 6 )
+string_to_password_templ_dec  ( 37 )
 # define  shifr_string_to_password_templ( N ) shifr_string_to_password##N##_templ
 # define  string_to_password_templ  shifr_string_to_password_templ
 
@@ -423,7 +429,8 @@ void  shifr_password##N##_to_string_templ ( \
   number_type ( N ) const * password0 , strp string ,  \
   strp letters , uint8_t letterscount  ) ;
 # define  password_to_string_templ_dec  shifr_password_to_string_templ_dec
-password_to_string_templ_dec  ( 6 )  
+password_to_string_templ_dec  ( 6 )
+password_to_string_templ_dec  ( 37 )  
 # define  shifr_password_to_string_templ( N ) shifr_password##N##_to_string_templ
 # define  password_to_string_templ  shifr_password_to_string_templ
 
@@ -434,9 +441,16 @@ void  password_to_string6_uni (
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
 void  shifr_generate_pass4 ( void ) ;
 
+// inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
+void  shifr_generate_pass6 ( void ) ;
+
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
 void  shifr_pass_to_array4 ( void ) ;
+
+// [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
+// = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
+void  shifr_pass_to_array6 ( void ) ;
 
 void  shifr_password_generate6 ( void ) ;
 
@@ -591,14 +605,14 @@ static inline  void  initarr ( arrp  const p , uint8_t const codefree ,
 //  0xff secret codes for salt + data 0x1
 // deshi needs salt
 
-# define  shifr_password_load_def(  N ) \
+# define  shifr_password_load_def(  N , SDS ) \
 void  shifr_password##N##_load  ( number_type ( N ) const * const password0 , \
   arrp const shifrp , arrp const deship ) { \
-  initarr ( shifrp , 0xff , shifr_deshi_size2 )  ;  \
-  initarr ( deship , 0xff , shifr_deshi_size2 )  ;  \
-  uint8_t arrind  [ shifr_deshi_size2  ] ;  \
-  { uint8_t * arrj  = & ( arrind  [ shifr_deshi_size2  ] ) ;  \
-    uint8_t j = shifr_deshi_size2  ;  \
+  initarr ( shifrp , 0xff , SDS )  ;  \
+  initarr ( deship , 0xff , SDS )  ;  \
+  uint8_t arrind  [ SDS  ] ;  \
+  { uint8_t * arrj  = & ( arrind  [ SDS  ] ) ;  \
+    uint8_t j = SDS  ;  \
     do  { \
       --  arrj  ; \
       --  j ; \
@@ -608,15 +622,16 @@ void  shifr_password##N##_load  ( number_type ( N ) const * const password0 , \
   number_type ( N ) password = * password0 ; \
   do {  \
     { uint8_t cindex = number_div_mod ( N ) ( & password ,  \
-        shifr_deshi_size2 - inde ) ;  \
+        SDS - inde ) ;  \
       uint8_t * arrind_cindexp = & (  arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
       memmove ( arrind_cindexp , arrind_cindexp + 1 , \
-        shifr_deshi_size2  - inde  - cindex - 1 ) ; } \
+        SDS  - inde  - cindex - 1 ) ; } \
     ++ inde  ;  \
-  } while ( inde < shifr_deshi_size2 ) ; }
-static  inline  shifr_password_load_def (  6 )
+  } while ( inde < SDS ) ; }
+static  inline  shifr_password_load_def (  6 , shifr_deshi_size2 )
+static  inline  shifr_password_load_def (  37 , shifr_deshi_size6 )
 # define  shifr_password_load( N ) shifr_password##N##_load
 # define  password_load shifr_password_load
 

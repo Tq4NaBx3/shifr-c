@@ -99,6 +99,7 @@ void  shifr_password##N##_to_string_templ ( \
   ( * stringi ) = '\00' ;  }
 # define  password_to_string_templ_def  shifr_password_to_string_templ_def
 password_to_string_templ_def  ( 6 )
+password_to_string_templ_def  ( 37 )
 
 # define  shifr_string_to_password_templ_def( N ) \
 void  shifr_string_to_password##N##_templ ( strcp const string , \
@@ -132,6 +133,7 @@ found : ; \
   ( * password  ) = pass ; }
 # define  string_to_password_templ_def  shifr_string_to_password_templ_def
 string_to_password_templ_def  ( 6 )
+string_to_password_templ_def  ( 37 )
 
 // number /= div , number := floor [ деление ] , return := остаток
 uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
@@ -861,7 +863,7 @@ void  shifr_pass_to_array6 ( void ) {
       // re += dice [ in ] * mu ;
       number_mul_byte ( 37 ) ( & mux  ,  ns_shifr . raspr6  . dice [ in ] ) ;
       number_add  ( 37 ) ( & ns_shifr . raspr6  . pass , & mux ) ; }
-    //$mu *=  16 - $in ;
+    //$mu *=  64 - $in ;
     number_mul_byte ( 37 ) ( & mu , 64 - in  ) ;
     ++  in ;
   } while ( in < 63 ) ; }
@@ -939,4 +941,5 @@ void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  
 
 # ifdef SHIFR_DEBUG
 number_def_princ  ( 6 )
+number_def_princ  ( 37 )
 # endif
