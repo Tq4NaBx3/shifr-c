@@ -812,15 +812,15 @@ void shifr_decode4  ( void  ) {
     } while ( true ) ; }
 
 void shifr_decode6 ( void ) {
-      uint8_t secretdata [ 1 ] ;
-      uint8_t old_last_data = 0 ;
-      uint8_t old_last_sole = 0 ;
-      while ( not isEOFstreambuf_read6bits ( & shifr_filebuffrom ,
-        & ( secretdata [ 0 ] ) , ns_shifr  . flagtext ) ) {
-        uint8_t decrypteddata [ 1 ] ;
-        decrypt_sole6 ( & secretdata , & ns_shifr  . deshi6 , & decrypteddata , 1 ,
-          & old_last_sole , & old_last_data ) ;
-        streambuf_write3bits ( & shifr_filebufto , decrypteddata [ 0 ] ) ; } }
+  uint8_t secretdata [ 1 ] ;
+  uint8_t old_last_data = 0 ;
+  uint8_t old_last_sole = 0 ;
+  while ( not isEOFstreambuf_read6bits ( & shifr_filebuffrom ,
+    & ( secretdata [ 0 ] ) , ns_shifr  . flagtext ) ) {
+    uint8_t decrypteddata [ 1 ] ;
+    decrypt_sole6 ( & secretdata , & ns_shifr  . deshi6 , & decrypteddata , 1 ,
+      & old_last_sole , & old_last_data ) ;
+    streambuf_write3bits ( & shifr_filebufto , decrypteddata [ 0 ] ) ; } }
 
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
 void  shifr_generate_pass4 ( void ) {

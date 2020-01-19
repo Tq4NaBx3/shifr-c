@@ -70,8 +70,8 @@ int main  ( int argc , char * argv [ ] )  {
       u8"  --текст или\n  --text\tшифрованный файл записан текстом ascii" :
       "  --text\tencrypted file written in ascii text"    );
     puts  ( ns_shifr . localerus ? 
-      u8"  --4\tиспользовать четырёх битное шифрование, ключ = 45 бит ( семь/восемь букв )." :
-      "  --4\tusing four bit encryption, key = 45 bits ( seven/eight letters )." ) ;
+      u8"  --4\tиспользовать четырёх битное шифрование, ключ = 45 бит ( шесть-восемь букв )." :
+      "  --4\tusing four bit encryption, key = 45 bits ( six-eight letters )." ) ;
     puts  ( ns_shifr . localerus ?
       u8"  --6\tиспользовать шести битное шифрование, ключ = 296 бит ( 45 - 50 букв ). ( по-умолчанию )" :
       "  --6\tusing six bit encryption, key = 296 bits ( 45 - 50 letters ). ( by default )") ;
