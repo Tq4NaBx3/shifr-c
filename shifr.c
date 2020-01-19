@@ -134,7 +134,7 @@ found : ; \
 # define  string_to_password_templ_def  shifr_string_to_password_templ_def
 string_to_password_templ_def  ( 6 )
 string_to_password_templ_def  ( 37 )
-
+/*
 // number /= div , number := floor [ деление ] , return := остаток
 uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
   uint8_t const div ) {
@@ -171,8 +171,8 @@ uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
 
   number  ->  a [ 4 ] +=  res [ 5 ] ;
 
-  return  ld  . rem ; }
-
+  return  ld  . rem ; }*/
+/*
 // --
 static  inline  void  number320dec  ( t_number320 * const restrict number ) {
   uint64_t  * restrict i = & ( ( number ->  a ) [ 0 ] ) ; 
@@ -182,8 +182,8 @@ static  inline  void  number320dec  ( t_number320 * const restrict number ) {
       -- ( * i ) ;
       break ; }
     ++  i ;
-  } while ( i not_eq & ( ( number ->  a ) [ 5 ] ) ) ; }
-  
+  } while ( i not_eq & ( ( number ->  a ) [ 5 ] ) ) ; }*/
+  /*
 static  inline  bool  number320_not0  (
   t_number320 const * const restrict np ) {
   uint64_t const * i = & ( np -> a [ 5 ] ) ;
@@ -191,8 +191,8 @@ static  inline  bool  number320_not0  (
     --  i ;
     if ( * i )  return  true  ;
   } while ( i not_eq & ( np -> a [ 0 ] ) ) ;
-  return  false ; }
-  
+  return  false ; }*/
+  /*
 void  password_to_string6_uni (
   t_number320 const * const restrict password0 , strp const string ,
   strp letters , uint8_t const letterscount  ) {
@@ -206,16 +206,16 @@ void  password_to_string6_uni (
         letterscount ) ] ;
       ++  stringi ;
     } while ( number320_not0 ( & password ) ) ; }
-  ( * stringi ) = '\00' ;  }
-  
+  ( * stringi ) = '\00' ;  }*/
+  /*
 static  inline  void number320_set0  ( t_number320 * const restrict np ) {
-  memset  ( & ( ( np -> a ) [ 0 ] ) , 0 , 5 * sizeof  ( uint64_t  ) ) ; }
-
+  memset  ( & ( ( np -> a ) [ 0 ] ) , 0 , 5 * sizeof  ( uint64_t  ) ) ; }*/
+/*
 static  inline  void number320_setUInt  ( t_number320 * const restrict np ,
   unsigned int const x ) {
   memset  ( & ( ( np -> a ) [ 1 ] ) , 0 , 4 * sizeof  ( uint64_t  ) ) ;
-  ( np -> a ) [ 0 ] = x ; }
-
+  ( np -> a ) [ 0 ] = x ; }*/
+/*
 static  void number320_add  (
   t_number320 * const restrict np , t_number320 const * const restrict xp ) {
   if ( np == xp ) {
@@ -232,8 +232,8 @@ static  void number320_add  (
     uint64_t  old = np  ->  a [ i ] ;
     ( np  ->  a [ i ] ) +=  pere  ;
     if ( np  ->  a [ i ] < old ) pere = 1 ;
-    else  pere  = pere2 ; } }
-  
+    else  pere  = pere2 ; } }*/
+  /*
 static void  number320_mul8  ( t_number320 * const restrict np , uint8_t const m ) {
   uint64_t  r [ 6 ] ;
   r  [ 0 ] = ( ( ( ( np  ->  a [ 0 ] ) << 8 ) >> 8 ) * ( ( uint64_t  ) m ) ) ;
@@ -250,8 +250,8 @@ static void  number320_mul8  ( t_number320 * const restrict np , uint8_t const m
     else  np  ->  a [ i ] = 0 ;
     np  ->  a [ i ] += ( r [ i ] >> ( i << 3 ) ) ;
     tmp = np  ->  a [ i ] ;
-    np  ->  a [ i ] += ( r [ i + 1 ] << ( ( 7 - i ) << 3 ) ) ; } }
-
+    np  ->  a [ i ] += ( r [ i + 1 ] << ( ( 7 - i ) << 3 ) ) ; } }*/
+/*
 void  string_to_password6_uni ( strcp const string ,
   t_number320 * const restrict password , char const (  * const letters ) [ ] ,
     uint8_t const letterscount ) {
@@ -280,8 +280,8 @@ found : ;
     number320_mul8  ( & mult , letterscount ) ;
     ++  stringi ;
   } while ( ( * stringi ) not_eq '\00' ) ;
-  ( * password  ) = pass ; }
-
+  ( * password  ) = pass ; }*/
+/*
 # ifdef SHIFR_DEBUG
 //  /= 64  или  >>= 6
 static inline void  number320_shift_down  ( t_number320 * const nump ,
@@ -295,7 +295,7 @@ static inline void  number320_shift_down  ( t_number320 * const nump ,
     old6 = new6 ;
   } while ( p not_eq & ( nump -> a [ 0 ] ) ) ;  }
 # endif
-
+*/
 static inline void datasole ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
@@ -402,7 +402,7 @@ void reset_keypress ( void  ) {
       u8"ошибка записи tcsetattr : %s\n" :
       "error write tcsetattr : %s\n"  ) , se  ) ;
     ns_shifr  . string_exception  = ( strcp ) se ;
-    longjmp(ns_shifr  . jump,1); } }  
+    longjmp(ns_shifr  . jump,1); } }
 
 # undef streambuf_file
 # define  streambuf_file  streambuf_file_pub
@@ -867,7 +867,7 @@ void  shifr_pass_to_array6 ( void ) {
     number_mul_byte ( 37 ) ( & mu , 64 - in  ) ;
     ++  in ;
   } while ( in < 63 ) ; }
-
+/*
 void  shifr_password_generate6 ( void ) {
   int const rmax  [ 10 ] = { 0 , 0 , 371982424 , 465456948 , 36645132 ,
           851424078 , 78362151 , 525642490 , 110135612 , 535066862 } ;
@@ -927,7 +927,7 @@ rand6ok :
         ( ((uint64_t)( r [ 8 ] bitand ( ( 1U << 18 ) - 1 ) )) << 46  ) ;
       ns_shifr . raspr6  . password_const . a [ 4 ] =
         ((uint64_t)( ( r [ 8 ] >> 18 ) bitand  ( ( 1U <<  11 ) - 1 ) )) bitor 
-        ( ((uint64_t)( r [ 9 ] bitand  ( ( 1U <<  29 ) - 1 ) )) << 11 ) ; }
+        ( ((uint64_t)( r [ 9 ] bitand  ( ( 1U <<  29 ) - 1 ) )) << 11 ) ; }*/
 
 # define  shifr_number_def_princ( N ) \
 void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  \
@@ -935,7 +935,7 @@ void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  
   fputs ( "[ " , fs ) ; \
   for ( int8_t i = N ; i ; ) {  \
     -- i ;  \
-    fprintf ( fs  , "%d , " , number_elt_copy ( N ) ( np , i ) ) ; }  \
+    fprintf ( fs  , "%x , " , number_elt_copy ( N ) ( np , i ) ) ; }  \
   fputs ( "]" , fs ) ; }
 # define  number_def_princ shifr_number_def_princ
 

@@ -46,27 +46,27 @@ int main  ( int argc , char * argv [ ] )  {
       "There is no diagnosis of the wrong password.\n"
       "Syntax : shifr [options]" ) ;
     puts  ( ns_shifr . localerus ? u8"Параметры :" : "Options :"  ) ;
-    puts  (ns_shifr . localerus ?
+    puts  ( ns_shifr . localerus ?
       u8"  --ген-пар или\n  --gen-pas\tгенерировать пароль" :
       "  --gen-pas\tpassword generate" );
-    puts  (ns_shifr . localerus ?
+    puts  ( ns_shifr . localerus ?
       u8"  --зашифр или\n  --encrypt\tзашифровать\t(по-умолчанию)" :
       "  --encrypt\t(by default)" );
-    puts  (ns_shifr . localerus ? u8"  --расшифр или\n  --decrypt\tрасшифровать" :
+    puts  ( ns_shifr . localerus ? u8"  --расшифр или\n  --decrypt\tрасшифровать" :
       "  --decrypt" );
-    puts  (ns_shifr . localerus ?
+    puts  ( ns_shifr . localerus ?
       u8"  --пар или\n  --pas 'строка_пароля'\tиспользовать данный пароль" :
       "  --pas 'password_string'\tuse this password" );
     puts  ( ns_shifr . localerus ?
       u8"  --пар-путь или\n  --pas-path 'путь_к_файлу_с_паролем'\tиспользовать пароль в файле" :
       "  --pas-path 'path_to_password_file'\tuse password in file" );
-    puts  (ns_shifr . localerus ?
+    puts  ( ns_shifr . localerus ?
       u8"  --вход или < или \n  --input 'имя_файла'\tчитать из файла (без данной опции читаются данные со стандартного входа)" :
-      "  --input or < 'file_name'\tread from file (without this option data reads from standard input)");
-    puts  (ns_shifr . localerus ? 
+      "  --input or < 'file_name'\tread from file (without this option data reads from standard input)" ) ;
+    puts  ( ns_shifr . localerus ? 
       u8"  --выход или > или \n  --output 'имя_файла'\tзаписывать в файл (без данной опции записываются данные в стандартный выход)" :
       "  --output or > 'file_name'\twrite to file (without this option data writes to standard output)"    );
-    puts  (ns_shifr . localerus ? 
+    puts  ( ns_shifr . localerus ? 
       u8"  --текст или\n  --text\tшифрованный файл записан текстом ascii" :
       "  --text\tencrypted file written in ascii text"    );
     puts  ( ns_shifr . localerus ? 
@@ -108,56 +108,48 @@ int main  ( int argc , char * argv [ ] )  {
       "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;
     puts  ( "  2+2" ) ;
     return 0 ; }
-# if  RAND_MAX  !=  0x7fffffff
-# error RAND_MAX  !=  0x7fffffff
-# endif
-  // 31 бит
   srand ( time  ( 0 ) ) ;
   for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
-if ( flagreadpasswdfromfile ) {
-    FILE * const f = fopen  ( argv  [ argj  ] , & ( "r" [ 0 ] ) ) ;
-    if  ( f == NULL ) {
-      int const e = errno ; 
-      fprintf ( stderr  , ( ns_shifr . localerus ?
-        u8"Ошибка открытия файла \"%s\" : %s\n" :
-        "Error opening file \"%s\" : %s\n" ) , argv  [ argj  ] ,
+    if ( flagreadpasswdfromfile ) {
+      FILE * const f = fopen  ( argv  [ argj  ] , & ( "r" [ 0 ] ) ) ;
+      if  ( f == NULL ) {
+        int const e = errno ; 
+        fprintf ( stderr  , ( ns_shifr . localerus ?
+          u8"Ошибка открытия файла \"%s\" : %s\n" :
+          "Error opening file \"%s\" : %s\n" ) , argv  [ argj  ] ,
             strerror  ( e ) ) ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        ( strcp ) & u8"Ошибка открытия файла" :
-        ( strcp ) & "Error opening file" ) ;
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          ( strcp ) & u8"Ошибка открытия файла" :
+          ( strcp ) & "Error opening file" ) ;
+        longjmp ( ns_shifr  . jump  , 1 ) ; }
+      clearerr  ( f ) ;
+      char  password_letters [ 20 ] ;
+      char  password_letters6 [ 100 ] ;
+      size_t nr;
+      size_t  ns ;
+      if ( ns_shifr . use_version == 4 ) {
+        ns  = 20 ;
+        nr = fread  ( & password_letters , 1 , ns , f ) ; }
+      else {
+        ns  = 100 ;
+        nr = fread  ( & password_letters6 , 1 , ns , f ) ; }
+      if ( nr >= ns )  {
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          ( strcp ) & u8"Файл пароля очень большой" :
+          ( strcp ) & "Password file is very large" ) ;
       longjmp ( ns_shifr  . jump  , 1 ) ; }
-    clearerr  ( f ) ;
-    char  password_letters [ 20 ] ;
-    char  password_letters6 [ 100 ] ;
-    size_t nr;
-    size_t  ns ;
-    if ( ns_shifr . use_version == 4 ) {
-      ns  = 20 ;
-      nr = fread  ( & password_letters , 1 , ns , f ) ; }
-    else {
-      ns  = 100 ;
-      nr = fread  ( & password_letters6 , 1 , ns , f ) ; }
-    if ( nr >= ns )  {
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        ( strcp ) & u8"Файл пароля очень большой" :
-        ( strcp ) & "Password file is very large" ) ;
-      longjmp ( ns_shifr  . jump  , 1 ) ; }
-    if ( ( not feof ( f ) ) and ferror ( f ) ) {
-      fprintf ( stderr  , ( ns_shifr . localerus ?
-        u8"Ошибка чтения файла \"%s\" \n" :
-        "Error reading file \"%s\" \n" ) , argv  [ argj  ] ) ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        ( strcp ) & u8"Ошибка чтения файла" :
-        ( strcp ) & "Error reading file" ) ;
-      longjmp ( ns_shifr  . jump  , 1 ) ; }
-
-  char * psw_uni ;
-  if ( ns_shifr . use_version == 4 ) 
-    psw_uni = password_letters ;
-  else
-    psw_uni = password_letters6 ;
-  psw_uni [ nr ] = '\00' ;
-
+      if ( ( not feof ( f ) ) and ferror ( f ) ) {
+        fprintf ( stderr  , ( ns_shifr . localerus ?
+          u8"Ошибка чтения файла \"%s\" \n" :
+          "Error reading file \"%s\" \n" ) , argv  [ argj  ] ) ;
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          ( strcp ) & u8"Ошибка чтения файла" :
+          ( strcp ) & "Error reading file" ) ;
+        longjmp ( ns_shifr  . jump  , 1 ) ; }
+      char * psw_uni ;
+      if ( ns_shifr . use_version == 4 ) psw_uni = password_letters ;
+      else psw_uni = password_letters6 ;
+      psw_uni [ nr ] = '\00' ;
       if ( ns_shifr . password_alphabet == 95 )  {
         for ( size_t i  = 0 ; i < nr  ; ++  i )
           if (  psw_uni [ i ] < ' ' or psw_uni  [ i ] > '~' ) {
@@ -172,47 +164,53 @@ if ( flagreadpasswdfromfile ) {
               psw_uni [ i ] = '\00' ;
               nr = i ;
               break ; } }
-    switch ( ns_shifr . use_version ) {
-    case 4 :
-      if ( ns_shifr . password_alphabet == 95 )
-        string_to_password_templ  ( 6 ) ( & password_letters ,
-          & ns_shifr . raspr4  . pass ,
-          & ns_shifr . letters ,  letters_count ) ;
-      else
-        string_to_password_templ  ( 6 ) ( & password_letters ,
-          & ns_shifr . raspr4  . pass ,
-          & ns_shifr . letters2 , letters_count2 ) ;
+      switch ( ns_shifr . use_version ) {
+      case 4 :
+        if ( ns_shifr . password_alphabet == 95 )
+          string_to_password_templ  ( 6 ) ( & password_letters ,
+            & ns_shifr . raspr4  . pass ,
+            & ns_shifr . letters ,  letters_count ) ;
+        else
+          string_to_password_templ  ( 6 ) ( & password_letters ,
+            & ns_shifr . raspr4  . pass ,
+            & ns_shifr . letters2 , letters_count2 ) ;
       break ;
-    case 6 : {
-      if ( ns_shifr . password_alphabet == 95 )
-        string_to_password6_uni ( & password_letters6 ,
-          & ns_shifr . raspr6  . password_const ,
-          & ns_shifr . letters ,  letters_count ) ;
-      else
-        string_to_password6_uni ( & password_letters6 ,
-          & ns_shifr . raspr6  . password_const ,
-          & ns_shifr . letters2 , letters_count2 ) ; }
+      case 6 : {
+        if ( ns_shifr . password_alphabet == 95 )
+          string_to_password_templ  ( 37 ) ( & password_letters6 ,
+            & ns_shifr . raspr6  . pass ,
+            & ns_shifr . letters ,  letters_count ) ;
+          /*string_to_password6_uni ( & password_letters6 ,
+            & ns_shifr . raspr6  . password_const ,
+            & ns_shifr . letters ,  letters_count ) ;*/
+        else
+          string_to_password_templ  ( 37 ) ( & password_letters6 ,
+            & ns_shifr . raspr6  . pass ,
+            & ns_shifr . letters2 , letters_count2 ) ;
+          /*string_to_password6_uni ( & password_letters6 ,
+            & ns_shifr . raspr6  . password_const ,
+            & ns_shifr . letters2 , letters_count2 ) ;*/ }
       break ;
-    default :
-      fprintf ( stderr  , ( ns_shifr . localerus ?
-        u8"версия %d не поддерживается\n" :
-        "version %d is not supported" ) , ns_shifr . use_version )  ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        ( strcp ) & u8"версия не поддерживается" :
-        ( strcp ) & "version is not supported" ) ;
-      longjmp(ns_shifr  . jump,1); }
-    if ( fclose  ( f ) )  {
-      int e = errno ; 
-      fprintf ( stderr  , ( ns_shifr . localerus ?
-        u8"Ошибка закрытия файла \"%s\" : %s\n" :
-        "Error closing file \"%s\" : %s\n" ) , argv  [ argj  ] ,
+      default :
+        fprintf ( stderr  , ( ns_shifr . localerus ?
+          u8"версия %d не поддерживается\n" :
+          "version %d is not supported" ) , ns_shifr . use_version )  ;
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          ( strcp ) & u8"версия не поддерживается" :
+          ( strcp ) & "version is not supported" ) ;
+        longjmp(ns_shifr  . jump,1); }
+      if ( fclose  ( f ) )  {
+        int e = errno ; 
+        fprintf ( stderr  , ( ns_shifr . localerus ?
+          u8"Ошибка закрытия файла \"%s\" : %s\n" :
+          "Error closing file \"%s\" : %s\n" ) , argv  [ argj  ] ,
             strerror  ( e ) ) ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        ( strcp ) & u8"Ошибка закрытия файла" :
-        ( strcp ) & "Error closing file" ) ;
-      longjmp ( ns_shifr  . jump  , 1 ) ; }
-    flagpasswd  = true  ; 
-    flagreadpasswdfromfile = false  ; }
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          ( strcp ) & u8"Ошибка закрытия файла" :
+          ( strcp ) & "Error closing file" ) ;
+        longjmp ( ns_shifr  . jump  , 1 ) ; }
+      flagpasswd  = true  ; 
+      flagreadpasswdfromfile = false  ; } // if flagreadpasswdfromfile
     else
     if  ( flagreadpasswd  ) {
       if  ( flagpasswd  ) {
