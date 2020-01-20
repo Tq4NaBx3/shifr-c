@@ -134,168 +134,7 @@ found : ; \
 # define  string_to_password_templ_def  shifr_string_to_password_templ_def
 string_to_password_templ_def  ( 6 )
 string_to_password_templ_def  ( 37 )
-/*
-// number /= div , number := floor [ деление ] , return := остаток
-uint8_t  number320_div8mod  ( t_number320 * restrict const number ,
-  uint8_t const div ) {
-  uint64_t res [ 6 ] ;
-  ldiv_t  ld  ;
 
-  ld  = ldiv  ( number  ->  a [ 4 ] , div ) ;
-  res [ 5 ] =  ld . quot ;
-  
-  ld  = ldiv  ( ( ld . rem <<  56 ) bitor
-    ( number  ->  a [ 3 ] >>  8 ) , div ) ;
-  res [ 4 ] = ld . quot ;
-
-  { int i = 3 ;
-    do {
-      ld  = ldiv  ( ( ld . rem <<  56 ) bitor
-        ( ( ( number  ->  a [ i ] ) << ( ( 4 + i ) << 3 ) ) >> 8 ) bitor
-        ( number  ->  a [ i - 1 ] >> ( ( 5 - i ) << 3 ) ) , div ) ;
-      res [ i ] = ld . quot ;
-      -- i ;
-    } while ( i >= 1 ) ; }
-
-  ld  = ldiv  ( ( ld . rem <<  32 ) bitor
-    ( ( ( number  ->  a [ 0 ] ) << 32 ) >> 32 ) , div ) ;
-
-  number  ->  a [ 0 ] = ld . quot ;
-
-  for ( int i = 1 ; i <= 4 ; ++ i ) {
-    { uint64_t const old = number  ->  a [ i - 1 ] ;
-      number  ->  a [ i - 1 ] +=  ( res [ i ] << ( ( 5 - i ) << 3 ) ) ;
-      if ( number  ->  a [ i - 1 ] < old )  number  ->  a [ i ] = 1 ;
-      else  number  ->  a [ i ] = 0 ; }
-    number  ->  a [ i ] +=  ( res [ i ] >> ( ( 3 + i ) << 3 ) ) ; }
-
-  number  ->  a [ 4 ] +=  res [ 5 ] ;
-
-  return  ld  . rem ; }*/
-/*
-// --
-static  inline  void  number320dec  ( t_number320 * const restrict number ) {
-  uint64_t  * restrict i = & ( ( number ->  a ) [ 0 ] ) ; 
-  do {
-    if ( ( * i ) == 0 ) -- ( * i ) ;
-    else  {
-      -- ( * i ) ;
-      break ; }
-    ++  i ;
-  } while ( i not_eq & ( ( number ->  a ) [ 5 ] ) ) ; }*/
-  /*
-static  inline  bool  number320_not0  (
-  t_number320 const * const restrict np ) {
-  uint64_t const * i = & ( np -> a [ 5 ] ) ;
-  do {
-    --  i ;
-    if ( * i )  return  true  ;
-  } while ( i not_eq & ( np -> a [ 0 ] ) ) ;
-  return  false ; }*/
-  /*
-void  password_to_string6_uni (
-  t_number320 const * const restrict password0 , strp const string ,
-  strp letters , uint8_t const letterscount  ) {
-  char * stringi = & ( ( * string )  [ 0 ] ) ;
-  if ( number320_not0 ( password0 ) ) {
-    t_number320 password = * password0  ;
-    do {
-      // здесь предыдущие размеры заняли место паролей
-      number320dec  ( & password  ) ;
-      ( * stringi ) = ( * letters ) [ number320_div8mod  ( & password ,
-        letterscount ) ] ;
-      ++  stringi ;
-    } while ( number320_not0 ( & password ) ) ; }
-  ( * stringi ) = '\00' ;  }*/
-  /*
-static  inline  void number320_set0  ( t_number320 * const restrict np ) {
-  memset  ( & ( ( np -> a ) [ 0 ] ) , 0 , 5 * sizeof  ( uint64_t  ) ) ; }*/
-/*
-static  inline  void number320_setUInt  ( t_number320 * const restrict np ,
-  unsigned int const x ) {
-  memset  ( & ( ( np -> a ) [ 1 ] ) , 0 , 4 * sizeof  ( uint64_t  ) ) ;
-  ( np -> a ) [ 0 ] = x ; }*/
-/*
-static  void number320_add  (
-  t_number320 * const restrict np , t_number320 const * const restrict xp ) {
-  if ( np == xp ) {
-    t_number320 tmp = * xp ;
-    number320_add ( np , & tmp ) ;
-    return ; }
-  uint64_t pere = 0 ;
-  for ( int i = 0 ; i < 5 ; ++ i ) {
-    uint64_t pere2  = 0 ;
-    { uint64_t old = np  ->  a [ i ] ;
-      ( np  ->  a [ i ] ) +=  ( xp  ->  a [ i ] ) ; 
-      if (  np  ->  a [ i ] < old ) pere2 = 1; 
-      else  pere2 = 0 ; }
-    uint64_t  old = np  ->  a [ i ] ;
-    ( np  ->  a [ i ] ) +=  pere  ;
-    if ( np  ->  a [ i ] < old ) pere = 1 ;
-    else  pere  = pere2 ; } }*/
-  /*
-static void  number320_mul8  ( t_number320 * const restrict np , uint8_t const m ) {
-  uint64_t  r [ 6 ] ;
-  r  [ 0 ] = ( ( ( ( np  ->  a [ 0 ] ) << 8 ) >> 8 ) * ( ( uint64_t  ) m ) ) ;
-  for ( int i = 1 ; i <= 4 ; ++ i )
-    r  [ i ] = ( ( ( np  ->  a [ i - 1 ]  ) >> ( ( 8 - i ) << 3 ) ) bitor
-      ( ( ( np  ->  a [ i ]  ) <<  ( ( 1 + i ) << 3 ) ) >> 8 ) ) *
-      ( ( uint64_t  ) m ) ;
-  r  [ 5 ] = ( ( np  ->  a [ 4 ]  ) >> 24 ) * ( ( uint64_t  ) m ) ;
-  np  ->  a [ 0 ] = r [ 0 ] ;
-  uint64_t  tmp = np  ->  a [ 0 ] ;
-  np  ->  a [ 0 ] += ( r [ 1 ] << 56 ) ;
-  for ( int i = 1 ; i <= 4 ; ++ i ) {
-    if ( np  ->  a [ i - 1 ] < tmp )  np  ->  a [ i ] = 1 ;
-    else  np  ->  a [ i ] = 0 ;
-    np  ->  a [ i ] += ( r [ i ] >> ( i << 3 ) ) ;
-    tmp = np  ->  a [ i ] ;
-    np  ->  a [ i ] += ( r [ i + 1 ] << ( ( 7 - i ) << 3 ) ) ; } }*/
-/*
-void  string_to_password6_uni ( strcp const string ,
-  t_number320 * const restrict password , char const (  * const letters ) [ ] ,
-    uint8_t const letterscount ) {
-  char const * restrict stringi = & ( ( * string )  [ 0 ] ) ;
-  if  ( ( * stringi ) == '\00' ) {
-    number320_set0 ( password  ) ;
-    return ; }
-  t_number320  pass ;
-  number320_set0  ( & pass  ) ;
-  t_number320  mult ;
-  number320_setUInt ( & mult , 1 ) ;
-  do  {
-    uint8_t i = letterscount ;
-    do {
-      -- i ;
-      if ( ( * stringi ) == ( * letters ) [ i ] ) goto found ; 
-    } while ( i ) ;
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-      ( strcp ) & u8"неправильная буква в пароле" :
-      ( strcp ) & "wrong letter in password" ) ;
-    longjmp ( ns_shifr  . jump  , 1 ) ;
-found : ;
-    { t_number320  tmp = mult ;
-      number320_mul8  ( & tmp , i + 1 ) ;
-      number320_add ( &  pass  , & tmp )  ; }
-    number320_mul8  ( & mult , letterscount ) ;
-    ++  stringi ;
-  } while ( ( * stringi ) not_eq '\00' ) ;
-  ( * password  ) = pass ; }*/
-/*
-# ifdef SHIFR_DEBUG
-//  /= 64  или  >>= 6
-static inline void  number320_shift_down  ( t_number320 * const nump ,
-  uint8_t const s ) {
-  uint64_t * p = & ( nump -> a [ 5 ] ) ;
-  uint8_t  old6 = 0 ;
-  do {
-    --  p ;
-    uint8_t const new6  = ( * p ) bitand (  ( 1U  <<  s ) - 1 ) ;
-    ( * p ) = ( ((uint64_t)old6) << ( 64  - s ) ) bitor ( ( * p ) >> s ) ;
-    old6 = new6 ;
-  } while ( p not_eq & ( nump -> a [ 0 ] ) ) ;  }
-# endif
-*/
 static inline void datasole ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
@@ -425,11 +264,12 @@ static  inline  uint8_t streambuf_Buf (
   return  streambuf_buf ( me  ) ; }
   
 // читаю 6 бит
+// 6 bits reads
 static inline bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  ,
-  uint8_t * const encrypteddata , bool const  flagtext ) {
-  if  ( ( not flagtext ) and streambuf_bufbitsize  ( me  ) >= 6 ) {
+  uint8_t * const encrypteddata ) {
+  if  ( ( not ( ns_shifr  . flagtext ) ) and streambuf_bufbitsize  ( me  ) >= 6 ) {
     streambuf_bufbitsize  ( me  ) -=  6 ;
-    ( * encrypteddata ) = streambuf_buf ( me  ) bitand (0x40 - 1) ;
+    ( * encrypteddata ) = streambuf_buf ( me  ) bitand ( 0x40 - 1 ) ;
     streambuf_buf ( me  ) >>= 6 ;
     return  false ; }
   uint8_t buf ;
@@ -443,9 +283,9 @@ static inline bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  
           u8"isEOFstreambuf_read6bits: ошибка чтения шести бит" :
           ( strcp ) & "isEOFstreambuf_read6bits: six bits read error" ) ;
         longjmp(ns_shifr  . jump,1); } } } // nreads
-
-  if  ( flagtext  ) {
+  if  ( ns_shifr  . flagtext  ) {
     // читаем одну букву ';'-'z' -> декодируем в шесть бит
+    // reads one letter ';'-'z' -> decode to six bits
     while ( ( buf < ((uint8_t)';') ) or ( buf > ((uint8_t)'z') ) ) {
       { size_t  const nreads  = fread ( & buf , 1 , 1 , streambuf_file  ( me  ) ) ;
         if ( nreads ==  0 ) {
@@ -458,7 +298,7 @@ static inline bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  
               ( strcp ) &
               "isEOFstreambuf_read6bits: six bits read error from text" ) ;
             longjmp(ns_shifr  . jump,1); } } } // nreads
-          } //  while not digit and not letter
+          }
     ( * encrypteddata ) = letter_to_bits6 ( buf ) ; }
   else  {
     ( * encrypteddata ) = ( streambuf_buf ( me  ) bitor 
@@ -544,6 +384,7 @@ static inline void  streambuf_writeflushzero ( t_streambuf * const restrict me ,
       longjmp(ns_shifr  . jump,1); } } }
   
 // версия 6 пишу три бита для расшифровки
+// version 6 write three bits to decode
 static inline void  streambuf_write3bits ( t_streambuf * const restrict me  ,
   uint8_t const encrypteddata ) {
     if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
@@ -816,7 +657,7 @@ void shifr_decode6 ( void ) {
   uint8_t old_last_data = 0 ;
   uint8_t old_last_sole = 0 ;
   while ( not isEOFstreambuf_read6bits ( & shifr_filebuffrom ,
-    & ( secretdata [ 0 ] ) , ns_shifr  . flagtext ) ) {
+    & ( secretdata [ 0 ] ) ) ) {
     uint8_t decrypteddata [ 1 ] ;
     decrypt_sole6 ( & secretdata , & ns_shifr  . deshi6 , & decrypteddata , 1 ,
       & old_last_sole , & old_last_data ) ;
@@ -867,67 +708,6 @@ void  shifr_pass_to_array6 ( void ) {
     number_mul_byte ( 37 ) ( & mu , 64 - in  ) ;
     ++  in ;
   } while ( in < 63 ) ; }
-/*
-void  shifr_password_generate6 ( void ) {
-  int const rmax  [ 10 ] = { 0 , 0 , 371982424 , 465456948 , 36645132 ,
-          851424078 , 78362151 , 525642490 , 110135612 , 535066862 } ;
-        int r [ 10  ] ;
-rand6try :
-        { int * ri  = & ( r [ 10  ] ) ;
-          do {
-            -- ri ;
-            ( * ri ) = rand ( ) >> 2 ;
-          } while ( ri not_eq ( & ( r [ 6 ] ) ) ) ;
-          // последний элемент солю микросекундами
-          struct timeval currentTime  ;
-          gettimeofday  ( & currentTime , NULL  ) ;
-          r [ 9 ] xor_eq ( currentTime . tv_usec ) ;
-          do {
-            -- ri ;
-            ( * ri ) = rand ( ) >> 1 ;
-          } while ( ri not_eq ( & ( r [ 0 ] ) ) ) ;
-          ri =  & ( r [ 10  ] ) ;
-          { int const * rmaxi  = & ( rmax [ 10  ] ) ;
-            do {
-              --  ri  ;
-              --  rmaxi ;
-              if ( ( * ri ) < ( * rmaxi ) ) goto rand6ok ;
-              if ( ( * ri ) > ( * rmaxi ) ) goto rand6try ; 
-            } while ( ri not_eq ( & ( r [ 2 ] ) ) ) ; } }
-        goto  rand6try ;
-rand6ok :
-# ifdef SHIFR_DEBUG
-      fputs ( ns_shifr . localerus ? u8"внутренний пароль = [ "  :
-        "inner password = [ " , stderr ) ;
-      for ( int const * i = & ( r [ 10 ] ) ; i not_eq & ( r [ 0 ] ) ;  ) {
-        --  i ;
-        fprintf (stderr, "%x , " , * i ) ;  }
-      fputs  ( "]\n",stderr ) ;
-# endif
-      // [ 0  .. 29 , 0 .. 29 , 0 .. 3  ]
-      // [ 4  .. 29 , 0 .. 29 , 0 .. 7  ]
-      // [ 8  .. 29 , 0 .. 29 , 0 .. 11 ]
-      // [ 12 .. 28 , 0 .. 28 , 0 .. 17 ]
-      // [ 18 .. 28 , 0 .. 28 ]
-      ns_shifr . raspr6  . password_const . a [ 0 ] =
-        ((uint64_t)( r [ 0 ] bitand  ( ( 1U <<  30 ) - 1 ) )) bitor 
-        ( ((uint64_t)( r [ 1 ] bitand  ( ( 1U <<  30 ) - 1 ) )) << 30 ) bitor
-        ( ((uint64_t)( r [ 2 ] bitand ( ( 1U << 4 ) - 1 ) )) << 60  ) ;
-      ns_shifr . raspr6  . password_const . a [ 1 ] =
-        ((uint64_t)( ( r [ 2 ] >> 4 ) bitand  ( ( 1U <<  26 ) - 1 ) )) bitor 
-        ( ((uint64_t)( r [ 3 ] bitand  ( ( 1U <<  30 ) - 1 ) )) << 26 ) bitor
-        ( ((uint64_t)( r [ 4 ] bitand ( ( 1U << 8 ) - 1 ) )) << 56  ) ;
-      ns_shifr . raspr6  . password_const . a [ 2 ] =
-        ((uint64_t)( ( r [ 4 ] >> 8 ) bitand  ( ( 1U <<  22 ) - 1 ) )) bitor 
-        ( ((uint64_t)( r [ 5 ] bitand  ( ( 1U <<  30 ) - 1 ) )) << 22 ) bitor
-        ( ((uint64_t)( r [ 6 ] bitand ( ( 1U << 12 ) - 1 ) )) << 52  ) ;
-      ns_shifr . raspr6  . password_const . a [ 3 ] =
-        ((uint64_t)( ( r [ 6 ] >> 12 ) bitand  ( ( 1U <<  17 ) - 1 ) )) bitor 
-        ( ((uint64_t)( r [ 7 ] bitand  ( ( 1U <<  29 ) - 1 ) )) << 17 ) bitor
-        ( ((uint64_t)( r [ 8 ] bitand ( ( 1U << 18 ) - 1 ) )) << 46  ) ;
-      ns_shifr . raspr6  . password_const . a [ 4 ] =
-        ((uint64_t)( ( r [ 8 ] >> 18 ) bitand  ( ( 1U <<  11 ) - 1 ) )) bitor 
-        ( ((uint64_t)( r [ 9 ] bitand  ( ( 1U <<  29 ) - 1 ) )) << 11 ) ; }*/
 
 # define  shifr_number_def_princ( N ) \
 void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  \

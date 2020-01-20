@@ -311,10 +311,6 @@ uint8_t dice  [ 16 - 1  ] ;
 number_type ( 6 ) pass  ;
 
 } t_raspr4  ;
-/*
-typedef struct  s_number320 {
-  uint64_t a [ 5 ] ;
-} t_number320 ;*/
 
 # define  t_raspr6  shifr_t_raspr6
 
@@ -402,10 +398,6 @@ string_to_password_templ_dec  ( 6 )
 string_to_password_templ_dec  ( 37 )
 # define  shifr_string_to_password_templ( N ) shifr_string_to_password##N##_templ
 # define  string_to_password_templ  shifr_string_to_password_templ
-/*
-void  string_to_password6_uni ( strcp string ,
-  t_number320 * password , char const (  * letters ) [ ] ,
-    uint8_t letterscount )  ;*/
     
 # define  strp  shifr_strp
 typedef char ( * strp ) [ ] ;    
@@ -419,10 +411,6 @@ password_to_string_templ_dec  ( 6 )
 password_to_string_templ_dec  ( 37 )  
 # define  shifr_password_to_string_templ( N ) shifr_password##N##_to_string_templ
 # define  password_to_string_templ  shifr_password_to_string_templ
-/*
-void  password_to_string6_uni (
-  t_number320 const * password0 , strp string ,
-  strp letters , uint8_t letterscount  )  ;*/
   
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
 void  shifr_generate_pass4 ( void ) ;
@@ -437,8 +425,6 @@ void  shifr_pass_to_array4 ( void ) ;
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
 void  shifr_pass_to_array6 ( void ) ;
-
-//void  shifr_password_generate6 ( void ) ;
 
 // Отключить эхо-вывод и буферизацию ввода
 void set_keypress (void)  ;
@@ -468,22 +454,14 @@ static  inline  void  enter_password6 ( void ) {
     string_to_password_templ  ( 37 ) ( p6 ,
             & ns_shifr . raspr6  . pass ,
             & ns_shifr . letters ,  letters_count ) ;
-    /*string_to_password6_uni ( p6 , & ns_shifr . raspr6  . password_const ,
-      & ns_shifr . letters ,  letters_count ) ;*/
     password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & password_letters6 , & ns_shifr . letters , letters_count ) ;
-    /*password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
-      & password_letters6 , & ns_shifr . letters , letters_count ) ;*/ }
+            & password_letters6 , & ns_shifr . letters , letters_count ) ; }
   else {
     string_to_password_templ  ( 37 ) ( p6 ,
             & ns_shifr . raspr6  . pass ,
             & ns_shifr . letters2 ,  letters_count2 ) ;
-    /*string_to_password6_uni ( p6 , & ns_shifr . raspr6  . password_const ,
-      & ns_shifr . letters2 , letters_count2 ) ;*/
     password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ;
-    /*password_to_string6_uni ( & ns_shifr . raspr6  . password_const ,
-      & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ;*/ }
+            & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ; }
   if  ( strcmp ( &(password_letters6[0]) , &((*p6)[0]) ) )  
     fprintf  ( stderr , ( ns_shifr . localerus ?
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'.\n" :
@@ -628,45 +606,6 @@ static  inline  shifr_password_load_def (  6 , shifr_deshi_size2 )
 static  inline  shifr_password_load_def (  37 , shifr_deshi_size6 )
 # define  shifr_password_load( N ) shifr_password##N##_load
 # define  password_load shifr_password_load
-/*
-// number /= div , number := floor [ деление ] , return := остаток
-uint8_t  number320_div8mod  ( t_number320 * number ,
-  uint8_t div ) ;
-*/
-// пароль раскладываем в таблицу шифровки , дешифровки
-  // пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
-  // пароль делим на 64, остаются 63! вариантов пароля
-  // пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
-  // секретных кодов для соли+данных 0x1  
-// в deshi нужна соль
-/*
-static inline void  password_load6 ( t_number320 const * const password_constp ,
-  arrp const shifrp , arrp const deship ) {
-# define  codefree ((uint8_t)0xffU)
-  initarr ( shifrp , codefree , shifr_deshi_size6 )  ;
-  initarr ( deship , codefree , shifr_deshi_size6 )  ;
-# undef codefree
-  t_number320  password = * password_constp ;
-  uint8_t arrind  [ shifr_deshi_size6 ] ;
-  { uint8_t * arrj  = & ( arrind  [ shifr_deshi_size6 ] ) ;
-    uint8_t j = shifr_deshi_size6  ;
-    do  {
-      --  arrj  ;
-      --  j ;
-      ( * arrj )  = j ;
-    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; }
-  // 0 .. 63
-  uint8_t inde  = 0 ;
-  do  {
-    uint8_t cindex  = number320_div8mod  ( & password ,
-      shifr_deshi_size6  - inde ) ;
-    uint8_t * arrind_cindexp = & (  arrind [ cindex ] ) ;
-    ( * shifrp  ) [ inde ] = (  * arrind_cindexp  ) ;
-    ( * deship  ) [ * arrind_cindexp ] = inde ;
-    memmove ( arrind_cindexp , arrind_cindexp + 1 ,
-      shifr_deshi_size6  - inde  - cindex - 1 ) ;
-    ++  inde  ;
-  } while ( inde  < shifr_deshi_size6  ) ; }*/
   
 void  shifr_encode4 ( void  ) ;
 void  shifr_encode6 ( void  ) ;
