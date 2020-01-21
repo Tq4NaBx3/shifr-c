@@ -357,11 +357,9 @@ static void  streambuf_write6 ( t_streambuf * const restrict me  ,
         streambuf_buf ( me  ) = ( ( * encrypteddata ) [ i ] ) >>
           ( 6 - streambuf_bufbitsize  ( me  ) ) ;  } } } }
 
-static inline void  streambuf_writeflushzero ( t_streambuf * const restrict me ,
-  bool const  flagtext ) {
+static inline void  streambuf_writeflushzero ( t_streambuf * const restrict me ) {
   if  ( streambuf_bufbitsize  ( me  ) ) {
     size_t  writen_count  ;
-    
       writen_count = fwrite ( & streambuf_buf ( me  ) , 1 , 1 ,
         streambuf_file  ( me  ) ) ;
     if ( writen_count < 1 ) {
@@ -371,7 +369,7 @@ static inline void  streambuf_writeflushzero ( t_streambuf * const restrict me ,
         ( strcp ) & "streambuf_writeflushzero: byte write error" ) ;
       longjmp(ns_shifr  . jump,1); }
     streambuf_bufbitsize  ( me  ) = 0 ; }
-  if ( flagtext and streambuf_bytecount ( me  ) )  {
+  if ( ns_shifr  . flagtext and streambuf_bytecount ( me  ) )  {
     streambuf_bytecount ( me  ) = 0 ;
     char  buf2 = '\n' ;
     size_t  const writen_count = fwrite ( & buf2 , 1 , 1 , 
@@ -567,7 +565,7 @@ void  shifr_encode6 ( void ) {
     goto  sole_xor_crypt_write  ;
     addr_sole_xor_crypt_write0  : ;
   } while ( not feof ) ; 
-  streambuf_writeflushzero ( & shifr_filebufto , ns_shifr  . flagtext ) ;
+  streambuf_writeflushzero ( & shifr_filebufto ) ;
   return  ;
 sole_xor_crypt_write  :
   datasole6 ( & secretdata , & secretdatasole , secretdatasolesize )  ;
