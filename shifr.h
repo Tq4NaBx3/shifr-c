@@ -512,8 +512,10 @@ typedef struct  s_streambuf  {
   uint8_t FmoX ;
   // bufbitsize
   uint8_t XUvM  ;
+  // для : write6 , writeflushzero в текстовом режиме
+  // for : write6 , writeflushzero in text mode
   // bytecount
-  int D6h7 ;
+  int D6h7 ; 
 } t_streambuf ;
   
 # define  streambuf_file_pub( M ) ((M)->oRmq)
