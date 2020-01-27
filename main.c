@@ -6,6 +6,7 @@
 # include <stdlib.h>
 # include <time.h>
 # include <errno.h>
+
 # include "shifr.h"
 
 int main  ( int argc , char * argv [ ] )  {

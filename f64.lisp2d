@@ -1,9 +1,0 @@
- (nil let ((n (64 !)))
-   (6 for* i
-      (cout print n)
-      (cout print "% = " (n % (2 ^ 30)))
-      ('n set (n  floor (2 ^ 30))))
-   (4 for* i
-      (cout print n)
-      (cout print "% = "  (n % (2 ^ 29)))
-      ('n set (n  floor (2 ^ 29)))))

@@ -113,7 +113,8 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 # include <string.h>
 # include <stdbool.h>
 # include <iso646.h>
-# include <termios.h>
+// убрать эхо в терминале
+# include <termios.h> // close terminal echo
 # include <setjmp.h>
 
 //# define  SHIFR_DEBUG
