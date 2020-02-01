@@ -109,6 +109,12 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 // длина буквенного пароля : log ( 95 , 1.26886932186e89 ) ≈ 45.05 букв <= 46 букв
 //  log ( 62 , 1.26886932186e89 ) ≈ 49.71 буквы <= 50 букв
 
+/*
+Password encrypted × password = can serve as a hash function.
+Hash ÷ decrypt (password) == password
+If the decrypted hash with the password gives this password, then the password is correct.
+*/
+
 # include <stdint.h>
 # include <string.h>
 # include <stdbool.h>
