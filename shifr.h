@@ -372,6 +372,9 @@ uint8_t shifr [ shifr_deshi_size2 ] ;
     // 38 .. 3f -  7
   uint8_t deshi6 [ shifr_deshi_size6 ] ;
   int password_alphabet ; // 62 or 95 // алфавит пароля 62 или 95
+  // union ?
+  char  password_letters2 [ 20  ] ;
+  char  password_letters3 [ 100 ] ;
 } t_ns_shifr ;
 
 extern  t_ns_shifr  ns_shifr  ;
@@ -620,3 +623,5 @@ typedef uint8_t const ( * arrcp ) [ ] ;
 void  printarr  ( strcp name , arrcp p ,
   size_t arrsize , FILE * f ) ;
 # endif
+  
+void  string_to_password ( void ) ;

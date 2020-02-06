@@ -124,16 +124,14 @@ int main  ( int argc , char * argv [ ] )  {
           ( strcp ) & "Error opening file" ) ;
         longjmp ( ns_shifr  . jump  , 1 ) ; }
       clearerr  ( f ) ;
-      char  password_letters [ 20 ] ;
-      char  password_letters6 [ 100 ] ;
       size_t nr;
       size_t  ns ;
       if ( ns_shifr . use_version == 4 ) {
         ns  = 20 ;
-        nr = fread  ( & password_letters , 1 , ns , f ) ; }
+        nr = fread  ( & ns_shifr  . password_letters2 , 1 , ns , f ) ; }
       else {
         ns  = 100 ;
-        nr = fread  ( & password_letters6 , 1 , ns , f ) ; }
+        nr = fread  ( & ns_shifr  . password_letters3 , 1 , ns , f ) ; }
       if ( nr >= ns )  {
         ns_shifr  . string_exception  = ( ns_shifr . localerus ?
           ( strcp ) & u8"Файл пароля очень большой" :
@@ -148,8 +146,8 @@ int main  ( int argc , char * argv [ ] )  {
           ( strcp ) & "Error reading file" ) ;
         longjmp ( ns_shifr  . jump  , 1 ) ; }
       char * psw_uni ;
-      if ( ns_shifr . use_version == 4 ) psw_uni = password_letters ;
-      else psw_uni = password_letters6 ;
+      if ( ns_shifr . use_version == 4 ) psw_uni = ns_shifr  . password_letters2 ;
+      else psw_uni = ns_shifr  . password_letters3 ;
       psw_uni [ nr ] = '\00' ;
       if ( ns_shifr . password_alphabet == 95 )  {
         for ( size_t i  = 0 ; i < nr  ; ++  i )
@@ -165,35 +163,9 @@ int main  ( int argc , char * argv [ ] )  {
               psw_uni [ i ] = '\00' ;
               nr = i ;
               break ; } }
-      switch ( ns_shifr . use_version ) {
-      case 4 :
-        if ( ns_shifr . password_alphabet == 95 )
-          string_to_password_templ  ( 6 ) ( & password_letters ,
-            & ns_shifr . raspr4  . pass ,
-            & ns_shifr . letters ,  letters_count ) ;
-        else
-          string_to_password_templ  ( 6 ) ( & password_letters ,
-            & ns_shifr . raspr4  . pass ,
-            & ns_shifr . letters2 , letters_count2 ) ;
-      break ;
-      case 6 : {
-        if ( ns_shifr . password_alphabet == 95 )
-          string_to_password_templ  ( 37 ) ( & password_letters6 ,
-            & ns_shifr . raspr6  . pass ,
-            & ns_shifr . letters ,  letters_count ) ;
-        else
-          string_to_password_templ  ( 37 ) ( & password_letters6 ,
-            & ns_shifr . raspr6  . pass ,
-            & ns_shifr . letters2 , letters_count2 ) ; }
-      break ;
-      default :
-        fprintf ( stderr  , ( ns_shifr . localerus ?
-          u8"версия %d не поддерживается\n" :
-          "version %d is not supported" ) , ns_shifr . use_version )  ;
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-          ( strcp ) & u8"версия не поддерживается" :
-          ( strcp ) & "version is not supported" ) ;
-        longjmp(ns_shifr  . jump,1); }
+
+      string_to_password  ( ) ;
+
       if ( fclose  ( f ) )  {
         int e = errno ; 
         fprintf ( stderr  , ( ns_shifr . localerus ?
@@ -213,69 +185,59 @@ int main  ( int argc , char * argv [ ] )  {
           ( strcp ) & u8"пароль уже задан" :
           ( strcp ) & "password already set" );
         longjmp(ns_shifr  . jump,1); }
+
       if ( ns_shifr . use_version == 4 ) {
-        if ( ns_shifr . password_alphabet == 95 )
-          string_to_password_templ  ( 6 ) ( ( strcp ) ( argv  [ argj  ] ) ,
-            & ns_shifr . raspr4  . pass , & ns_shifr . letters ,
-            letters_count ) ; 
-        else
-          string_to_password_templ  ( 6 ) ( ( strcp ) ( argv  [ argj  ] ) ,
-            & ns_shifr . raspr4  . pass , & ns_shifr . letters2 ,
-            letters_count2 ) ;
+        strncpy ( ns_shifr  . password_letters2 , argv  [ argj  ] , 20  ) ;
+        string_to_password  ( ) ;
 # ifdef SHIFR_DEBUG
       fputs ( ( ns_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
       number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
       fputs ( "\n" , stderr ) ;
-# endif                           
+# endif      
         }
-      if ( ns_shifr . use_version == 6 ) {
-        if ( ns_shifr . password_alphabet == 95 )
-          string_to_password_templ  ( 37 ) ( ( strcp ) ( argv  [ argj  ] ) ,
-            & ns_shifr . raspr6  . pass , & ns_shifr . letters ,
-            letters_count ) ; 
-        else
-          string_to_password_templ  ( 37 ) ( ( strcp ) ( argv  [ argj  ] ) ,
-            & ns_shifr . raspr6  . pass , & ns_shifr . letters2 ,
-            letters_count2 ) ;
+      else {
+        strncpy ( ns_shifr  . password_letters3 , argv  [ argj  ] , 100 ) ; 
+        string_to_password  ( ) ;
 # ifdef SHIFR_DEBUG                           
       fputs ( ( ns_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
       number_princ  ( 37 ) ( & ns_shifr . raspr6  . pass , stderr  ) ;
       fputs ( "\n" , stderr ) ;
-# endif            
-      }
-      char  password_letters [ 20 ] ;
-      char  password_letters6 [ 100 ] ;
+# endif                    
+        }
+
       if ( ns_shifr . use_version == 4 ) {
         if ( ns_shifr . password_alphabet == 95 )
           password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
-            & password_letters , & ns_shifr . letters , letters_count ) ;
+            & ns_shifr  . password_letters2 , & ns_shifr . letters ,
+            letters_count ) ;
         else
           password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
-            & password_letters , & ns_shifr . letters2 , letters_count2 ) ; }
+            & ns_shifr  . password_letters2 , & ns_shifr . letters2 ,
+            letters_count2 ) ; }
       if ( ns_shifr . use_version == 6 ) {
         if ( ns_shifr . password_alphabet == 95 )
           password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & password_letters6 , & ns_shifr . letters , letters_count ) ;
+            & ns_shifr  . password_letters3 , & ns_shifr . letters , letters_count ) ;
         else
           password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ; }
+            & ns_shifr  . password_letters3 , & ns_shifr . letters2 , letters_count2 ) ; }
 # ifdef SHIFR_DEBUG
       if ( ns_shifr . use_version == 6 ) {
-        if  ( strcmp ( password_letters6 , argv  [ argj  ] ) )  
+        if  ( strcmp ( ns_shifr  . password_letters3 , argv  [ argj  ] ) )  
           fprintf  ( stderr , ns_shifr . localerus ?
             u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
             "Warning! Password \'%s\' is very large. Same as \'%s\'\n"
-            , argv  [ argj  ] , & ( password_letters6  [ 0 ] ) ) ; }
+            , argv  [ argj  ] , & ( ns_shifr  . password_letters3  [ 0 ] ) ) ; }
       else {
-        if  ( strcmp ( password_letters , argv  [ argj  ] ) )  
+        if  ( strcmp ( ns_shifr  . password_letters2 , argv  [ argj  ] ) )  
           fprintf  ( stderr , ns_shifr . localerus ?
             u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
             "Warning! Password \'%s\' is very large. Same as \'%s\'\n"
-            , argv  [ argj  ] , & ( password_letters  [ 0 ] ) ) ; }
+            , argv  [ argj  ] , & ( ns_shifr  . password_letters2  [ 0 ] ) ) ; }
 # endif
         flagpasswd  = true  ;
         flagreadpasswd = false  ; }
@@ -403,20 +365,18 @@ int main  ( int argc , char * argv [ ] )  {
       ( strcp ) & "unrecognized version" ) ;
     longjmp ( ns_shifr  . jump  , 1 ) ; }
 # endif
-    char  password_letters [ 20 ] ;
     char  password_letters2 [ 20 ] ;
-    char  password_letters61 [ 100 ] ;
     char  password_letters62 [ 100 ] ;
     switch  ( ns_shifr . use_version )  {
     case  4 :
       password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
-        & password_letters , & ns_shifr . letters , letters_count ) ;
+        & ns_shifr  . password_letters2 , & ns_shifr . letters , letters_count ) ;
       password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
         & password_letters2 , & ns_shifr . letters2 , letters_count2 ) ; 
       break ;
     case  6 :
       password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-        & password_letters61 , & ns_shifr . letters , letters_count ) ;
+        & ns_shifr  . password_letters3 , & ns_shifr . letters , letters_count ) ;
       password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
         & password_letters62 , & ns_shifr . letters2 , letters_count2 ) ; 
       break ;
@@ -431,8 +391,8 @@ int main  ( int argc , char * argv [ ] )  {
 # ifdef SHIFR_DEBUG        
     printf  ( ( ns_shifr . localerus ? u8"--a95\tбуквами между кавычек = \'%s\'\n" : 
       "--a95\tby letters between quotes = \'%s\'\n"  ) ,
-      & ( ( ( ns_shifr . use_version == 6 ) ? password_letters61 :
-        password_letters ) [ 0 ] ) ) ;
+      & ( ( ( ns_shifr . use_version == 6 ) ? ns_shifr  . password_letters3 :
+        ns_shifr  . password_letters2 ) [ 0 ] ) ) ;
     printf  ( ( ns_shifr . localerus ?
       u8"--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
       "--a62\tby letters between quotes = \'%s\' (by default)\n"  ) ,
@@ -441,7 +401,7 @@ int main  ( int argc , char * argv [ ] )  {
     switch  ( ns_shifr . use_version ) {
     case  4 :
       { number_type ( 6 ) password2 ;
-        string_to_password_templ  ( 6 ) ( & password_letters ,
+        string_to_password_templ  ( 6 ) ( & ns_shifr  . password_letters2 ,
           & password2 , & ns_shifr . letters ,
           letters_count ) ; 
         fputs ( ( ns_shifr . localerus ?
@@ -460,7 +420,7 @@ int main  ( int argc , char * argv [ ] )  {
       break ;
     case  6 :
       { number_type ( 37 ) password2 ;
-        string_to_password_templ  ( 37 ) ( & password_letters61 ,
+        string_to_password_templ  ( 37 ) ( & ns_shifr  . password_letters3 ,
           & password2 , & ns_shifr . letters ,
           letters_count ) ; 
         fputs ( ( ns_shifr . localerus ?
@@ -488,7 +448,7 @@ int main  ( int argc , char * argv [ ] )  {
 # else
   if ( ns_shifr . password_alphabet == 95 )
     puts  ( & ( ( ( ns_shifr . use_version == 6 ) ?
-      password_letters61 : password_letters ) [ 0 ] ) ) ;
+      ns_shifr  . password_letters3 : ns_shifr  . password_letters2 ) [ 0 ] ) ) ;
   else
     puts  ( & ( ( ( ns_shifr . use_version == 6 ) ? password_letters62 :
       password_letters2 ) [ 0 ] ) ) ;

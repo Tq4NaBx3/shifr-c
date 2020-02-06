@@ -720,3 +720,34 @@ void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  
 number_def_princ  ( 6 )
 number_def_princ  ( 37 )
 # endif
+
+void  string_to_password ( void ) {
+      switch ( ns_shifr . use_version ) {
+      case 4 :
+        if ( ns_shifr . password_alphabet == 95 )
+          string_to_password_templ  ( 6 ) ( & ns_shifr  . password_letters2 ,
+            & ns_shifr . raspr4  . pass ,
+            & ns_shifr . letters ,  letters_count ) ;
+        else
+          string_to_password_templ  ( 6 ) ( & ns_shifr  . password_letters2 ,
+            & ns_shifr . raspr4  . pass ,
+            & ns_shifr . letters2 , letters_count2 ) ;
+      break ;
+      case 6 : {
+        if ( ns_shifr . password_alphabet == 95 )
+          string_to_password_templ  ( 37 ) ( & ns_shifr  . password_letters3 ,
+            & ns_shifr . raspr6  . pass ,
+            & ns_shifr . letters ,  letters_count ) ;
+        else
+          string_to_password_templ  ( 37 ) ( & ns_shifr  . password_letters3 ,
+            & ns_shifr . raspr6  . pass ,
+            & ns_shifr . letters2 , letters_count2 ) ; }
+      break ;
+      default :
+        fprintf ( stderr  , ( ns_shifr . localerus ?
+          u8"версия %d не поддерживается\n" :
+          "version %d is not supported" ) , ns_shifr . use_version )  ;
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          ( strcp ) & u8"версия не поддерживается" :
+          ( strcp ) & "version is not supported" ) ;
+        longjmp(ns_shifr  . jump,1); } }
