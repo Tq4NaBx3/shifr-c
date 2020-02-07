@@ -14,7 +14,7 @@ Password encrypted × password = can serve as a hash function.<br>
 Hash ÷ decrypt (password) == password<br>
 If the decrypted hash with the password gives this password, then the password is correct.<br>
 Double encryption of known data with a password can serve as a signature.<br>
-For example Sha1Sum(data) * password * password = Signature<br>
+For example Sha1Sum(data) × password × password = Signature<br>
 If the signature decrypted twice gives the checksum, then this gives reason to trust the signed data.<br>
 Double data decryption can also serve as a signature.<br>
 Data ÷ decryption ÷ decryption = signature<br>
