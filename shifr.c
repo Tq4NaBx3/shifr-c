@@ -751,3 +751,82 @@ void  string_to_password ( void ) {
           ( strcp ) & u8"версия не поддерживается" :
           ( strcp ) & "version is not supported" ) ;
         longjmp(ns_shifr  . jump,1); } }
+
+void  shifr_encode  ( void  ) {
+  switch  ( ns_shifr . use_version  ) {
+  case  4 : shifr_encode4 ( ) ;
+    break ;
+  case  6 : shifr_encode6 ( ) ; 
+    break ;
+  default :
+    fprintf ( stderr  , ( ns_shifr . localerus ?
+          u8"encode:версия %d не поддерживается\n" :
+          "encode:version %d is not supported" ) , ns_shifr . use_version )  ;
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          ( strcp ) & u8"encode:версия не поддерживается" :
+          ( strcp ) & "encode:version is not supported" ) ;
+        longjmp(ns_shifr  . jump,1); } }
+
+void  shifr_decode  ( void  ) {
+  switch  ( ns_shifr . use_version  ) {
+  case  4 : shifr_decode4 ( ) ;
+    break ;
+  case  6 : shifr_decode6 ( ) ; 
+    break ;
+  default :
+    fprintf ( stderr  , ( ns_shifr . localerus ?
+          u8"decode:версия %d не поддерживается\n" :
+          "decode:version %d is not supported" ) , ns_shifr . use_version )  ;
+        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          ( strcp ) & u8"decode:версия не поддерживается" :
+          ( strcp ) & "decode:version is not supported" ) ;
+        longjmp(ns_shifr  . jump,1); } }
+
+void  shifr_password_load_uni ( void  ) {
+  switch ( ns_shifr . use_version )  {
+    case 4 :
+      password_load ( 6 ) ( & ns_shifr . raspr4  . pass , & ns_shifr  . shifr ,
+        & ns_shifr  . deshi ) ;
+      break ;
+    case 6 :
+      password_load ( 37 ) ( & ns_shifr . raspr6  . pass , & ns_shifr  . shifr6 ,
+        & ns_shifr  . deshi6 ) ;
+      break ;
+    default :
+      fprintf ( stderr  , ( ns_shifr . localerus ?
+        u8"password_load:версия %d не поддерживается\n" :
+        "password_load:version %d is not supported" ) , ns_shifr . use_version )  ;
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        ( strcp ) & u8"password_load:версия не поддерживается" :
+        ( strcp ) & "password_load:version is not supported" ) ;
+      longjmp(ns_shifr  . jump,1); } }
+
+void  password_to_string  ( void  ) {
+  switch  ( ns_shifr . use_version ) {
+  case  4 : {
+        if ( ns_shifr . password_alphabet == 95 )
+          password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
+            & ns_shifr  . password_letters2 , & ns_shifr . letters ,
+            letters_count ) ;
+        else
+          password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
+            & ns_shifr  . password_letters2 , & ns_shifr . letters2 ,
+            letters_count2 ) ; 
+        break ; }
+   case 6 : {
+        if ( ns_shifr . password_alphabet == 95 )
+          password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
+            & ns_shifr  . password_letters3 , & ns_shifr . letters , letters_count ) ;
+        else
+          password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
+            & ns_shifr  . password_letters3 , & ns_shifr . letters2 , letters_count2 ) ;
+        break ; }
+    default :
+      fprintf ( stderr  , ( ns_shifr . localerus ?
+        u8"password_to_string:версия %d не поддерживается\n" :
+        "password_to_string:version %d is not supported" ) , ns_shifr . use_version )  ;
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        ( strcp ) & u8"password_to_string:версия не поддерживается" :
+        ( strcp ) & "password_to_string:version is not supported" ) ;
+      longjmp(ns_shifr  . jump,1); } }
+

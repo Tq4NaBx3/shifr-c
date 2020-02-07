@@ -505,6 +505,24 @@ static  inline  void  enter_password4 ( void ) {
       "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
       , &((*p4)[0]) , & ( password_letters [ 0 ] ) ) ; }
       
+# define  enter_password  shifr_enter_password
+static  inline  void  enter_password (  void  ) {
+  switch ( ns_shifr . use_version ) {
+    case  6 :
+      enter_password6  ( ) ;
+      break ;
+    case 4 :
+      enter_password4  ( ) ;
+      break ;
+    default :
+      fprintf(stderr,( ns_shifr . localerus ?
+        u8"enter_password:Неизвестная версия %d\n" :
+        "enter_password:Unknown version %d\n" ),ns_shifr . use_version);
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        ( strcp ) & u8"enter_password:Неизвестная версия" :
+        ( strcp ) & "enter_password:Unknown version" ) ;
+      longjmp(ns_shifr  . jump,1); } }
+      
 # define  t_streambuf shifr_t_streambuf
 typedef struct  s_streambuf  {
   // file
@@ -609,11 +627,8 @@ static  inline  shifr_password_load_def (  6 , shifr_deshi_size2 )
 static  inline  shifr_password_load_def (  37 , shifr_deshi_size6 )
 # define  shifr_password_load( N ) shifr_password##N##_load
 # define  password_load shifr_password_load
-  
-void  shifr_encode4 ( void  ) ;
-void  shifr_encode6 ( void  ) ;
-void  shifr_decode4 ( void  ) ;
-void  shifr_decode6 ( void  ) ;
+
+void  shifr_password_load_uni ( void  ) ;
 
 # define  arrcp  shifr_arrcp
 typedef uint8_t const ( * arrcp ) [ ] ;
@@ -625,3 +640,42 @@ void  printarr  ( strcp name , arrcp p ,
 # endif
   
 void  string_to_password ( void ) ;
+# define  password_to_string  shifr_password_to_string
+void  password_to_string  ( void  ) ;
+void  shifr_encode  ( void  ) ;
+void  shifr_decode  ( void  ) ;
+
+# define  generate_password shifr_generate_password
+static  inline  void  generate_password ( void  ) {
+  switch  ( ns_shifr . use_version  ) {
+    case  4 : 
+      shifr_generate_pass4  ( ) ;
+      shifr_pass_to_array4  ( ) ;
+# ifdef SHIFR_DEBUG
+      fputs ( ( ns_shifr . localerus ?
+        u8"generate_password:внутренний пароль = " :
+        "generate_password:internal password = " ) , stderr ) ;
+      number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
+      fputs ( "\n" , stderr ) ;
+# endif
+      break ;
+    case 6 :
+      shifr_generate_pass6  ( ) ;
+      shifr_pass_to_array6  ( ) ;
+# ifdef SHIFR_DEBUG
+      fputs ( ( ns_shifr . localerus ?
+        u8"generate_password:внутренний пароль = " :
+        "generate_password:internal password = " ) , stderr ) ;
+      number_princ  ( 37 ) ( & ns_shifr . raspr6  . pass , stderr  ) ;
+      fputs ( "\n" , stderr ) ;
+# endif
+      break ;
+    default :
+      fprintf ( stderr , ( ns_shifr . localerus ?
+        u8"generate_password:неопознанная версия : \'%d\'\n" :
+        "generate_password:unrecognized version : \'%d\'\n" ) , ns_shifr . use_version ) ;
+      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        ( strcp ) & u8"generate_password:неопознанная версия" :
+        ( strcp ) & "generate_password:unrecognized version" ) ;
+      longjmp ( ns_shifr  . jump  , 1 ) ; } }
+

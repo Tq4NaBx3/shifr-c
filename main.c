@@ -163,9 +163,7 @@ int main  ( int argc , char * argv [ ] )  {
               psw_uni [ i ] = '\00' ;
               nr = i ;
               break ; } }
-
       string_to_password  ( ) ;
-
       if ( fclose  ( f ) )  {
         int e = errno ; 
         fprintf ( stderr  , ( ns_shifr . localerus ?
@@ -208,23 +206,7 @@ int main  ( int argc , char * argv [ ] )  {
       fputs ( "\n" , stderr ) ;
 # endif                    
         }
-
-      if ( ns_shifr . use_version == 4 ) {
-        if ( ns_shifr . password_alphabet == 95 )
-          password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
-            & ns_shifr  . password_letters2 , & ns_shifr . letters ,
-            letters_count ) ;
-        else
-          password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
-            & ns_shifr  . password_letters2 , & ns_shifr . letters2 ,
-            letters_count2 ) ; }
-      if ( ns_shifr . use_version == 6 ) {
-        if ( ns_shifr . password_alphabet == 95 )
-          password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & ns_shifr  . password_letters3 , & ns_shifr . letters , letters_count ) ;
-        else
-          password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & ns_shifr  . password_letters3 , & ns_shifr . letters2 , letters_count2 ) ; }
+      password_to_string  ( ) ;
 # ifdef SHIFR_DEBUG
       if ( ns_shifr . use_version == 6 ) {
         if  ( strcmp ( ns_shifr  . password_letters3 , argv  [ argj  ] ) )  
@@ -308,38 +290,8 @@ int main  ( int argc , char * argv [ ] )  {
             ( strcp ) & "unrecognized option" ) ;
           longjmp(ns_shifr  . jump,1); } } }
   if ( flaggenpasswd ) {
-    switch  ( ns_shifr . use_version  ) {
-    case  4 : 
-      shifr_generate_pass4  ( ) ;
-      shifr_pass_to_array4  ( ) ;
-# ifdef SHIFR_DEBUG
-      fputs ( ( ns_shifr . localerus ?
-        u8"внутренний пароль = " :
-        "internal password = " ) , stderr ) ;
-      number_princ  ( 6 ) ( & ns_shifr . raspr4  . pass , stderr  ) ;
-      fputs ( "\n" , stderr ) ;
-# endif
-      break ;
-    case 6 :
-      shifr_generate_pass6  ( ) ;
-      shifr_pass_to_array6  ( ) ;
-# ifdef SHIFR_DEBUG
-      fputs ( ( ns_shifr . localerus ?
-        u8"внутренний пароль = " :
-        "internal password = " ) , stderr ) ;
-      number_princ  ( 37 ) ( & ns_shifr . raspr6  . pass , stderr  ) ;
-      fputs ( "\n" , stderr ) ;
-# endif
-      break ;
-    default :
-      fprintf ( stderr , ( ns_shifr . localerus ?
-        u8"неопознанная версия : \'%d\'\n" :
-        "unrecognized version : \'%d\'\n" ) , ns_shifr . use_version ) ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        ( strcp ) & u8"неопознанная версия" :
-        ( strcp ) & "unrecognized version" ) ;
-      longjmp ( ns_shifr  . jump  , 1 ) ; }
-  flagpasswd  = true  ;
+    generate_password ( ) ;
+    flagpasswd  = true  ;
 # ifdef SHIFR_DEBUG    
   switch ( ns_shifr . use_version ) {
   case  4 :
@@ -467,21 +419,7 @@ int main  ( int argc , char * argv [ ] )  {
   if ( not flagpasswd )    {
     fputs ( ( ns_shifr . localerus ? u8"введите пароль = " :
       "enter the password = " ) , stdout  ) ;
-    switch ( ns_shifr . use_version ) {
-    case  6 :
-      enter_password6  ( ) ;
-      break ;
-    case 4 :
-      enter_password4  ( ) ;
-      break ;
-    default :
-      fprintf(stderr,( ns_shifr . localerus ?
-        u8"Неизвестная версия %d\n" :
-        "Unknown version %d\n" ),ns_shifr . use_version);
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        ( strcp ) & u8"Неизвестная версия" :
-        ( strcp ) & "Unknown version" ) ;
-      longjmp(ns_shifr  . jump,1); } }
+    enter_password  ( ) ; }
   if ( flaginputfromfile ) {
     FILE * const f = fopen  ( & ( ( * inputfilename ) [ 0 ] ) , & ( "r" [ 0 ] ) ) ;
     if  ( f == NULL ) {
@@ -512,23 +450,7 @@ int main  ( int argc , char * argv [ ] )  {
     ns_shifr  . fileto  = f ;    }
   streambuf_init  ( & shifr_filebuffrom , ns_shifr  . filefrom )  ;
   streambuf_init  ( & shifr_filebufto , ns_shifr  . fileto )  ;
-    switch ( ns_shifr . use_version )  {
-    case 4 :
-      password_load ( 6 ) ( & ns_shifr . raspr4  . pass , & ns_shifr  . shifr ,
-        & ns_shifr  . deshi ) ;
-      break ;
-    case 6 :
-      password_load ( 37 ) ( & ns_shifr . raspr6  . pass , & ns_shifr  . shifr6 ,
-        & ns_shifr  . deshi6 ) ;
-      break ;
-    default :
-      fprintf ( stderr  , ( ns_shifr . localerus ?
-        u8"версия %d не поддерживается\n" :
-        "version %d is not supported" ) , ns_shifr . use_version )  ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
-        ( strcp ) & u8"версия не поддерживается" :
-        ( strcp ) & "version is not supported" ) ;
-      longjmp(ns_shifr  . jump,1); }
+  shifr_password_load_uni ( ) ;
 # ifdef SHIFR_DEBUG    
   if ( ns_shifr . use_version == 6 )  { 
     printarr  ( & "shifr" , & ns_shifr . shifr6 , shifr_deshi_size6 ,stderr) ;
@@ -537,14 +459,8 @@ int main  ( int argc , char * argv [ ] )  {
     printarr  ( & "shifr" , & ns_shifr . shifr , shifr_deshi_size2 ,stderr) ;
     printarr  ( & "deshi" , & ns_shifr . deshi , shifr_deshi_size2 ,stderr) ; }
 # endif
-  if ( flagenc ) {
-    if ( ns_shifr . use_version == 4 ) shifr_encode4 ( ) ;
-    else
-      if ( ns_shifr . use_version == 6 ) shifr_encode6 ( ) ; }
-  else  {
-    if ( ns_shifr . use_version == 4 ) shifr_decode4 ( ) ;
-    else
-      if ( ns_shifr . use_version == 6 ) shifr_decode6 ( ) ; }
+  if ( flagenc ) shifr_encode  ( ) ;
+  else  shifr_decode  ( ) ;
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
     if  ( fclose  ( ns_shifr  . fileto  ) ) {
