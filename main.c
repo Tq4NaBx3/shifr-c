@@ -46,14 +46,17 @@ int main  ( int argc , char * argv [ ] )  {
       "Data size doubles. Tripled in text mode.\n"
       "There is no diagnosis of the wrong password.\n"
       "Syntax : shifr [options]" ) ;
-    puts  ( ns_shifr . localerus ? u8"Параметры :" : "Options :"  ) ;
+    puts  ( ns_shifr . localerus ?
+      u8"Параметры :" :
+      "Options :"  ) ;
     puts  ( ns_shifr . localerus ?
       u8"  --ген-пар или\n  --gen-pas\tгенерировать пароль" :
       "  --gen-pas\tpassword generate" );
     puts  ( ns_shifr . localerus ?
       u8"  --зашифр или\n  --encrypt\tзашифровать\t(по-умолчанию)" :
       "  --encrypt\t(by default)" );
-    puts  ( ns_shifr . localerus ? u8"  --расшифр или\n  --decrypt\tрасшифровать" :
+    puts  ( ns_shifr . localerus ?
+      u8"  --расшифр или\n  --decrypt\tрасшифровать" :
       "  --decrypt" );
     puts  ( ns_shifr . localerus ?
       u8"  --пар или\n  --pas 'строка_пароля'\tиспользовать данный пароль" :
@@ -79,19 +82,27 @@ int main  ( int argc , char * argv [ ] )  {
     fputs  ( ns_shifr . localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
-    for ( char const * cj = & ( ns_shifr  . letters [ 0 ] ) ;
-      cj not_eq ( & ( ns_shifr  . letters [ letters_count ] ) ) ; ++ cj )
-      fputc ( * cj  , stdout  ) ;
-    fputs ( ( ns_shifr . localerus ? u8"\'\n  --а62 или\n  --a62\t\'" :
+    { char const * cj = & ( ns_shifr  . letters [ 0 ] ) ;
+      do {
+        fputc ( * cj  , stdout  ) ;
+        ++ cj ;
+      } while ( cj not_eq ( & ( ns_shifr  . letters [ letters_count ] ) ) ) ; }
+    fputs ( ( ns_shifr . localerus ?
+      u8"\'\n  --а62 или\n  --a62\t\'" :
       "\'\n  --a62\t\'" ) , stdout  ) ;
-    for ( char const * cj = & ( ns_shifr  . letters2 [ 0 ] ) ;
-      cj not_eq ( & ( ns_shifr  . letters2 [ letters_count2 ] ) ) ; ++ cj )
-      fputc ( * cj  , stdout  ) ;
-    fputs ( ( ns_shifr . localerus ? u8"\'\t(по умолчанию)\n" :
+    { char const * cj = & ( ns_shifr  . letters2 [ 0 ] ) ;
+      do {
+        fputc ( * cj  , stdout  ) ;
+        ++ cj ;
+      } while ( cj not_eq ( & ( ns_shifr  . letters2 [ letters_count2 ] ) ) ) ; }
+    fputs ( ( ns_shifr . localerus ?
+      u8"\'\t(по умолчанию)\n" :
       "\'\t(by default)\n"  ) , stdout  ) ;
-    puts  ( ns_shifr  . localerus ? u8"Пример использования :"  :
+    puts  ( ns_shifr  . localerus ?
+      u8"Пример использования :"  :
       "Usage example"  ) ;
-    puts  ( ns_shifr  . localerus ? u8"  $ ./shifr --ген-пар > psw"  :
+    puts  ( ns_shifr  . localerus ?
+      u8"  $ ./shifr --ген-пар > psw"  :
       "  $ ./shifr --gen-pas > psw"  ) ;
     puts  ( 
       "  $ cat psw\n"
@@ -99,7 +110,8 @@ int main  ( int argc , char * argv [ ] )  {
     puts  ( ns_shifr  . localerus ?
       u8"  $ ./shifr --пар-путь 'psw' > test.shi --текст"  :
       "  $ ./shifr --pas-path 'psw' > test.shi --text"  ) ;
-    puts( ns_shifr  . localerus ? u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
+    puts( ns_shifr  . localerus ?
+      u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
       "  2+2 (Press Enter,Ctrl+D)" ) ;
     puts  ( 
       "  $ cat test.shi\n"
@@ -110,7 +122,8 @@ int main  ( int argc , char * argv [ ] )  {
     puts  ( "  2+2" ) ;
     return 0 ; }
   srand ( time  ( 0 ) ) ;
-  for ( int argj = 1 ; argv [ argj ] ; ++ argj ) {
+  { int argj = 1 ;
+  for ( ; argv [ argj ] ; ++ argj ) {
     if ( flagreadpasswdfromfile ) {
       FILE * const f = fopen  ( argv  [ argj  ] , & ( "r" [ 0 ] ) ) ;
       if  ( f == NULL ) {
@@ -146,23 +159,32 @@ int main  ( int argc , char * argv [ ] )  {
           ( strcp ) & "Error reading file" ) ;
         longjmp ( ns_shifr  . jump  , 1 ) ; }
       char * psw_uni ;
-      if ( ns_shifr . use_version == 4 ) psw_uni = ns_shifr  . password_letters2 ;
-      else psw_uni = ns_shifr  . password_letters3 ;
+      if ( ns_shifr . use_version == 4 )
+        psw_uni = ns_shifr  . password_letters2 ;
+      else 
+        psw_uni = ns_shifr  . password_letters3 ;
       psw_uni [ nr ] = '\00' ;
       if ( ns_shifr . password_alphabet == 95 )  {
-        for ( size_t i  = 0 ; i < nr  ; ++  i )
-          if (  psw_uni [ i ] < ' ' or psw_uni  [ i ] > '~' ) {
+        size_t i  = 0 ;
+        for ( ; i < nr  ; ++  i ) {
+          if (  psw_uni [ i ] < ' ' or
+            psw_uni  [ i ] > '~' ) {
             psw_uni [ i ] = '\00' ;
             nr = i ;
-            break ; } }
+            break ; } } }
         else {
-          for ( size_t i  = 0 ; i < nr  ; ++  i )
-            if (  ( psw_uni [ i ] < '0' or psw_uni  [ i ] > '9' ) and
-                ( psw_uni [ i ] < 'a' or psw_uni  [ i ] > 'z' ) and
-                ( psw_uni [ i ] < 'A' or psw_uni  [ i ] > 'Z' ) ) {
+          size_t i  = 0 ;
+          for ( ; i < nr  ; ++  i ) {
+            char  psw_unii = psw_uni [ i ] ;
+            if ( ( psw_unii < '0' or
+                psw_unii > '9' ) and
+              ( psw_unii < 'a' or
+                psw_unii > 'z' ) and
+              ( psw_unii < 'A' or
+                psw_unii > 'Z' ) ) {
               psw_uni [ i ] = '\00' ;
               nr = i ;
-              break ; } }
+              break ; } } }
       string_to_password  ( ) ;
       if ( fclose  ( f ) )  {
         int e = errno ; 
@@ -288,7 +310,7 @@ int main  ( int argc , char * argv [ ] )  {
           ns_shifr  . string_exception  = ( ns_shifr . localerus ?
             ( strcp ) & u8"неопознанная опция" :
             ( strcp ) & "unrecognized option" ) ;
-          longjmp(ns_shifr  . jump,1); } } }
+          longjmp ( ns_shifr  . jump  , 1 ) ; } } } }
   if ( flaggenpasswd ) {
     generate_password ( ) ;
     flagpasswd  = true  ;
@@ -459,8 +481,10 @@ int main  ( int argc , char * argv [ ] )  {
     printarr  ( & "shifr" , & ns_shifr . shifr , shifr_deshi_size2 ,stderr) ;
     printarr  ( & "deshi" , & ns_shifr . deshi , shifr_deshi_size2 ,stderr) ; }
 # endif
-  if ( flagenc ) shifr_encode  ( ) ;
-  else  shifr_decode  ( ) ;
+  if ( flagenc )
+    shifr_encode  ( ) ;
+  else
+    shifr_decode  ( ) ;
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
     if  ( fclose  ( ns_shifr  . fileto  ) ) {

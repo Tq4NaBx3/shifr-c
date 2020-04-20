@@ -188,13 +188,17 @@ void  shifr_number##N##_mul_byte ( number_type ( N ) * const restrict  np  , \
   if ( byte == 0 ) {  \
     number_set0 ( N ) ( np  ) ; \
     return  ; } \
-  if ( byte == 1 ) return ; \
+  if ( byte == 1 )  \
+    return ; \
   uint8_t per = 0 ; \
-  for ( uint8_t i = 0 ; i < N ; ++ i )  { \
-    uint16_t  x = ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) * \
-      ( ( uint16_t  ) byte  ) + ( ( uint16_t  ) per ) ; \
-    number_array  ( np  ) [ i ] = x bitand 0xff ; \
-    per = x >>  8 ; } }
+  { uint8_t i = 0 ; \
+    do { \
+      uint16_t  x = ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) * \
+        ( ( uint16_t  ) byte  ) + ( ( uint16_t  ) per ) ; \
+      number_array  ( np  ) [ i ] = x bitand 0xff ; \
+      per = x >>  8 ; \
+      ++  i ; \
+    } while ( i < N ) ; } }
 # define  number_def_mul_byte shifr_number_def_mul_byte
 
 # define  shifr_number_mul_byte( N ) shifr_number##N##_mul_byte
@@ -204,7 +208,8 @@ void  shifr_number##N##_mul_byte ( number_type ( N ) * const restrict  np  , \
 void  shifr_number##N##_add  ( number_type ( N ) * const restrict  np  ,  \
   number_type ( N ) const * const restrict  xp ) {  \
   uint8_t per = 0 ; \
-  for ( uint8_t i = 0 ; i < N ; ++ i )  { \
+  uint8_t i = 0 ; \
+  do  { \
     uint16_t  s = ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) + \
       ( ( uint16_t  ) number_elt_copy ( N ) ( xp  , i ) ) + \
       ( ( uint16_t  ) per ) ; \
@@ -213,7 +218,9 @@ void  shifr_number##N##_add  ( number_type ( N ) * const restrict  np  ,  \
       per = 1 ; } \
     else  { \
       number_array  ( np  ) [ i ] = s  ;  \
-      per = 0 ;  } } }
+      per = 0 ;  }  \
+    ++ i  ; \
+  } while ( i < N ) ; }
 # define  number_def_add shifr_number_def_add
 
 # define  shifr_number_add( N ) shifr_number##N##_add
@@ -225,7 +232,8 @@ bool  shifr_number##N##_not_zero  ( \
   uint8_t const * i = & ( number_array  ( np  ) [ N ] ) ; \
   do {  \
     --  i ; \
-    if ( * i )  return  true  ; \
+    if ( * i )  \
+      return  true  ; \
   } while ( i not_eq & ( number_array  ( np  ) [ 0 ] ) ) ;  \
   return  false ; }
 # define  number_def_not_zero shifr_number_def_not_zero
@@ -238,7 +246,8 @@ void  shifr_number##N##_dec ( \
   number_type ( N ) * const restrict  np  ) { \
   uint8_t  * restrict i = & ( number_array  ( np  ) [ 0 ] ) ; \
   do {  \
-    if ( ( * i ) == 0 ) -- ( * i ) ;  \
+    if ( ( * i ) == 0 ) \
+      -- ( * i ) ;  \
     else  { \
       -- ( * i ) ;  \
       break ; } \
@@ -253,12 +262,14 @@ void  shifr_number##N##_dec ( \
 uint8_t shifr_number##N##_div_mod ( \
   number_type ( N ) * const restrict  np , uint8_t const div ) { \
   uint8_t modi  = 0 ; \
-  for ( uint8_t i = N ; i > 0 ; )  {  \
+  uint8_t i = N ; \
+  do {  \
     -- i ;  \
     uint16_t  x = ( ( ( uint16_t  ) modi  ) <<  8 ) bitor  \
       ( ( uint16_t  ) ( number_array  ( np  ) [ i ] ) ) ; \
     modi  = x % div ; \
-    number_array  ( np  ) [ i ] = x / div ;  }  \
+    number_array  ( np  ) [ i ] = x / div ; \
+  } while ( i > 0 ) ; \
   return  modi ; }
 # define  number_def_div_mod shifr_number_def_div_mod
 # define  shifr_number_div_mod( N ) shifr_number##N##_div_mod
@@ -381,12 +392,32 @@ extern  t_ns_shifr  ns_shifr  ;
 
 static inline void  shifr_init ( void  ) {
   { char * j = & ( ns_shifr . letters [ 0 ] ) ;
-    for ( uint8_t i = ' ' ; i <= '~' ; ++ i , ++ j ) ( * j ) = i ;  }
+    uint8_t i = ' ' ;
+    do {
+      ( * j ) = i ;
+      ++ i  ;
+      ++ j  ;
+    } while ( i <= '~' ) ; }
   // 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
   { char * j = & ( ns_shifr . letters2 [ 0 ] ) ;
-    for ( uint8_t i = '0' ; i <= '9' ; ++ i , ++ j ) ( * j ) = i ;
-    for ( uint8_t i = 'A' ; i <= 'Z' ; ++ i , ++ j ) ( * j ) = i ;
-    for ( uint8_t i = 'a' ; i <= 'z' ; ++ i , ++ j ) ( * j ) = i ; }
+    { uint8_t i = '0' ;
+      do {
+        ( * j ) = i ;
+        ++ i  ;
+        ++ j  ;
+      } while ( i <= '9' ) ; }
+    { uint8_t i = 'A' ;
+      do {
+        ( * j ) = i ;
+        ++ i  ;
+        ++ j  ;
+      } while ( i <= 'Z'  ) ; }
+    { uint8_t i = 'a' ;
+      do {
+        ( * j ) = i ;
+        ++ i  ;
+        ++ j  ;
+      } while ( i <= 'z'  ) ; } }
   ns_shifr  . filefrom  = stdin ;
   ns_shifr  . fileto = stdout ; }
 
@@ -440,7 +471,8 @@ static  inline  void  enter_password6 ( void ) {
     fgets ( & ( p60 [ 0 ] ) , 100 , stdin ) ;
   reset_keypress ( ) ;
   char * j = & ( ( * p6 ) [ 0 ]  ) ;
-  while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and
+  while ( ( ( * j ) not_eq '\n' ) and
+    ( ( * j ) not_eq '\00' ) and
     ( j < ( & ( * p6 ) [ 100 ] ) ) )
     ++ j ;  
   if ( j < ( & ( ( * p6 ) [ 100 ] ) ) )
@@ -449,34 +481,35 @@ static  inline  void  enter_password6 ( void ) {
     ns_shifr  . string_exception  = ( ns_shifr . localerus ?
       ( strcp ) & u8"в пароле нет конца строки" :
       ( strcp ) & "there is no end of line in the password" ) ;
-    longjmp(ns_shifr  . jump,1); }
+    longjmp ( ns_shifr  . jump  , 1 ) ; }
   char  password_letters6 [ 100 ] ;
   if ( ns_shifr . password_alphabet == 95 ) {
     string_to_password_templ  ( 37 ) ( p6 ,
-            & ns_shifr . raspr6  . pass ,
-            & ns_shifr . letters ,  letters_count ) ;
+      & ns_shifr . raspr6  . pass ,
+      & ns_shifr . letters ,  letters_count ) ;
     password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & password_letters6 , & ns_shifr . letters , letters_count ) ; }
+      & password_letters6 , & ns_shifr . letters , letters_count ) ; }
   else {
     string_to_password_templ  ( 37 ) ( p6 ,
-            & ns_shifr . raspr6  . pass ,
-            & ns_shifr . letters2 ,  letters_count2 ) ;
+      & ns_shifr . raspr6  . pass ,
+      & ns_shifr . letters2 ,  letters_count2 ) ;
     password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ; }
-  if  ( strcmp ( &(password_letters6[0]) , &((*p6)[0]) ) )  
+      & password_letters6 , & ns_shifr . letters2 , letters_count2 ) ; }
+  if  ( strcmp ( &  ( password_letters6 [ 0 ] ) , & ( ( * p6  ) [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifr . localerus ?
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'.\n" :
       "Warning! Password \'%s\' is very large. Same as \'%s\'.\n" )
-      , &((*p6)[0]) , & ( password_letters6  [ 0 ] ) ) ; }
+      , & ( ( * p6  ) [ 0 ] ) , & ( password_letters6  [ 0 ] ) ) ; }
       
 static  inline  void  enter_password4 ( void ) {
   char p40 [ 20 ] ;
   set_keypress  ( ) ;
-  char ( * const p4 ) [ 20 ] = (char(*const)[20])
+  char ( * const p4 ) [ 20 ] = (  char  ( * const ) [ 20  ] )
     fgets ( & ( p40 [ 0 ] ) , 20 , stdin ) ;
   reset_keypress ( ) ;
   char * j = & ( ( * p4 ) [ 0 ]  ) ;
-  while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and
+  while ( ( ( * j ) not_eq '\n' ) and
+    ( ( * j ) not_eq '\00' ) and
     ( j < ( & ( * p4 ) [ 20 ] ) ) )
     ++ j ;  
   if ( j < ( & ( ( * p4 ) [ 20 ] ) ) )
@@ -485,7 +518,7 @@ static  inline  void  enter_password4 ( void ) {
     ns_shifr  . string_exception  = ( ns_shifr . localerus ?
       ( strcp ) & u8"в пароле нет конца строки" :
       ( strcp ) & "there is no end of line in the password" ) ;
-    longjmp(ns_shifr  . jump,1); }
+    longjmp ( ns_shifr  . jump  , 1 ) ; }
   if ( ns_shifr . password_alphabet == 95 )
     string_to_password_templ  ( 6 ) ( p4 , & ns_shifr . raspr4  . pass ,
       & ns_shifr . letters ,  letters_count ) ;
@@ -499,11 +532,11 @@ static  inline  void  enter_password4 ( void ) {
   else
     password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
       & password_letters , & ns_shifr . letters2 , letters_count2 ) ;
-  if  ( strcmp ( &(password_letters[0]) , &((*p4)[0]) ) )  
+  if  ( strcmp ( &  ( password_letters  [ 0 ] ) , & ( ( * p4  ) [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifr . localerus ?
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
       "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
-      , &((*p4)[0]) , & ( password_letters [ 0 ] ) ) ; }
+      , & ( ( * p4  ) [ 0 ] ) , & ( password_letters [ 0 ] ) ) ; }
       
 # define  enter_password  shifr_enter_password
 static  inline  void  enter_password (  void  ) {
@@ -515,13 +548,13 @@ static  inline  void  enter_password (  void  ) {
       enter_password4  ( ) ;
       break ;
     default :
-      fprintf(stderr,( ns_shifr . localerus ?
+      fprintf ( stderr  , ( ns_shifr . localerus ?
         u8"enter_password:Неизвестная версия %d\n" :
-        "enter_password:Unknown version %d\n" ),ns_shifr . use_version);
+        "enter_password:Unknown version %d\n" ) , ns_shifr . use_version  ) ;
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
         ( strcp ) & u8"enter_password:Неизвестная версия" :
         ( strcp ) & "enter_password:Unknown version" ) ;
-      longjmp(ns_shifr  . jump,1); } }
+      longjmp ( ns_shifr  . jump  , 1 ) ; } }
       
 # define  t_streambuf shifr_t_streambuf
 typedef struct  s_streambuf  {
@@ -614,8 +647,7 @@ void  shifr_password##N##_load  ( number_type ( N ) const * const password0 , \
   uint8_t inde  = 0 ; \
   number_type ( N ) password = * password0 ; \
   do {  \
-    { uint8_t cindex = number_div_mod ( N ) ( & password ,  \
-        SDS - inde ) ;  \
+    { uint8_t cindex = number_div_mod ( N ) ( & password , SDS - inde ) ;  \
       uint8_t * arrind_cindexp = & (  arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
