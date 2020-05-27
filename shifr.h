@@ -114,7 +114,8 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 # include <stdbool.h>
 # include <iso646.h>
 // убрать эхо в терминале
-# include <termios.h> // close terminal echo
+// close terminal echo
+# include <termios.h>
 # include <setjmp.h>
 
 //# define  SHIFR_DEBUG
@@ -128,14 +129,11 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 # define letters_count2 (UINT8_C( \
   ('9' - '0') + 1 + ('Z' - 'A') + 1 + ('z' - 'a') + 1 ))
 
-# define  strcp  shifr_strcp
-typedef char const ( * strcp ) [ ] ;
-
 # define  shifr_number_def( N ) \
-  typedef struct  shifr_s_number##N { \
+  struct  shifr_s_number ## N { \
     /* array */ \
     uint8_t HRDG [ N ] ; \
-  } shifr_t_number##N ;  
+  } ;  
 
 # define  number_def  shifr_number_def
 
@@ -143,47 +141,47 @@ typedef char const ( * strcp ) [ ] ;
 # define  shifr_number_array_pri( M ) number::array is private
 # define  shifr_number_array  shifr_number_array_pub
 # define  number_array  shifr_number_array
-
-# define  shifr_number_type( N ) shifr_t_number##N
+  
+# define  shifr_number_type( N ) shifr_t_number ## N
 # define  number_type shifr_number_type
 
 # define  shifr_number_dec_set0( N ) \
-void shifr_number##N##_set0  ( number_type  ( N ) * ) ;
+  void shifr_number ## N ## _set0  ( number_type  ( N ) * ) ;
 # define  number_dec_set0 shifr_number_dec_set0
   
 # define  shifr_number_def_set0( N ) \
-void shifr_number##N##_set0  ( number_type  ( N ) * const restrict np ) { \
-  memset  ( & ( ( number_array  ( np  ) ) [ 0 ] ) , 0 , N ) ; }
+  void shifr_number ## N ## _set0  ( number_type  ( N ) * const restrict np ) { \
+    memset  ( & ( ( number_array  ( np  ) ) [ 0 ] ) , 0 , N ) ; }
 # define  number_def_set0 shifr_number_def_set0
 
-# define  shifr_number_set0( N ) shifr_number##N##_set0
+# define  shifr_number_set0( N ) shifr_number ## N ## _set0
 # define  number_set0 shifr_number_set0
 
 # define  shifr_number_def_set_byte(  N ) \
-void  shifr_number##N##_set_byte  ( number_type ( N ) * const restrict np , \
+void  shifr_number ## N ## _set_byte  ( number_type ( N ) * const restrict np , \
   uint8_t const x ) { \
   memset  ( & ( ( number_array ( np ) ) [ 1 ] ) , 0 , N - 1 ) ; \
   ( number_array ( np ) ) [ 0 ] = x ; }
 # define  number_def_set_byte shifr_number_def_set_byte
 
-# define  shifr_number_set_byte( N ) shifr_number##N##_set_byte
+# define  shifr_number_set_byte( N ) shifr_number ## N ## _set_byte
 # define  number_set_byte shifr_number_set_byte
 
 # define  shifr_number_def_elt_copy( N ) \
-uint8_t shifr_number##N##_elt_copy  ( \
+uint8_t shifr_number ## N ## _elt_copy  ( \
   number_type ( N ) const * const restrict  np  , uint8_t const i ) { \
   return  number_array  ( np  ) [ i ] ; }
 # define  number_def_elt_copy shifr_number_def_elt_copy
 
-# define  shifr_number_elt_copy( N ) shifr_number##N##_elt_copy
+# define  shifr_number_elt_copy( N ) shifr_number ## N ## _elt_copy
 # define  number_elt_copy shifr_number_elt_copy
 
 # define  shifr_number_dec_mul_byte(  N ) \
-void  shifr_number##N##_mul_byte ( number_type ( N ) * , uint8_t )  ;
+void  shifr_number ## N ## _mul_byte ( number_type ( N ) * , uint8_t )  ;
 # define  number_dec_mul_byte shifr_number_dec_mul_byte
 
 # define  shifr_number_def_mul_byte(  N ) \
-void  shifr_number##N##_mul_byte ( number_type ( N ) * const restrict  np  , \
+void  shifr_number ## N ## _mul_byte ( number_type ( N ) * const restrict  np  , \
   uint8_t const byte ) {  \
   if ( byte == 0 ) {  \
     number_set0 ( N ) ( np  ) ; \
@@ -201,11 +199,11 @@ void  shifr_number##N##_mul_byte ( number_type ( N ) * const restrict  np  , \
     } while ( i < N ) ; } }
 # define  number_def_mul_byte shifr_number_def_mul_byte
 
-# define  shifr_number_mul_byte( N ) shifr_number##N##_mul_byte
+# define  shifr_number_mul_byte( N ) shifr_number ## N ## _mul_byte
 # define  number_mul_byte shifr_number_mul_byte
 
 # define  shifr_number_def_add(  N ) \
-void  shifr_number##N##_add  ( number_type ( N ) * const restrict  np  ,  \
+void  shifr_number ## N ## _add  ( number_type ( N ) * const restrict  np  ,  \
   number_type ( N ) const * const restrict  xp ) {  \
   uint8_t per = 0 ; \
   uint8_t i = 0 ; \
@@ -223,11 +221,11 @@ void  shifr_number##N##_add  ( number_type ( N ) * const restrict  np  ,  \
   } while ( i < N ) ; }
 # define  number_def_add shifr_number_def_add
 
-# define  shifr_number_add( N ) shifr_number##N##_add
+# define  shifr_number_add( N ) shifr_number ## N ## _add
 # define  number_add shifr_number_add
 
 # define  shifr_number_def_not_zero(  N ) \
-bool  shifr_number##N##_not_zero  ( \
+bool  shifr_number ## N ## _not_zero  ( \
   number_type ( N ) const * const restrict  np  ) { \
   uint8_t const * i = & ( number_array  ( np  ) [ N ] ) ; \
   do {  \
@@ -238,11 +236,11 @@ bool  shifr_number##N##_not_zero  ( \
   return  false ; }
 # define  number_def_not_zero shifr_number_def_not_zero
 
-# define  shifr_number_not_zero( N ) shifr_number##N##_not_zero
+# define  shifr_number_not_zero( N ) shifr_number ## N ## _not_zero
 # define  number_not_zero shifr_number_not_zero
 
 # define  shifr_number_def_dec(  N ) \
-void  shifr_number##N##_dec ( \
+void  shifr_number ## N ## _dec ( \
   number_type ( N ) * const restrict  np  ) { \
   uint8_t  * restrict i = & ( number_array  ( np  ) [ 0 ] ) ; \
   do {  \
@@ -255,11 +253,11 @@ void  shifr_number##N##_dec ( \
   } while ( i not_eq & ( number_array  ( np  ) [ N ] ) ) ; }
 # define  number_def_dec shifr_number_def_dec
 
-# define  shifr_number_dec( N ) shifr_number##N##_dec
+# define  shifr_number_dec( N ) shifr_number ## N ## _dec
 # define  number_dec shifr_number_dec
 
 # define  shifr_number_def_div_mod(  N ) \
-uint8_t shifr_number##N##_div_mod ( \
+uint8_t shifr_number ## N ## _div_mod ( \
   number_type ( N ) * const restrict  np , uint8_t const div ) { \
   uint8_t modi  = 0 ; \
   uint8_t i = N ; \
@@ -272,14 +270,16 @@ uint8_t shifr_number##N##_div_mod ( \
   } while ( i > 0 ) ; \
   return  modi ; }
 # define  number_def_div_mod shifr_number_def_div_mod
-# define  shifr_number_div_mod( N ) shifr_number##N##_div_mod
+# define  shifr_number_div_mod( N ) shifr_number ## N ## _div_mod
 # define  number_div_mod shifr_number_div_mod
 
 # define  shifr_number_dec_princ( N ) \
-void  shifr_number##N##_princ ( number_type ( N ) const * np ,  \
+void  shifr_number ## N ## _princ ( number_type ( N ) const * np ,  \
   FILE * fs ) ;
 # define  number_dec_princ shifr_number_dec_princ
 
+# include "type.h"
+  
 number_def  ( 6 )
 number_dec_set0 ( 6 )
 static  inline  number_def_set_byte ( 6 )
@@ -314,23 +314,19 @@ shifr_number_dec_princ  ( 37 )
 # undef shifr_number_array
 # define  shifr_number_array  shifr_number_array_pri
 
-# define  t_raspr4  shifr_t_raspr4
-
-typedef struct  s_raspr4 {
+struct  s_raspr4 {
 
 uint8_t dice  [ 16 - 1  ] ;
 // log(2,16!) ceil 8 = 6
 number_type ( 6 ) pass  ;
 
-} t_raspr4  ;
+} ;
 
-# define  t_raspr6  shifr_t_raspr6
-
-typedef struct  s_raspr6 {
+struct  s_raspr6 {
   uint8_t dice  [ 64 - 1 ] ;
   // log(2,64!) ceil 8 = 37
   number_type ( 37 ) pass  ;
-} t_raspr6 ;
+} ;
 
 // 4 * 4 = 16
 // четыре * четыре = шестнадцать
@@ -339,7 +335,7 @@ typedef struct  s_raspr6 {
 // 8 * 8 = 64
 # define  shifr_deshi_size6  ((size_t)(0x40U))
 
-typedef struct  s_ns_shifr  {
+struct  s_ns_shifr  {
 
 // буквы разрешённые в пароле :
 // ascii  
@@ -386,7 +382,7 @@ uint8_t shifr [ shifr_deshi_size2 ] ;
   // union ?
   char  password_letters2 [ 20  ] ;
   char  password_letters3 [ 100 ] ;
-} t_ns_shifr ;
+} ;
 
 extern  t_ns_shifr  ns_shifr  ;
 
@@ -430,10 +426,7 @@ string_to_password_templ_dec  ( 6 )
 string_to_password_templ_dec  ( 37 )
 # define  shifr_string_to_password_templ( N ) shifr_string_to_password##N##_templ
 # define  string_to_password_templ  shifr_string_to_password_templ
-    
-# define  strp  shifr_strp
-typedef char ( * strp ) [ ] ;    
-    
+
 # define  shifr_password_to_string_templ_dec( N ) \
 void  shifr_password##N##_to_string_templ ( \
   number_type ( N ) const * password0 , strp string ,  \
@@ -556,8 +549,7 @@ static  inline  void  enter_password (  void  ) {
         ( strcp ) & "enter_password:Unknown version" ) ;
       longjmp ( ns_shifr  . jump  , 1 ) ; } }
       
-# define  t_streambuf shifr_t_streambuf
-typedef struct  s_streambuf  {
+struct  s_streambuf  {
   // file
   FILE  * oRmq  ;
   // buf
@@ -568,7 +560,7 @@ typedef struct  s_streambuf  {
   // for : write6 , writeflushzero in text mode
   // bytecount
   int D6h7 ; 
-} t_streambuf ;
+} ;
   
 # define  streambuf_file_pub( M ) ((M)->oRmq)
 # define  streambuf_file_pri( M ) "streambuf::file is private"
@@ -604,9 +596,6 @@ static  inline  void  streambuf_init  ( t_streambuf * const restrict me  ,
   
 extern  t_streambuf shifr_filebuffrom ;
 extern  t_streambuf shifr_filebufto ;
-
-# define  arrp  shifr_arrp
-typedef uint8_t ( * arrp ) [ ] ;
 
 # define  initarr shifr_initarr
 static inline  void  initarr ( arrp  const p , uint8_t const codefree ,
@@ -661,9 +650,6 @@ static  inline  shifr_password_load_def (  37 , shifr_deshi_size6 )
 # define  password_load shifr_password_load
 
 void  shifr_password_load_uni ( void  ) ;
-
-# define  arrcp  shifr_arrcp
-typedef uint8_t const ( * arrcp ) [ ] ;
 
 # ifdef SHIFR_DEBUG
 # define  printarr  shifr_printarr
