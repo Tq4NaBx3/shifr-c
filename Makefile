@@ -4,7 +4,8 @@ SHIFR_OBJECTS = shifr.o main.o
 SHIFR_ASM = shifr.s main.s
 SHIFR_GCCRUN = $(GCC) $(SHDE) -Wall -Wextra -Winline -Wno-clobbered -std=c11 -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
-DEPENDshifrh = shifr.h type.h
+DEPENDstructh = struct.h type.h
+DEPENDshifrh = shifr.h $(DEPENDstructh)
 shifr: $(SHIFR_OBJECTS)
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) -o shifr
 shifr.o: shifr.c $(DEPENDshifrh)

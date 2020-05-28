@@ -12,9 +12,12 @@ typedef uint8_t const ( * arrcp ) [ ] ;
 
 # define  shifr_number_structtype( N ) \
   struct  shifr_s_number ## N ;
+
+# define  shifr_number_type( N ) shifr_t_number ## N
+# define  number_type shifr_number_type
   
 # define  shifr_number_typedef( N ) \
-  typedef struct  shifr_s_number ## N shifr_t_number ## N ;  
+  typedef struct  shifr_s_number ## N number_type ( N ) ;  
 
 shifr_number_structtype( 6 )
 shifr_number_typedef( 6 )

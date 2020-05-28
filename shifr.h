@@ -117,34 +117,15 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 // close terminal echo
 # include <termios.h>
 # include <setjmp.h>
+# include "struct.h"
 
 //# define  SHIFR_DEBUG
-
-// 0x20 (пробел) ' '    ---     0x7e (тильда) '~'
-// 95 шт
-# define letters_count (UINT8_C(('~' - ' ') + 1))
-
-// 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'
-// 62 шт
-# define letters_count2 (UINT8_C( \
-  ('9' - '0') + 1 + ('Z' - 'A') + 1 + ('z' - 'a') + 1 ))
-
-# define  shifr_number_def( N ) \
-  struct  shifr_s_number ## N { \
-    /* array */ \
-    uint8_t HRDG [ N ] ; \
-  } ;  
-
-# define  number_def  shifr_number_def
 
 # define  shifr_number_array_pub( M ) ((M)->HRDG)
 # define  shifr_number_array_pri( M ) number::array is private
 # define  shifr_number_array  shifr_number_array_pub
 # define  number_array  shifr_number_array
   
-# define  shifr_number_type( N ) shifr_t_number ## N
-# define  number_type shifr_number_type
-
 # define  shifr_number_dec_set0( N ) \
   void shifr_number ## N ## _set0  ( number_type  ( N ) * ) ;
 # define  number_dec_set0 shifr_number_dec_set0
@@ -278,9 +259,6 @@ void  shifr_number ## N ## _princ ( number_type ( N ) const * np ,  \
   FILE * fs ) ;
 # define  number_dec_princ shifr_number_dec_princ
 
-# include "type.h"
-  
-number_def  ( 6 )
 number_dec_set0 ( 6 )
 static  inline  number_def_set_byte ( 6 )
 static  inline  number_def_elt_copy ( 6 )
@@ -297,7 +275,6 @@ static  inline  number_def_div_mod  ( 6 )
 shifr_number_dec_princ  ( 6 )
 # endif
 
-number_def  ( 37 )
 number_dec_set0 ( 37 )
 static  inline  number_def_set_byte ( 37 )
 number_dec_mul_byte ( 37 )
@@ -313,76 +290,6 @@ shifr_number_dec_princ  ( 37 )
 
 # undef shifr_number_array
 # define  shifr_number_array  shifr_number_array_pri
-
-struct  s_raspr4 {
-
-uint8_t dice  [ 16 - 1  ] ;
-// log(2,16!) ceil 8 = 6
-number_type ( 6 ) pass  ;
-
-} ;
-
-struct  s_raspr6 {
-  uint8_t dice  [ 64 - 1 ] ;
-  // log(2,64!) ceil 8 = 37
-  number_type ( 37 ) pass  ;
-} ;
-
-// 4 * 4 = 16
-// четыре * четыре = шестнадцать
-# define  shifr_deshi_size2  ((size_t)(0x10U))
-
-// 8 * 8 = 64
-# define  shifr_deshi_size6  ((size_t)(0x40U))
-
-struct  s_ns_shifr  {
-
-// буквы разрешённые в пароле :
-// ascii  
-char  letters [ letters_count ] ;  
-// a..zA..Z0..9
-char  letters2 [ letters_count2 ] ;    
-bool  localerus ; 
-
-// хранилище дефолтного состояния
-struct termios stored_termios  ;
-
-// исключения
-jmp_buf jump ;
-strcp string_exception ;
-
-t_raspr4 raspr4 ;
-t_raspr6 raspr6 ;
-
-int use_version ; //  4 или 6
-
-FILE  * filefrom  ;
-FILE  * fileto  ;
-bool  flagtext  ;
-
-uint8_t shifr [ shifr_deshi_size2 ] ;
-    uint8_t shifr6 [ shifr_deshi_size6 ] ;
-    // варианты секретных кодов для буквы
-    // 0 .. 3 - 0
-    // 4 .. 7 - 1
-    // 8 .. b - 2
-    // c .. f - 3
-    uint8_t deshi [ shifr_deshi_size2 ] ;
-    // варианты секретных кодов для буквы
-    // 0 .. 7 -  0
-    // 8 .. f -  1
-    // 10 .. 17 -  2
-    // 18 .. 1f -  3
-    // 20 .. 27 -  4
-    // 28 .. 2f -  5
-    // 30 .. 37 -  6
-    // 38 .. 3f -  7
-  uint8_t deshi6 [ shifr_deshi_size6 ] ;
-  int password_alphabet ; // 62 or 95 // алфавит пароля 62 или 95
-  // union ?
-  char  password_letters2 [ 20  ] ;
-  char  password_letters3 [ 100 ] ;
-} ;
 
 extern  t_ns_shifr  ns_shifr  ;
 
@@ -548,20 +455,7 @@ static  inline  void  enter_password (  void  ) {
         ( strcp ) & u8"enter_password:Неизвестная версия" :
         ( strcp ) & "enter_password:Unknown version" ) ;
       longjmp ( ns_shifr  . jump  , 1 ) ; } }
-      
-struct  s_streambuf  {
-  // file
-  FILE  * oRmq  ;
-  // buf
-  uint8_t FmoX ;
-  // bufbitsize
-  uint8_t XUvM  ;
-  // для : write6 , writeflushzero в текстовом режиме
-  // for : write6 , writeflushzero in text mode
-  // bytecount
-  int D6h7 ; 
-} ;
-  
+
 # define  streambuf_file_pub( M ) ((M)->oRmq)
 # define  streambuf_file_pri( M ) "streambuf::file is private"
 # define  streambuf_file  streambuf_file_pub
@@ -691,7 +585,8 @@ static  inline  void  generate_password ( void  ) {
     default :
       fprintf ( stderr , ( ns_shifr . localerus ?
         u8"generate_password:неопознанная версия : \'%d\'\n" :
-        "generate_password:unrecognized version : \'%d\'\n" ) , ns_shifr . use_version ) ;
+        "generate_password:unrecognized version : \'%d\'\n" ) ,
+        ns_shifr . use_version ) ;
       ns_shifr  . string_exception  = ( ns_shifr . localerus ?
         ( strcp ) & u8"generate_password:неопознанная версия" :
         ( strcp ) & "generate_password:unrecognized version" ) ;
