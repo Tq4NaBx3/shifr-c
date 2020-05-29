@@ -7,6 +7,30 @@
 
 # include "shifr.h"
 
+# define  shifr_number_def_set0( N ) \
+  void shifr_number ## N ## _set0  ( number_type  ( N ) * const restrict np ) { \
+    memset  ( & ( ( number_array  ( np  ) ) [ 0 ] ) , 0 , N ) ; }
+# define  number_def_set0 shifr_number_def_set0
+
+# define  shifr_number_def_mul_byte(  N ) \
+void  shifr_number ## N ## _mul_byte ( number_type ( N ) * const restrict  np  , \
+  uint8_t const byte ) {  \
+  if ( byte == 0 ) {  \
+    number_set0 ( N ) ( np  ) ; \
+    return  ; } \
+  if ( byte == 1 )  \
+    return ; \
+  uint8_t per = 0 ; \
+  { uint8_t i = 0 ; \
+    do { \
+      uint16_t  x = ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) * \
+        ( ( uint16_t  ) byte  ) + ( ( uint16_t  ) per ) ; \
+      number_array  ( np  ) [ i ] = x bitand 0xff ; \
+      per = x >>  8 ; \
+      ++  i ; \
+    } while ( i < N ) ; } }
+# define  number_def_mul_byte shifr_number_def_mul_byte
+
 # undef shifr_number_array
 # define  shifr_number_array  shifr_number_array_pub
 number_def_set0 ( 6 )
@@ -503,9 +527,6 @@ void  shifr_encode4 ( void ) {
           ( strcp ) & "error writing to file" ) ;
         longjmp ( ns_shifr  . jump  , 1 ) ; } } }
 
-t_streambuf shifr_filebuffrom ;
-t_streambuf shifr_filebufto ;
-
 void  shifr_encode6 ( void ) {
   // версия 6 шифруем ...
   int bitscount  = 0 ;
@@ -579,7 +600,7 @@ void  shifr_encode6 ( void ) {
     goto  sole_xor_crypt_write  ;
     addr_sole_xor_crypt_write0  : ;
   } while ( not feof ) ; 
-  streambuf_writeflushzero ( & shifr_filebufto ) ;
+  streambuf_writeflushzero ( & ns_shifr . filebufto ) ;
   return  ;
 sole_xor_crypt_write  :
   datasole6 ( & secretdata , & secretdatasole , secretdatasolesize )  ;
@@ -588,7 +609,7 @@ sole_xor_crypt_write  :
     secretdatasolesize )  ;
   crypt_decrypt ( & secretdatasole , & ns_shifr  . shifr6 , & encrypteddata ,
     secretdatasolesize ) ;
-  streambuf_write6 ( & shifr_filebufto , & encrypteddata , secretdatasolesize ,
+  streambuf_write6 ( & ns_shifr . filebufto , & encrypteddata , secretdatasolesize ,
     ns_shifr  . flagtext )  ;
   if (  addr_sole_xor_crypt_write ==  0 )
     goto  addr_sole_xor_crypt_write0  ;
@@ -671,12 +692,12 @@ void shifr_decode6 ( void ) {
   uint8_t secretdata [ 1 ] ;
   uint8_t old_last_data = 0 ;
   uint8_t old_last_sole = 0 ;
-  while ( not isEOFstreambuf_read6bits ( & shifr_filebuffrom ,
+  while ( not isEOFstreambuf_read6bits ( & ns_shifr . filebuffrom ,
     & ( secretdata [ 0 ] ) ) ) {
     uint8_t decrypteddata [ 1 ] ;
     decrypt_sole6 ( & secretdata , & ns_shifr  . deshi6 , & decrypteddata , 1 ,
       & old_last_sole , & old_last_data ) ;
-    streambuf_write3bits ( & shifr_filebufto , decrypteddata [ 0 ] ) ; } }
+    streambuf_write3bits ( & ns_shifr . filebufto , decrypteddata [ 0 ] ) ; } }
 
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
 void  shifr_generate_pass4 ( void ) {
@@ -732,6 +753,8 @@ void  shifr_pass_to_array6 ( void ) {
     ++  in ;
   } while ( in < 63 ) ; }
 
+# ifdef SHIFR_DEBUG
+
 # define  shifr_number_def_princ( N ) \
 void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  \
   FILE * const fs ) { \
@@ -744,10 +767,10 @@ void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  
   fputs ( "]" , fs ) ; }
 # define  number_def_princ shifr_number_def_princ
 
-# ifdef SHIFR_DEBUG
 number_def_princ  ( 6 )
 number_def_princ  ( 37 )
-# endif
+
+# endif // SHIFR_DEBUG
 
 void  string_to_password ( void ) {
       switch ( ns_shifr . use_version ) {

@@ -40,6 +40,25 @@ struct  s_raspr6 {
 // 8 * 8 = 64
 # define  shifr_deshi_size6  ((size_t)(0x40U))
   
+struct  s_streambuf  {
+  // file
+  FILE  * oRmq  ;
+  // buf
+  uint8_t FmoX ;
+  // bufbitsize
+  uint8_t XUvM  ;
+  // для : write6 , writeflushzero в текстовом режиме
+  // for : write6 , writeflushzero in text mode
+  // bytecount
+  int D6h7 ; 
+  } ;
+
+# include <setjmp.h>
+// убрать эхо в терминале
+// close terminal echo
+# include <termios.h>
+# include <stdbool.h>
+  
 struct  s_ns_shifr  {
   // letters allowed in password :
   // буквы разрешённые в пароле :
@@ -95,17 +114,6 @@ struct  s_ns_shifr  {
   // union ?
   char  password_letters2 [ 20  ] ;
   char  password_letters3 [ 100 ] ;
-  } ;
-
-struct  s_streambuf  {
-  // file
-  FILE  * oRmq  ;
-  // buf
-  uint8_t FmoX ;
-  // bufbitsize
-  uint8_t XUvM  ;
-  // для : write6 , writeflushzero в текстовом режиме
-  // for : write6 , writeflushzero in text mode
-  // bytecount
-  int D6h7 ; 
+  t_streambuf filebuffrom ;
+  t_streambuf filebufto ;
   } ;

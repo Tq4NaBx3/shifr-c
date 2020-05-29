@@ -5,12 +5,15 @@ SHIFR_ASM = shifr.s main.s
 SHIFR_GCCRUN = $(GCC) $(SHDE) -Wall -Wextra -Winline -Wno-clobbered -std=c11 -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDstructh = struct.h type.h
-DEPENDshifrh = shifr.h $(DEPENDstructh)
+DEPENDpublich = public.h type.h define.h
+DEPENDshifrh = shifr.h $(DEPENDstructh) $(DEPENDpublich) define.h
+DEPENDmainc = main.c $(DEPENDshifrh) define.h
+DEPENDshifrc = shifr.c $(DEPENDshifrh)
 shifr: $(SHIFR_OBJECTS)
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) -o shifr
-shifr.o: shifr.c $(DEPENDshifrh)
+shifr.o: $(DEPENDshifrc)
 	@$(SHIFR_COMPILE) shifr.c
-main.o: main.c $(DEPENDshifrh)
+main.o: $(DEPENDmainc)
 	@$(SHIFR_COMPILE) main.c
 clean:
 	@rm -f shifr
@@ -20,7 +23,7 @@ debug asmdebug: SHDE = -DSHIFR_DEBUG
 debug: shifr
 asmdebug: asm
 asm: $(SHIFR_ASM)
-shifr.s: shifr.c $(DEPENDshifrh)
+shifr.s: $(DEPENDshifrc)
 	@$(SHIFR_GCCRUN) shifr.c -S
-main.s: main.c $(DEPENDshifrh)
+main.s: $(DEPENDmainc)
 	@$(SHIFR_GCCRUN) main.c -S

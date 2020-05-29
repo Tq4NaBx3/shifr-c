@@ -6,7 +6,7 @@
 # include <stdlib.h>
 # include <time.h>
 # include <errno.h>
-
+# include "define.h"
 # include "shifr.h"
 
 int main  ( int argc , char * argv [ ] )  {
@@ -470,8 +470,8 @@ int main  ( int argc , char * argv [ ] )  {
       longjmp(ns_shifr  . jump,1); }
     flagclosefileto = true ;
     ns_shifr  . fileto  = f ;    }
-  streambuf_init  ( & shifr_filebuffrom , ns_shifr  . filefrom )  ;
-  streambuf_init  ( & shifr_filebufto , ns_shifr  . fileto )  ;
+  streambuf_init  ( & ns_shifr . filebuffrom , ns_shifr  . filefrom )  ;
+  streambuf_init  ( & ns_shifr . filebufto , ns_shifr  . fileto )  ;
   shifr_password_load_uni ( ) ;
 # ifdef SHIFR_DEBUG    
   if ( ns_shifr . use_version == 6 )  { 

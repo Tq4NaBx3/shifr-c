@@ -1,3 +1,5 @@
+# include <stdint.h>
+
 # define  strp  shifr_strp
 typedef char ( * strp ) [ ] ;    
 
