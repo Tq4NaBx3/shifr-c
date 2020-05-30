@@ -6,9 +6,9 @@ SHIFR_GCCRUN = $(GCC) $(SHDE) -Wall -Wextra -Winline -Wno-clobbered -std=c11 -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDstructh = struct.h type.h
 DEPENDpublich = public.h type.h define.h
-DEPENDshifrh = shifr.h $(DEPENDstructh) $(DEPENDpublich) define.h
-DEPENDmainc = main.c $(DEPENDshifrh) define.h
-DEPENDshifrc = shifr.c $(DEPENDshifrh)
+DEPENDinlineh = inline.h $(DEPENDstructh) $(DEPENDpublich) define.h access.h
+DEPENDmainc = main.c $(DEPENDinlineh) define.h
+DEPENDshifrc = shifr.c $(DEPENDinlineh)
 shifr: $(SHIFR_OBJECTS)
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) -o shifr
 shifr.o: $(DEPENDshifrc)

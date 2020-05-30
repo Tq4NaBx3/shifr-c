@@ -5,7 +5,7 @@
 # include <stdlib.h>
 # include <errno.h>
 
-# include "shifr.h"
+# include "inline.h"
 
 # define  shifr_number_def_set0( N ) \
   void shifr_number ## N ## _set0  ( number_type  ( N ) * const restrict np ) { \
@@ -269,14 +269,10 @@ void reset_keypress ( void  ) {
     ns_shifr  . string_exception  = ( strcp ) se ;
     longjmp ( ns_shifr  . jump  , 1 ) ; } }
 
-# undef streambuf_file
-# define  streambuf_file  streambuf_file_pub
-# undef streambuf_buf
-# define  streambuf_buf  streambuf_buf_pub
-# undef streambuf_bufbitsize
-# define  streambuf_bufbitsize  streambuf_bufbitsize_pub
-# undef streambuf_bytecount
-# define  streambuf_bytecount  streambuf_bytecount_pub
+# define  streambuf_file  shifr_streambuf_file_pub
+# define  streambuf_buf  shifr_streambuf_buf_pub
+# define  streambuf_bufbitsize  shifr_streambuf_bufbitsize_pub
+# define  streambuf_bytecount  shifr_streambuf_bytecount_pub
 
 static  inline  int streambuf_ByteCount  ( t_streambuf const * const restrict me ) {
   return  streambuf_bytecount ( me  ) ; }
@@ -445,13 +441,9 @@ static inline void  streambuf_write3bits ( t_streambuf * const restrict me  ,
         ( 3 - streambuf_bufbitsize  ( me  ) ) ; } }
 
 # undef streambuf_file
-# define  streambuf_file  streambuf_file_pri
 # undef streambuf_buf
-# define  streambuf_buf  streambuf_buf_pri
 # undef streambuf_bufbitsize
-# define  streambuf_bufbitsize  streambuf_bufbitsize_pri
 # undef streambuf_bytecount
-# define  streambuf_bytecount  streambuf_bytecount_pri
 
 void  shifr_encode4 ( void ) {
     int charcount = 0 ;

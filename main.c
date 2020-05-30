@@ -7,7 +7,7 @@
 # include <time.h>
 # include <errno.h>
 # include "define.h"
-# include "shifr.h"
+# include "inline.h"
 
 int main  ( int argc , char * argv [ ] )  {
   char const * const locale = setlocale ( LC_ALL  , ""  ) ;

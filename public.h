@@ -84,7 +84,7 @@ void set_keypress (void)  ;
 void reset_keypress ( void  ) ;
 
 void  shifr_password_load_uni ( void  ) ;
-
+# define  string_to_password  shifr_string_to_password
 void  string_to_password ( void ) ;
 # define  password_to_string  shifr_password_to_string
 void  password_to_string  ( void  ) ;
