@@ -203,7 +203,7 @@ uint8_t shifr_number ## N ## _div_mod ( \
 # define  shifr_number_div_mod( N ) shifr_number ## N ## _div_mod
 # define  number_div_mod shifr_number_div_mod
 
-# undef shifr_number_array
+# undef number_array
 
 # include <iso646.h>
 # include <string.h>
@@ -225,7 +225,7 @@ static  inline  number_def_not_zero ( 37 )
 static  inline  number_def_dec  ( 37 )
 static  inline  number_def_div_mod  ( 37 )
 
-# undef shifr_number_array
+# undef number_array
 
 # include "public.h"
 

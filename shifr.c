@@ -7,6 +7,8 @@
 
 # include "inline.h"
 
+# define  number_array  shifr_number_array_pub
+
 # define  shifr_number_def_set0( N ) \
   void shifr_number ## N ## _set0  ( number_type  ( N ) * const restrict np ) { \
     memset  ( & ( ( number_array  ( np  ) ) [ 0 ] ) , 0 , N ) ; }
@@ -31,14 +33,11 @@ void  shifr_number ## N ## _mul_byte ( number_type ( N ) * const restrict  np  ,
     } while ( i < N ) ; } }
 # define  number_def_mul_byte shifr_number_def_mul_byte
 
-# undef shifr_number_array
-# define  shifr_number_array  shifr_number_array_pub
 number_def_set0 ( 6 )
 number_def_mul_byte ( 6 )
 number_def_set0 ( 37 )
 number_def_mul_byte ( 37 )
-# undef shifr_number_array
-# define  shifr_number_array  shifr_number_array_pri
+# undef number_array
   
 # ifdef SHIFR_DEBUG
 void  printarr  ( strcp const  name , arrcp const p ,
