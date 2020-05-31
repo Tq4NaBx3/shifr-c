@@ -93,16 +93,6 @@ static inline void  decrypt_sole6 ( arrp const datap , arrcp const tablep ,
     ++  id  ;
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
-
-t_ns_shifr  ns_shifr = {
-  . use_version  = 6 ,
-  . flagtext = false ,
-  . shifr = { } ,
-  . deshi = { } ,
-  . shifr6 = { } ,
-  . deshi6 = { } ,
-  . password_alphabet = 62 ,
-} ;
     
 # define  shifr_password_to_string_templ_def( N ) \
 void  shifr_password##N##_to_string_templ ( \
@@ -124,8 +114,8 @@ password_to_string_templ_def  ( 6 )
 password_to_string_templ_def  ( 37 )
 
 # define  shifr_string_to_password_templ_def( N ) \
-void  shifr_string_to_password##N##_templ ( strcp const string , \
-  number_type ( N ) * const restrict password ,  \
+void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp , \
+  strcp const string , number_type ( N ) * const restrict password ,  \
   strcp const letters , uint8_t const letterscount  ) { \
   char const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
   if  ( ( * stringi ) == '\00' ) { \
@@ -142,10 +132,10 @@ void  shifr_string_to_password##N##_templ ( strcp const string , \
       if ( ( * stringi ) == ( * letters ) [ i ] ) \
         goto found ; \
     } while ( i ) ; \
-    ns_shifr  . string_exception  = ( ns_shifr . localerus ?  \
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?  \
       ( strcp ) & u8"неправильная буква в пароле" : \
       ( strcp ) & "wrong letter in password" ) ;  \
-    longjmp ( ns_shifr  . jump  , 1 ) ; \
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
 found : ; \
     { number_type ( N ) tmp = mult ;  \
       number_mul_byte ( N ) ( & tmp , i + 1 ) ; \
@@ -238,35 +228,35 @@ static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
   return  letter  - ';' ; }
     
 // Отключить эхо-вывод и буферизацию ввода
-void set_keypress ( void  ) {
-  if  ( tcgetattr ( 0 , & ns_shifr  . stored_termios  ) ) {
+void set_keypress ( t_ns_shifr * const ns_shifrp ) {
+  if  ( tcgetattr ( 0 , & ns_shifrp  -> stored_termios  ) ) {
     char const * const se = strerror ( errno ) ;
-    fprintf ( stderr  , ( ns_shifr . localerus ?
+    fprintf ( stderr  , ( ns_shifrp -> localerus ?
       u8"ошибка чтения tcgetattr : %s\n" :
       "error read tcgetattr : %s\n" ) ,se ) ;
-    ns_shifr  . string_exception  = ( strcp ) se ;
-    longjmp ( ns_shifr  . jump  , 1 ) ; }
-  struct termios new_termios = ns_shifr . stored_termios  ;
+    ns_shifrp  -> string_exception  = ( strcp ) se ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+  struct termios new_termios = ns_shifrp -> stored_termios  ;
   new_termios.c_lflag  and_eq ~ ( ECHO bitor ICANON ) ;
   new_termios.c_cc  [ VMIN  ] = 1 ;  
   new_termios.c_cc  [ VTIME ] = 0 ; 
   if  ( tcsetattr ( 0 , TCSANOW , & new_termios ) ) {
     char const * const se = strerror ( errno ) ;
-    fprintf ( stderr  , ( ns_shifr . localerus ?
+    fprintf ( stderr  , ( ns_shifrp -> localerus ?
       u8"ошибка записи tcsetattr : %s\n" :
       "error write tcsetattr : %s\n"  ) , se  ) ;
-    ns_shifr  . string_exception  = ( strcp ) se ;
-    longjmp ( ns_shifr  . jump  , 1 ) ; } }
+    ns_shifrp  -> string_exception  = ( strcp ) se ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
  
 // Восстановление дефолтного состояния
-void reset_keypress ( void  ) {
-  if  ( tcsetattr ( 0 , TCSANOW , & ns_shifr . stored_termios ) ) {
+void reset_keypress ( t_ns_shifr * const ns_shifrp ) {
+  if  ( tcsetattr ( 0 , TCSANOW , & ns_shifrp -> stored_termios ) ) {
     char const * const se = strerror ( errno ) ;
-    fprintf ( stderr  , ( ns_shifr . localerus ?
+    fprintf ( stderr  , ( ns_shifrp -> localerus ?
       u8"ошибка записи tcsetattr : %s\n" :
       "error write tcsetattr : %s\n"  ) , se  ) ;
-    ns_shifr  . string_exception  = ( strcp ) se ;
-    longjmp ( ns_shifr  . jump  , 1 ) ; } }
+    ns_shifrp  -> string_exception  = ( strcp ) se ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
 # define  streambuf_file  shifr_streambuf_file_pub
 # define  streambuf_buf  shifr_streambuf_buf_pub
@@ -286,9 +276,9 @@ static  inline  uint8_t streambuf_Buf (
   
 // читаю 6 бит
 // 6 bits reads
-static inline bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  ,
-  uint8_t * const encrypteddata ) {
-  if  ( ( not ( ns_shifr  . flagtext ) ) and
+static inline bool  isEOFstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
+  t_streambuf * const restrict me  , uint8_t * const encrypteddata ) {
+  if  ( ( not ( ns_shifrp  -> flagtext ) ) and
     streambuf_bufbitsize  ( me  ) >= 6 ) {
     streambuf_bufbitsize  ( me  ) -=  6 ;
     ( * encrypteddata ) = streambuf_buf ( me  ) bitand
@@ -302,12 +292,12 @@ static inline bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  
         return  true  ;
       if  ( ferror  ( streambuf_file  ( me  ) ) ) {
         clearerr ( streambuf_file  ( me  ) ) ;
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
           ( strcp ) &
           u8"isEOFstreambuf_read6bits: ошибка чтения шести бит" :
           ( strcp ) & "isEOFstreambuf_read6bits: six bits read error" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; } } } // nreads
-  if  ( ns_shifr  . flagtext  ) {
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; } } } // nreads
+  if  ( ns_shifrp  -> flagtext  ) {
     // читаем одну букву ';'-'z' -> декодируем в шесть бит
     // reads one letter ';'-'z' -> decode to six bits
     while ( ( buf < ( ( uint8_t ) ';' ) ) or
@@ -318,12 +308,12 @@ static inline bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  
             return  true  ;
           if  ( ferror  ( streambuf_file  ( me  ) ) ) {
             clearerr ( streambuf_file  ( me  ) ) ;
-            ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+            ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
               ( strcp ) &
               u8"isEOFstreambuf_read6bits: ошибка чтения шести бит из текста" :
               ( strcp ) &
               "isEOFstreambuf_read6bits: six bits read error from text" ) ;
-            longjmp ( ns_shifr  . jump  , 1 ) ; } } } // nreads
+            longjmp ( ns_shifrp  -> jump  , 1 ) ; } } } // nreads
           }
     ( * encrypteddata ) = letter_to_bits6 ( buf ) ; }
   else  {
@@ -341,8 +331,8 @@ static inline bool  isEOFstreambuf_read6bits ( t_streambuf * const restrict me  
 // I write in six bits
 // secretdatasolesize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
-static void  streambuf_write6 ( t_streambuf * const restrict me  ,
-  uint8_t const (  * const encrypteddata ) [ 3 ] ,
+static void  streambuf_write6 ( t_ns_shifr * const ns_shifrp ,
+  t_streambuf * const restrict me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
   uint8_t const secretdatasolesize , bool const  flagtext ) {
   if  ( flagtext  ) {
     uint8_t i = 0 ;
@@ -352,10 +342,10 @@ static void  streambuf_write6 ( t_streambuf * const restrict me  ,
         writen_count  = fwrite  ( & buf2  , 1 , 1 , streambuf_file  ( me  ) ) ;
         if  ( writen_count  ==  0 ) {
           clearerr  ( streambuf_file  ( me  ) ) ; 
-          ns_shifr  . string_exception  = ( ns_shifr  . localerus ? 
+          ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
             ( strcp ) & u8"streambuf_write6: ошибка записи байта"  :
             ( strcp ) & "streambuf_write6: byte write error" ) ;
-          longjmp ( ns_shifr  . jump  , 1 ) ; }
+          longjmp ( ns_shifrp  -> jump  , 1 ) ; }
         ++  streambuf_bytecount ( me  ) ;
         if  ( streambuf_bytecount ( me  ) >=  60  ) {
           streambuf_bytecount ( me  ) = 0 ;
@@ -378,10 +368,10 @@ static void  streambuf_write6 ( t_streambuf * const restrict me  ,
         writen_count = fwrite ( & to_write , 1 , 1 , streambuf_file  ( me  ) ) ;
         if ( writen_count < 1 ) {
           clearerr ( streambuf_file  ( me  ) ) ; 
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+          ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
             ( strcp ) & u8"streambuf_write6: ошибка записи байта" :
             ( strcp ) & "streambuf_write6: byte write error" ) ;
-          longjmp ( ns_shifr  . jump  , 1 ) ; }
+          longjmp ( ns_shifrp  -> jump  , 1 ) ; }
         // + 6 - 8
         streambuf_bufbitsize  ( me  ) -= 2 ;
         streambuf_buf ( me  ) = ( ( * encrypteddata ) [ i ] ) >>
@@ -389,34 +379,35 @@ static void  streambuf_write6 ( t_streambuf * const restrict me  ,
         ++  i ;
       } while ( i < secretdatasolesize ) ; } }
 
-static inline void  streambuf_writeflushzero ( t_streambuf * const restrict me ) {
+static inline void  streambuf_writeflushzero ( t_ns_shifr * const ns_shifrp ,
+  t_streambuf * const restrict me ) {
   if  ( streambuf_bufbitsize  ( me  ) ) {
     size_t  writen_count  ;
       writen_count = fwrite ( & streambuf_buf ( me  ) , 1 , 1 ,
         streambuf_file  ( me  ) ) ;
     if ( writen_count < 1 ) {
       clearerr ( streambuf_file  ( me  ) ) ; 
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
         ( strcp ) & u8"streambuf_writeflushzero: ошибка записи байта" :
         ( strcp ) & "streambuf_writeflushzero: byte write error" ) ;
-      longjmp ( ns_shifr  . jump  , 1 ) ; }
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
     streambuf_bufbitsize  ( me  ) = 0 ; }
-  if ( ns_shifr  . flagtext and streambuf_bytecount ( me  ) )  {
+  if ( ns_shifrp  -> flagtext and streambuf_bytecount ( me  ) )  {
     streambuf_bytecount ( me  ) = 0 ;
     char  buf2 = '\n' ;
     size_t  const writen_count = fwrite ( & buf2 , 1 , 1 , 
       streambuf_file  ( me  ) ) ;
     if ( writen_count < 1 ) {
       clearerr ( streambuf_file  ( me  ) ) ; 
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
         ( strcp ) & u8"streambuf_writeflushzero: ошибка записи байта" :
         ( strcp ) & "streambuf_writeflushzero: byte write error" ) ;
-      longjmp ( ns_shifr  . jump  , 1 ) ; } } }
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; } } }
   
 // версия 6 пишу три бита для расшифровки
 // version 6 write three bits to decode
-static inline void  streambuf_write3bits ( t_streambuf * const restrict me  ,
-  uint8_t const encrypteddata ) {
+static inline void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
+  t_streambuf * const restrict me  , uint8_t const encrypteddata ) {
     if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
       streambuf_buf ( me  ) or_eq
         ( encrypteddata << streambuf_bufbitsize  ( me  )  ) ;
@@ -430,10 +421,10 @@ static inline void  streambuf_write3bits ( t_streambuf * const restrict me  ,
         streambuf_file  ( me  ) ) ;
       if ( writen_count < 1 ) {
         clearerr ( streambuf_file  ( me  ) ) ; 
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
           ( strcp ) & u8"streambuf_write3bits: ошибка записи байта" :
           ( strcp ) & "streambuf_write3bits: byte write error" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; }
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; }
       // + 3 - 8
       streambuf_bufbitsize  ( me  ) -= 5 ;
       streambuf_buf ( me  ) =  encrypteddata   >>
@@ -444,20 +435,20 @@ static inline void  streambuf_write3bits ( t_streambuf * const restrict me  ,
 # undef streambuf_bufbitsize
 # undef streambuf_bytecount
 
-void  shifr_encode4 ( void ) {
+void  shifr_encode4 ( t_ns_shifr * const ns_shifrp ) {
     int charcount = 0 ;
     uint8_t old_last_data = 0 ;
     uint8_t old_last_sole = 0 ;
     do {
       char buf ;
-      size_t readcount = fread ( & buf , 1 , 1 , ns_shifr  . filefrom ) ;
+      size_t readcount = fread ( & buf , 1 , 1 , ns_shifrp  -> filefrom ) ;
       if ( readcount == 0 ) {
-        if ( ferror ( ns_shifr  . filefrom ) ) {
-          clearerr ( ns_shifr  . filefrom ) ;
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+        if ( ferror ( ns_shifrp  -> filefrom ) ) {
+          clearerr ( ns_shifrp  -> filefrom ) ;
+          ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
             ( strcp ) & u8"ошибка чтения файла" :
             ( strcp ) & "error reading file" ) ;
-          longjmp ( ns_shifr  . jump  , 1 ) ; }
+          longjmp ( ns_shifrp  -> jump  , 1 ) ; }
         break ; }
       uint8_t const secretdata  [ 4 ] = { [ 0 ]  = buf  bitand 0x3 ,
         [ 1 ] = ( buf >>  2 ) bitand 0x3 , [ 2 ] = ( buf >>  4 ) bitand 0x3 ,
@@ -467,7 +458,7 @@ void  shifr_encode4 ( void ) {
       // после подсоления, данные переворачиваем предыдущим ксором
       data_xor ( & old_last_data , & old_last_sole , & secretdatasole , 4 )  ;
       uint8_t encrypteddata [ 4 ] ;
-      crypt_decrypt ( & secretdatasole , & ns_shifr  . shifr , & encrypteddata ,
+      crypt_decrypt ( & secretdatasole , & ns_shifrp  -> shifr , & encrypteddata ,
         4 ) ;
 // 2^16 ^ 1/3 = 40.32
 // 2^16 % 40 = 0 .. 39
@@ -478,7 +469,7 @@ void  shifr_encode4 ( void ) {
 // делаем [0] % 40 , [1] % 40 , [2] % 41
 // 'R' = 82 .. 'z' = 122
       size_t writecount ;
-      if  ( ns_shifr  . flagtext  ) {
+      if  ( ns_shifrp  -> flagtext  ) {
         uint16_t buf16 = ((uint16_t)( encrypteddata [ 0 ] bitand 0xf )) bitor
           ( ((uint16_t)( encrypteddata [ 1 ] bitand 0xf )) << 4  )  bitor
           ( ((uint16_t)( encrypteddata [ 2 ] bitand 0xf )) << 8  )  bitor
@@ -493,32 +484,32 @@ void  shifr_encode4 ( void ) {
         if ( charcount == 60 )  {
           charcount = 0 ;
           buf3  [ 3 ] = '\n' ;
-          writecount = fwrite ( & ( buf3 [ 0 ] ) , 4 , 1 , ns_shifr  . fileto ) ; }
+          writecount = fwrite ( & ( buf3 [ 0 ] ) , 4 , 1 , ns_shifrp  -> fileto ) ; }
         else
-          writecount = fwrite ( & ( buf3 [ 0 ] ) , 3 , 1 , ns_shifr  . fileto ) ; }
+          writecount = fwrite ( & ( buf3 [ 0 ] ) , 3 , 1 , ns_shifrp  -> fileto ) ; }
       else {
         char buf2 [ 2 ] = {
           [ 0 ] = ((uint16_t)( encrypteddata [ 0 ] & 0xf )) bitor
             ( ((uint16_t)( encrypteddata [ 1 ] & 0xf )) << 4  ) ,
           [ 1 ] = ((uint16_t)( encrypteddata [ 2 ] & 0xf )) bitor
             ( ((uint16_t)( encrypteddata [ 3 ] & 0xf )) << 4 ) } ;
-        writecount = fwrite ( & (buf2[0]) , 2 , 1 , ns_shifr  . fileto ) ; }
+        writecount = fwrite ( & (buf2[0]) , 2 , 1 , ns_shifrp  -> fileto ) ; }
       if ( writecount == 0 ) {
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
           ( strcp ) & u8"ошибка записи в файл" :
           ( strcp ) & "error writing to file" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; }
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; }
     } while ( true ) ; 
-    if ( ns_shifr  . flagtext and charcount ) {
+    if ( ns_shifrp  -> flagtext and charcount ) {
       char buf = '\n' ;
-      size_t  writecount = fwrite ( & buf , 1 , 1 , ns_shifr  . fileto ) ;
+      size_t  writecount = fwrite ( & buf , 1 , 1 , ns_shifrp  -> fileto ) ;
       if ( writecount == 0 ) {
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
           ( strcp ) & u8"ошибка записи в файл" :
           ( strcp ) & "error writing to file" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; } } }
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; } } }
 
-void  shifr_encode6 ( void ) {
+void  shifr_encode6 ( t_ns_shifr * const ns_shifrp ) {
   // версия 6 шифруем ...
   int bitscount  = 0 ;
   uint8_t secretdata  [ 4 ] ;
@@ -531,14 +522,14 @@ void  shifr_encode6 ( void ) {
   uint8_t addr_sole_xor_crypt_write ;
   do {
     unsigned  char buf ;
-    size_t readcount = fread ( & buf , 1 , 1 , ns_shifr  . filefrom ) ;
+    size_t readcount = fread ( & buf , 1 , 1 , ns_shifrp  -> filefrom ) ;
     if ( readcount == 0 ) {
-      if ( ferror ( ns_shifr  . filefrom ) ) {
-        clearerr ( ns_shifr  . filefrom ) ;
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+      if ( ferror ( ns_shifrp  -> filefrom ) ) {
+        clearerr ( ns_shifrp  -> filefrom ) ;
+        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
           ( strcp ) & u8"ошибка чтения файла" :
           ( strcp ) & "error reading file" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; }
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; }
       buf = 0 ;
       feof  = true  ; 
       if  ( bitscount ==  0 ) {
@@ -580,39 +571,39 @@ void  shifr_encode6 ( void ) {
         secretdatasolesize  = 3 ;
         break ;
     default :
-        fprintf ( stderr  , ( ns_shifr . localerus ?
+        fprintf ( stderr  , ( ns_shifrp -> localerus ?
           u8"неожиданное значение bitscount = %d\n":
           "unexpected value bitscount = %d\n" ) , bitscount ) ;
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ? 
+        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
           ( strcp ) & u8"неожиданное значение bitscount" :
           ( strcp ) & "unexpected value bitscount" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; }
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; }
     addr_sole_xor_crypt_write =  0  ;
     goto  sole_xor_crypt_write  ;
     addr_sole_xor_crypt_write0  : ;
   } while ( not feof ) ; 
-  streambuf_writeflushzero ( & ns_shifr . filebufto ) ;
+  streambuf_writeflushzero ( ns_shifrp , & ns_shifrp -> filebufto ) ;
   return  ;
 sole_xor_crypt_write  :
   datasole6 ( & secretdata , & secretdatasole , secretdatasolesize )  ;
   // после подсоления, данные переворачиваем предыдущим ксором
   data_xor6 ( & old_last_data , & old_last_sole , & secretdatasole ,
     secretdatasolesize )  ;
-  crypt_decrypt ( & secretdatasole , & ns_shifr  . shifr6 , & encrypteddata ,
+  crypt_decrypt ( & secretdatasole , & ns_shifrp  -> shifr6 , & encrypteddata ,
     secretdatasolesize ) ;
-  streambuf_write6 ( & ns_shifr . filebufto , & encrypteddata , secretdatasolesize ,
-    ns_shifr  . flagtext )  ;
+  streambuf_write6 ( ns_shifrp , & ns_shifrp -> filebufto , & encrypteddata ,
+    secretdatasolesize , ns_shifrp  -> flagtext )  ;
   if (  addr_sole_xor_crypt_write ==  0 )
     goto  addr_sole_xor_crypt_write0  ;
   goto  addr_sole_xor_crypt_write1  ; }
 
-void shifr_decode4  ( void  ) {
+void shifr_decode4  ( t_ns_shifr * const ns_shifrp ) {
   uint8_t old_last_data = 0 ;
   uint8_t old_last_sole = 0 ;
   do {
     char buf [ 2 ] ;
     size_t readcount ;
-    if  ( ns_shifr  . flagtext  ) {
+    if  ( ns_shifrp  -> flagtext  ) {
 // 2^16 ^ 1/3 = 40.32
 // 2^16 % 40 = 0 .. 39
 // 2^16 / 40 = 1638.4
@@ -628,14 +619,14 @@ void shifr_decode4  ( void  ) {
       do {
         do {
           readcount = fread ( & ( buf3 [ buf3index ] ) , 1 , 1 ,
-            ns_shifr  . filefrom ) ;
+            ns_shifrp  -> filefrom ) ;
           if ( readcount == 0 ) {
-            if ( feof ( ns_shifr  . filefrom ) )
+            if ( feof ( ns_shifrp  -> filefrom ) )
               return ;
-            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+            ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
               ( strcp ) & u8"ошибка чтения данных" :
               ( strcp ) & "error data reading" ) ;
-            longjmp ( ns_shifr  . jump  , 1 ) ; }
+            longjmp ( ns_shifrp  -> jump  , 1 ) ; }
         } while ( buf3  [ buf3index ] < 'R' or
           buf3  [ buf3index ] > 'z' ) ;
         ++  buf3index ;
@@ -646,53 +637,54 @@ void shifr_decode4  ( void  ) {
       buf [ 0 ] = u16 bitand 0xff ;
       buf [ 1 ] = u16 >> 8 ; }
     else {
-        readcount = fread ( & ( buf [ 0 ] ) , 1 , 2 , ns_shifr  . filefrom ) ;
+        readcount = fread ( & ( buf [ 0 ] ) , 1 , 2 , ns_shifrp  -> filefrom ) ;
         if ( readcount < 2 ) {
-          if ( feof ( ns_shifr  . filefrom  ) )
+          if ( feof ( ns_shifrp  -> filefrom  ) )
             break ;
-          if ( ferror ( ns_shifr  . filefrom ) ) {
-            clearerr ( ns_shifr  . filefrom ) ;
-            ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          if ( ferror ( ns_shifrp  -> filefrom ) ) {
+            clearerr ( ns_shifrp  -> filefrom ) ;
+            ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
               ( strcp ) & u8"ошибка чтения файла" :
               ( strcp ) & "error reading file" ) ;
-            longjmp ( ns_shifr  . jump  , 1 ) ; }
+            longjmp ( ns_shifrp  -> jump  , 1 ) ; }
           break ; } }
       uint8_t secretdata  [ 4 ] = { [ 0 ] = buf [ 0 ] bitand  0xf ,
         [ 1 ] = ( buf [ 0 ] >>  4 ) bitand  0xf ,
         [ 2 ] = buf [ 1 ] bitand  0xf ,
         [ 3 ] = ( buf [ 1 ] >>  4 ) bitand  0xf  } ;
       uint8_t decrypteddata [ 4 ] ;
-      decrypt_sole ( & secretdata , & ns_shifr  . deshi , & decrypteddata , 4 ,
+      decrypt_sole ( & secretdata , & ns_shifrp  -> deshi , & decrypteddata , 4 ,
         & old_last_sole , & old_last_data ) ;
       buf [ 0 ] = ( decrypteddata [ 0 ] bitand 0x3  ) bitor
         ( ( decrypteddata [ 1 ] bitand 0x3  ) << 2  )
         bitor ( ( decrypteddata [ 2 ] bitand 0x3  ) <<  4 ) bitor
         ( ( decrypteddata [ 3 ] bitand 0x3  ) << 6  ) ;
-      size_t writecount = fwrite ( & (  buf [ 0 ] ) , 1 , 1 , ns_shifr  . fileto ) ;
+      size_t writecount = fwrite ( & (  buf [ 0 ] ) , 1 , 1 , ns_shifrp  -> fileto ) ;
       if ( writecount == 0 ) {
-        if ( ferror ( ns_shifr  . fileto ) ) {
-          clearerr ( ns_shifr  . fileto ) ;
-          ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        if ( ferror ( ns_shifrp  -> fileto ) ) {
+          clearerr ( ns_shifrp  -> fileto ) ;
+          ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
             ( strcp ) & u8"ошибка записи файла" :
             ( strcp ) & "error writing file" ) ;
-          longjmp(ns_shifr  . jump,1); }
+          longjmp(ns_shifrp  -> jump,1); }
         break ; }
     } while ( true ) ; }
 
-void shifr_decode6 ( void ) {
+void shifr_decode6 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t secretdata [ 1 ] ;
   uint8_t old_last_data = 0 ;
   uint8_t old_last_sole = 0 ;
-  while ( not isEOFstreambuf_read6bits ( & ns_shifr . filebuffrom ,
+  while ( not isEOFstreambuf_read6bits ( ns_shifrp , & ns_shifrp -> filebuffrom ,
     & ( secretdata [ 0 ] ) ) ) {
     uint8_t decrypteddata [ 1 ] ;
-    decrypt_sole6 ( & secretdata , & ns_shifr  . deshi6 , & decrypteddata , 1 ,
+    decrypt_sole6 ( & secretdata , & ns_shifrp  -> deshi6 , & decrypteddata , 1 ,
       & old_last_sole , & old_last_data ) ;
-    streambuf_write3bits ( & ns_shifr . filebufto , decrypteddata [ 0 ] ) ; } }
+    streambuf_write3bits (
+      ns_shifrp , & ns_shifrp -> filebufto , decrypteddata [ 0 ] ) ; } }
 
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass4 ( void ) {
-  uint8_t * j = & ( ns_shifr . raspr4  . dice [ 0 ] ) ;
+void  shifr_generate_pass4 ( t_ns_shifr * const ns_shifrp ) {
+  uint8_t * j = & ( ns_shifrp -> raspr4  . dice [ 0 ] ) ;
   uint8_t i  = 16 ;
   do {
     ( * j ) = rand  ( ) % i ;
@@ -701,8 +693,8 @@ void  shifr_generate_pass4 ( void ) {
   } while ( i >= 2 ) ; }
 
 // inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass6 ( void ) {
-  uint8_t * j = & ( ns_shifr . raspr6  . dice [ 0 ] ) ;
+void  shifr_generate_pass6 ( t_ns_shifr * const ns_shifrp ) {
+  uint8_t * j = & ( ns_shifrp -> raspr6  . dice [ 0 ] ) ;
   uint8_t i  = 64 ;
   do {
     ( * j ) = rand  ( ) % i ;
@@ -712,16 +704,16 @@ void  shifr_generate_pass6 ( void ) {
 
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
-void  shifr_pass_to_array4 ( void ) {
-  number_set0 ( 6 ) ( & ns_shifr . raspr4  . pass  ) ;
+void  shifr_pass_to_array4 ( t_ns_shifr * const ns_shifrp ) {
+  number_set0 ( 6 ) ( & ns_shifrp -> raspr4  . pass  ) ;
   number_type ( 6 ) mu  ;
   number_set_byte ( 6 ) ( & mu , 1 ) ;
   uint8_t in = 0 ;
   do {
     { number_type ( 6 ) mux = mu ;
       // re += dice [ in ] * mu ;
-      number_mul_byte ( 6 ) ( & mux  ,  ns_shifr . raspr4  . dice [ in ] ) ;
-      number_add  ( 6 ) ( & ns_shifr . raspr4  . pass , & mux ) ; }
+      number_mul_byte ( 6 ) ( & mux  ,  ns_shifrp -> raspr4  . dice [ in ] ) ;
+      number_add  ( 6 ) ( & ns_shifrp -> raspr4  . pass , & mux ) ; }
     //$mu *=  16 - $in ;
     number_mul_byte ( 6 ) ( & mu , 16 - in  ) ;
     ++  in ;
@@ -729,16 +721,16 @@ void  shifr_pass_to_array4 ( void ) {
 
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
-void  shifr_pass_to_array6 ( void ) {
-  number_set0 ( 37 ) ( & ns_shifr . raspr6  . pass  ) ;
+void  shifr_pass_to_array6 ( t_ns_shifr * const ns_shifrp ) {
+  number_set0 ( 37 ) ( & ns_shifrp -> raspr6  . pass  ) ;
   number_type ( 37 ) mu  ;
   number_set_byte ( 37 ) ( & mu , 1 ) ;
   uint8_t in = 0 ;
   do {
     { number_type ( 37 ) mux = mu ;
       // re += dice [ in ] * mu ;
-      number_mul_byte ( 37 ) ( & mux  ,  ns_shifr . raspr6  . dice [ in ] ) ;
-      number_add  ( 37 ) ( & ns_shifr . raspr6  . pass , & mux ) ; }
+      number_mul_byte ( 37 ) ( & mux  ,  ns_shifrp -> raspr6  . dice [ in ] ) ;
+      number_add  ( 37 ) ( & ns_shifrp -> raspr6  . pass , & mux ) ; }
     //$mu *=  64 - $in ;
     number_mul_byte ( 37 ) ( & mu , 64 - in  ) ;
     ++  in ;
@@ -763,112 +755,119 @@ number_def_princ  ( 37 )
 
 # endif // SHIFR_DEBUG
 
-void  string_to_password ( void ) {
-      switch ( ns_shifr . use_version ) {
+void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
+      switch ( ns_shifrp -> use_version ) {
       case 4 :
-        if ( ns_shifr . password_alphabet == 95 )
-          string_to_password_templ  ( 6 ) ( & ns_shifr  . password_letters2 ,
-            & ns_shifr . raspr4  . pass ,
-            & ns_shifr . letters ,  letters_count ) ;
+        if ( ns_shifrp -> password_alphabet == 95 )
+          string_to_password_templ  ( 6 ) ( ns_shifrp ,
+            & ns_shifrp  -> password_letters2 ,
+            & ns_shifrp -> raspr4  . pass ,
+            & ns_shifrp -> letters ,  letters_count ) ;
         else
-          string_to_password_templ  ( 6 ) ( & ns_shifr  . password_letters2 ,
-            & ns_shifr . raspr4  . pass ,
-            & ns_shifr . letters2 , letters_count2 ) ;
+          string_to_password_templ  ( 6 ) ( ns_shifrp ,
+            & ns_shifrp  -> password_letters2 ,
+            & ns_shifrp -> raspr4  . pass ,
+            & ns_shifrp -> letters2 , letters_count2 ) ;
       break ;
       case 6 : {
-        if ( ns_shifr . password_alphabet == 95 )
-          string_to_password_templ  ( 37 ) ( & ns_shifr  . password_letters3 ,
-            & ns_shifr . raspr6  . pass ,
-            & ns_shifr . letters ,  letters_count ) ;
+        if ( ns_shifrp -> password_alphabet == 95 )
+          string_to_password_templ  ( 37 ) ( ns_shifrp ,
+            & ns_shifrp  -> password_letters3 ,
+            & ns_shifrp -> raspr6  . pass ,
+            & ns_shifrp -> letters ,  letters_count ) ;
         else
-          string_to_password_templ  ( 37 ) ( & ns_shifr  . password_letters3 ,
-            & ns_shifr . raspr6  . pass ,
-            & ns_shifr . letters2 , letters_count2 ) ; }
+          string_to_password_templ  ( 37 ) ( ns_shifrp , 
+            & ns_shifrp  -> password_letters3 ,
+            & ns_shifrp -> raspr6  . pass ,
+            & ns_shifrp -> letters2 , letters_count2 ) ; }
       break ;
       default :
-        fprintf ( stderr  , ( ns_shifr . localerus ?
+        fprintf ( stderr  , ( ns_shifrp -> localerus ?
           u8"версия %d не поддерживается\n" :
-          "version %d is not supported" ) , ns_shifr . use_version )  ;
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          "version %d is not supported" ) , ns_shifrp -> use_version )  ;
+        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
           ( strcp ) & u8"версия не поддерживается" :
           ( strcp ) & "version is not supported" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; } }
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-void  shifr_encode  ( void  ) {
-  switch  ( ns_shifr . use_version  ) {
-  case  4 : shifr_encode4 ( ) ;
+void  shifr_encode  ( t_ns_shifr * const ns_shifrp ) {
+  switch  ( ns_shifrp -> use_version  ) {
+  case  4 : shifr_encode4 ( ns_shifrp ) ;
     break ;
-  case  6 : shifr_encode6 ( ) ; 
+  case  6 : shifr_encode6 ( ns_shifrp ) ; 
     break ;
   default :
-    fprintf ( stderr  , ( ns_shifr . localerus ?
+    fprintf ( stderr  , ( ns_shifrp -> localerus ?
           u8"encode:версия %d не поддерживается\n" :
-          "encode:version %d is not supported" ) , ns_shifr . use_version )  ;
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          "encode:version %d is not supported" ) , ns_shifrp -> use_version )  ;
+        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
           ( strcp ) & u8"encode:версия не поддерживается" :
           ( strcp ) & "encode:version is not supported" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; } }
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-void  shifr_decode  ( void  ) {
-  switch  ( ns_shifr . use_version  ) {
-  case  4 : shifr_decode4 ( ) ;
+void  shifr_decode  ( t_ns_shifr * const ns_shifrp ) {
+  switch  ( ns_shifrp -> use_version  ) {
+  case  4 : shifr_decode4 ( ns_shifrp ) ;
     break ;
-  case  6 : shifr_decode6 ( ) ; 
+  case  6 : shifr_decode6 ( ns_shifrp ) ; 
     break ;
   default :
-    fprintf ( stderr  , ( ns_shifr . localerus ?
+    fprintf ( stderr  , ( ns_shifrp -> localerus ?
           u8"decode:версия %d не поддерживается\n" :
-          "decode:version %d is not supported" ) , ns_shifr . use_version )  ;
-        ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+          "decode:version %d is not supported" ) , ns_shifrp -> use_version )  ;
+        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
           ( strcp ) & u8"decode:версия не поддерживается" :
           ( strcp ) & "decode:version is not supported" ) ;
-        longjmp ( ns_shifr  . jump  , 1 ) ; } }
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-void  shifr_password_load_uni ( void  ) {
-  switch ( ns_shifr . use_version )  {
+void  shifr_password_load_uni ( t_ns_shifr * const ns_shifrp ) {
+  switch ( ns_shifrp -> use_version )  {
   case 4 :
-      password_load ( 6 ) ( & ns_shifr . raspr4  . pass , & ns_shifr  . shifr ,
-        & ns_shifr  . deshi ) ;
+      password_load ( 6 ) ( & ns_shifrp -> raspr4  . pass , & ns_shifrp  -> shifr ,
+        & ns_shifrp  -> deshi ) ;
       break ;
   case 6 :
-      password_load ( 37 ) ( & ns_shifr . raspr6  . pass , & ns_shifr  . shifr6 ,
-        & ns_shifr  . deshi6 ) ;
+      password_load ( 37 ) ( & ns_shifrp -> raspr6  . pass , & ns_shifrp  -> shifr6 ,
+        & ns_shifrp  -> deshi6 ) ;
       break ;
   default :
-      fprintf ( stderr  , ( ns_shifr . localerus ?
+      fprintf ( stderr  , ( ns_shifrp -> localerus ?
         u8"password_load:версия %d не поддерживается\n" :
-        "password_load:version %d is not supported" ) , ns_shifr . use_version )  ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        "password_load:version %d is not supported" ) , ns_shifrp -> use_version )  ;
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( strcp ) & u8"password_load:версия не поддерживается" :
         ( strcp ) & "password_load:version is not supported" ) ;
-      longjmp ( ns_shifr  . jump  , 1 ) ; } }
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-void  password_to_string  ( void  ) {
-  switch  ( ns_shifr . use_version ) {
+void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
+  switch  ( ns_shifrp -> use_version ) {
   case  4 : {
-        if ( ns_shifr . password_alphabet == 95 )
-          password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
-            & ns_shifr  . password_letters2 , & ns_shifr . letters ,
+        if ( ns_shifrp -> password_alphabet == 95 )
+          password_to_string_templ  ( 6 ) ( & ns_shifrp -> raspr4  . pass ,
+            & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters ,
             letters_count ) ;
         else
-          password_to_string_templ  ( 6 ) ( & ns_shifr . raspr4  . pass ,
-            & ns_shifr  . password_letters2 , & ns_shifr . letters2 ,
+          password_to_string_templ  ( 6 ) ( & ns_shifrp -> raspr4  . pass ,
+            & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters2 ,
             letters_count2 ) ; 
         break ; }
    case 6 : {
-        if ( ns_shifr . password_alphabet == 95 )
-          password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & ns_shifr  . password_letters3 , & ns_shifr . letters , letters_count ) ;
+        if ( ns_shifrp -> password_alphabet == 95 )
+          password_to_string_templ  ( 37 ) ( & ns_shifrp -> raspr6  . pass ,
+            & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters ,
+            letters_count ) ;
         else
-          password_to_string_templ  ( 37 ) ( & ns_shifr . raspr6  . pass ,
-            & ns_shifr  . password_letters3 , & ns_shifr . letters2 , letters_count2 ) ;
+          password_to_string_templ  ( 37 ) ( & ns_shifrp -> raspr6  . pass ,
+            & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters2 ,
+            letters_count2 ) ;
         break ; }
     default :
-      fprintf ( stderr  , ( ns_shifr . localerus ?
+      fprintf ( stderr  , ( ns_shifrp -> localerus ?
         u8"password_to_string:версия %d не поддерживается\n" :
-        "password_to_string:version %d is not supported" ) , ns_shifr . use_version )  ;
-      ns_shifr  . string_exception  = ( ns_shifr . localerus ?
+        "password_to_string:version %d is not supported" ) ,
+        ns_shifrp -> use_version )  ;
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( strcp ) & u8"password_to_string:версия не поддерживается" :
         ( strcp ) & "password_to_string:version is not supported" ) ;
-      longjmp ( ns_shifr  . jump  , 1 ) ; } }
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 

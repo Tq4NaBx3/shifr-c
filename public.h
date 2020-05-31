@@ -39,12 +39,9 @@ void  printarr  ( strcp name , arrcp p , size_t arrsize , FILE * f ) ;
 
 # endif // SHIFR_DEBUG
 
-extern  t_ns_shifr  ns_shifr  ;
-
 # define  shifr_string_to_password_templ_dec( N ) \
-void  shifr_string_to_password  ##  N ##  _templ ( strcp string , \
-  number_type ( N ) * password ,  \
-  strcp letters , uint8_t letterscount  ) ;
+void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * , strcp string , \
+  number_type ( N ) * password , strcp letters , uint8_t letterscount  ) ;
 # define  string_to_password_templ_dec  shifr_string_to_password_templ_dec
 string_to_password_templ_dec  ( 6 )
 string_to_password_templ_dec  ( 37 )
@@ -62,31 +59,31 @@ password_to_string_templ_dec  ( 37 )
 # define  password_to_string_templ  shifr_password_to_string_templ
 
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass4 ( void ) ;
+void  shifr_generate_pass4 ( t_ns_shifr * ) ;
 
 // inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass6 ( void ) ;
+void  shifr_generate_pass6 ( t_ns_shifr * ) ;
 
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
-void  shifr_pass_to_array4 ( void ) ;
+void  shifr_pass_to_array4 ( t_ns_shifr * ) ;
 
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
-void  shifr_pass_to_array6 ( void ) ;
+void  shifr_pass_to_array6 ( t_ns_shifr * ) ;
 
 // Disable ping and input buffering
 // Отключить эхо-вывод и буферизацию ввода
-void set_keypress (void)  ;
+void set_keypress ( t_ns_shifr * ) ;
 
 // Recovery of default state
 // Восстановление дефолтного состояния
-void reset_keypress ( void  ) ;
+void reset_keypress ( t_ns_shifr * ) ;
 
-void  shifr_password_load_uni ( void  ) ;
+void  shifr_password_load_uni ( t_ns_shifr * ) ;
 # define  string_to_password  shifr_string_to_password
-void  string_to_password ( void ) ;
+void  string_to_password ( t_ns_shifr * ) ;
 # define  password_to_string  shifr_password_to_string
-void  password_to_string  ( void  ) ;
-void  shifr_encode  ( void  ) ;
-void  shifr_decode  ( void  ) ;
+void  password_to_string  ( t_ns_shifr * ) ;
+void  shifr_encode  ( t_ns_shifr * ) ;
+void  shifr_decode  ( t_ns_shifr * ) ;
