@@ -820,7 +820,7 @@ void  shifr_decode  ( t_ns_shifr * const ns_shifrp ) {
           ( strcp ) & "decode:version is not supported" ) ;
         longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-void  shifr_password_load_uni ( t_ns_shifr * const ns_shifrp ) {
+void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {
   case 4 :
       password_load ( 6 ) ( & ns_shifrp -> raspr4  . pass , & ns_shifrp  -> shifr ,

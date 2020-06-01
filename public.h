@@ -74,13 +74,16 @@ void  shifr_pass_to_array6 ( t_ns_shifr * ) ;
 
 // Disable ping and input buffering
 // Отключить эхо-вывод и буферизацию ввода
+# define  set_keypress  shifr_set_keypress
 void set_keypress ( t_ns_shifr * ) ;
 
 // Recovery of default state
 // Восстановление дефолтного состояния
+# define  reset_keypress  shifr_reset_keypress
 void reset_keypress ( t_ns_shifr * ) ;
 
-void  shifr_password_load_uni ( t_ns_shifr * ) ;
+# define  password_load_uni shifr_password_load_uni
+void  password_load_uni ( t_ns_shifr * ) ;
 # define  string_to_password  shifr_string_to_password
 void  string_to_password ( t_ns_shifr * ) ;
 # define  password_to_string  shifr_password_to_string

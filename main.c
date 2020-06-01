@@ -475,7 +475,7 @@ int main  ( int argc , char * argv [ ] )  {
     main_shifr  . fileto  = f ;    }
   streambuf_init  ( & main_shifr . filebuffrom , main_shifr  . filefrom )  ;
   streambuf_init  ( & main_shifr . filebufto , main_shifr  . fileto )  ;
-  shifr_password_load_uni ( & main_shifr ) ;
+  password_load_uni ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 6 )  { 
     printarr  ( & "shifr" , & main_shifr . shifr6 , shifr_deshi_size6 ,stderr) ;
