@@ -485,9 +485,9 @@ int main  ( int argc , char * argv [ ] )  {
     printarr  ( & "deshi" , & main_shifr . deshi , shifr_deshi_size2 ,stderr) ; }
 # endif
   if ( flagenc )
-    shifr_encode  ( & main_shifr ) ;
+    shifr_encrypt ( & main_shifr ) ;
   else
-    shifr_decode  ( & main_shifr ) ;
+    shifr_decrypt ( & main_shifr ) ;
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
     if  ( fclose  ( main_shifr  . fileto  ) ) {

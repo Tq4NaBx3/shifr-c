@@ -790,7 +790,7 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
           ( strcp ) & "version is not supported" ) ;
         longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-void  shifr_encode  ( t_ns_shifr * const ns_shifrp ) {
+void  shifr_encrypt ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version  ) {
   case  4 : shifr_encode4 ( ns_shifrp ) ;
     break ;
@@ -798,14 +798,14 @@ void  shifr_encode  ( t_ns_shifr * const ns_shifrp ) {
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-          u8"encode:версия %d не поддерживается\n" :
-          "encode:version %d is not supported" ) , ns_shifrp -> use_version )  ;
-        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-          ( strcp ) & u8"encode:версия не поддерживается" :
-          ( strcp ) & "encode:version is not supported" ) ;
-        longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+        u8"encode:версия %d не поддерживается\n" :
+        "encode:version %d is not supported" ) , ns_shifrp -> use_version )  ;
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+      ( strcp ) & u8"encode:версия не поддерживается" :
+      ( strcp ) & "encode:version is not supported" ) ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-void  shifr_decode  ( t_ns_shifr * const ns_shifrp ) {
+void  shifr_decrypt ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version  ) {
   case  4 : shifr_decode4 ( ns_shifrp ) ;
     break ;
@@ -813,12 +813,12 @@ void  shifr_decode  ( t_ns_shifr * const ns_shifrp ) {
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-          u8"decode:версия %d не поддерживается\n" :
-          "decode:version %d is not supported" ) , ns_shifrp -> use_version )  ;
-        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-          ( strcp ) & u8"decode:версия не поддерживается" :
-          ( strcp ) & "decode:version is not supported" ) ;
-        longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+        u8"decode:версия %d не поддерживается\n" :
+        "decode:version %d is not supported" ) , ns_shifrp -> use_version )  ;
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+      ( strcp ) & u8"decode:версия не поддерживается" :
+      ( strcp ) & "decode:version is not supported" ) ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
 void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {

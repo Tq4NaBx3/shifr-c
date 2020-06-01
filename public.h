@@ -88,5 +88,19 @@ void  password_load_uni ( t_ns_shifr * ) ;
 void  string_to_password ( t_ns_shifr * ) ;
 # define  password_to_string  shifr_password_to_string
 void  password_to_string  ( t_ns_shifr * ) ;
-void  shifr_encode  ( t_ns_shifr * ) ;
-void  shifr_decode  ( t_ns_shifr * ) ;
+
+/*
+Encryption
+Reads data from '->filefrom', writes to '->fileto'
+Шифрование
+Читает данные из '->filefrom' , записывает в '->fileto'
+*/
+void  shifr_encrypt ( t_ns_shifr * ) ;
+
+/*
+Decryption
+Reads data from '->filefrom', writes to '->fileto'
+Расшифровка
+Читает данные из '->filefrom' , записывает в '->fileto'
+*/
+void  shifr_decrypt ( t_ns_shifr * ) ;
