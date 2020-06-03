@@ -8,20 +8,18 @@
 
 # define  number_def  shifr_number_def
 
-number_def  ( 6 )
+number_def  ( number_size2 )
 
 struct  s_raspr4 {
-  uint8_t dice  [ 16 - 1  ] ;
-  // log(2,16!) ceil 8 = 6
-  number_type ( 6 ) pass  ;
+  uint8_t dice  [ deshi_size2 - 1  ] ;
+  number_type ( number_size2 ) pass  ;
   } ;
 
-number_def  ( 37 )
+number_def  ( number_size3 )
 
 struct  s_raspr6 {
-  uint8_t dice  [ 64 - 1 ] ;
-  // log(2,64!) ceil 8 = 37
-  number_type ( 37 ) pass  ;
+  uint8_t dice  [ deshi_size6 - 1 ] ;
+  number_type ( number_size3 ) pass  ;
   } ;
 
 // 0x20 (space) ' '    ---     0x7e (tilde) '~'
@@ -33,13 +31,7 @@ struct  s_raspr6 {
 // 62 шт pcs
 # define letters_count2 (UINT8_C( \
   ('9' - '0') + 1 + ('Z' - 'A') + 1 + ('z' - 'a') + 1 ))
-  
-// 4 * 4 = 16
-# define  shifr_deshi_size2  ((size_t)(0x10U))
 
-// 8 * 8 = 64
-# define  shifr_deshi_size6  ((size_t)(0x40U))
-  
 struct  s_streambuf  {
   // file
   FILE  * oRmq  ;
@@ -77,7 +69,9 @@ struct  s_ns_shifr  {
   jmp_buf jump ;
   strcp string_exception ;
 
+  // ver2
   t_raspr4 raspr4 ;
+  // ver3
   t_raspr6 raspr6 ;
 
   //  4 or 6
@@ -88,15 +82,15 @@ struct  s_ns_shifr  {
   FILE  * fileto  ;
   bool  flagtext  ;
 
-  uint8_t shifr [ shifr_deshi_size2 ] ;
-  uint8_t shifr6 [ shifr_deshi_size6 ] ;
+  uint8_t shifr [ deshi_size2 ] ;
+  uint8_t shifr6 [ deshi_size6 ] ;
   // secret code options for letters
   // варианты секретных кодов для буквы
   // 0 .. 3 - 0
   // 4 .. 7 - 1
   // 8 .. b - 2
   // c .. f - 3
-  uint8_t deshi [ shifr_deshi_size2 ] ;
+  uint8_t deshi [ deshi_size2 ] ;
   // secret code options for letters
   // варианты секретных кодов для буквы
   // 0 .. 7 -  0
@@ -107,12 +101,13 @@ struct  s_ns_shifr  {
   // 28 .. 2f -  5
   // 30 .. 37 -  6
   // 38 .. 3f -  7
-  uint8_t deshi6 [ shifr_deshi_size6 ] ;
+  uint8_t deshi6 [ deshi_size6 ] ;
   // 62 or 95 
   // алфавит пароля 62 или 95
   int password_alphabet ; 
-  // union ?
+  // ver2
   char  password_letters2 [ 20  ] ;
+  // ver3
   char  password_letters3 [ 100 ] ;
   t_streambuf filebuffrom ;
   t_streambuf filebufto ;

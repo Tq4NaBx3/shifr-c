@@ -8,8 +8,8 @@
 # define  shifr_number_set0( N ) shifr_number ## N ## _set0
 # define  number_set0 shifr_number_set0
   
-number_dec_set0 ( 6 )
-number_dec_set0 ( 37 )
+number_dec_set0 ( number_size2 )
+number_dec_set0 ( number_size3 )
 
 # define  shifr_number_dec_mul_byte(  N ) \
 void  shifr_number ## N ## _mul_byte ( number_type ( N ) * , uint8_t )  ;
@@ -18,8 +18,8 @@ void  shifr_number ## N ## _mul_byte ( number_type ( N ) * , uint8_t )  ;
 # define  shifr_number_mul_byte( N ) shifr_number ## N ## _mul_byte
 # define  number_mul_byte shifr_number_mul_byte
 
-number_dec_mul_byte ( 6 )
-number_dec_mul_byte ( 37 )
+number_dec_mul_byte ( number_size2 )
+number_dec_mul_byte ( number_size3 )
 
 # ifdef SHIFR_DEBUG
 
@@ -31,8 +31,8 @@ void  shifr_number ## N ## _princ ( number_type ( N ) const * np ,  \
 # define  shifr_number_princ( N ) shifr_number  ##  N ##  _princ
 # define  number_princ shifr_number_princ
 
-number_dec_princ  ( 6 )
-number_dec_princ  ( 37 )
+number_dec_princ  ( number_size2 )
+number_dec_princ  ( number_size3 )
 
 # define  printarr  shifr_printarr
 void  printarr  ( strcp name , arrcp p , size_t arrsize , FILE * f ) ;
@@ -43,9 +43,9 @@ void  printarr  ( strcp name , arrcp p , size_t arrsize , FILE * f ) ;
 void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * , strcp string , \
   number_type ( N ) * password , strcp letters , uint8_t letterscount  ) ;
 # define  string_to_password_templ_dec  shifr_string_to_password_templ_dec
-string_to_password_templ_dec  ( 6 )
-string_to_password_templ_dec  ( 37 )
-# define  shifr_string_to_password_templ( N ) shifr_string_to_password##N##_templ
+string_to_password_templ_dec  ( number_size2 )
+string_to_password_templ_dec  ( number_size3 )
+# define  shifr_string_to_password_templ( N ) shifr_string_to_password  ##  N ##  _templ
 # define  string_to_password_templ  shifr_string_to_password_templ
 
 # define  shifr_password_to_string_templ_dec( N ) \
@@ -53,9 +53,9 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
   number_type ( N ) const * password0 , strp string ,  \
   strp letters , uint8_t letterscount  ) ;
 # define  password_to_string_templ_dec  shifr_password_to_string_templ_dec
-password_to_string_templ_dec  ( 6 )
-password_to_string_templ_dec  ( 37 )  
-# define  shifr_password_to_string_templ( N ) shifr_password##N##_to_string_templ
+password_to_string_templ_dec  ( number_size2 )
+password_to_string_templ_dec  ( number_size3 )  
+# define  shifr_password_to_string_templ( N ) shifr_password  ##  N ##  _to_string_templ
 # define  password_to_string_templ  shifr_password_to_string_templ
 
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
@@ -77,15 +77,25 @@ void  shifr_pass_to_array6 ( t_ns_shifr * ) ;
 # define  set_keypress  shifr_set_keypress
 void set_keypress ( t_ns_shifr * ) ;
 
-// Recovery of default state
-// Восстановление дефолтного состояния
+// Console recovery of default state
+// Восстановление дефолтного состояния консоли
 # define  reset_keypress  shifr_reset_keypress
 void reset_keypress ( t_ns_shifr * ) ;
 
 # define  password_load_uni shifr_password_load_uni
 void  password_load_uni ( t_ns_shifr * ) ;
+
+/*
+Password translation by letters '-> password_letters' to internal '-> raspr. pass'
+Перевод  пароля буквами '-> password_letters' во внутренний '-> raspr  . pass'
+*/
 # define  string_to_password  shifr_string_to_password
 void  string_to_password ( t_ns_shifr * ) ;
+
+/*
+Translation of the internal password '-> raspr. pass' to letters '-> password_letters'
+Перевод внутреннего пароля '-> raspr  . pass ' в буквы '->password_letters'
+*/
 # define  password_to_string  shifr_password_to_string
 void  password_to_string  ( t_ns_shifr * ) ;
 

@@ -344,15 +344,15 @@ int main  ( int argc , char * argv [ ] )  {
     char  password_letters62 [ 100 ] ;
     switch  ( main_shifr . use_version )  {
     case  4 :
-      password_to_string_templ  ( 6 ) ( & main_shifr . raspr4  . pass ,
+      password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr4  . pass ,
         & main_shifr  . password_letters2 , & main_shifr . letters , letters_count ) ;
-      password_to_string_templ  ( 6 ) ( & main_shifr . raspr4  . pass ,
+      password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr4  . pass ,
         & password_letters2 , & main_shifr . letters2 , letters_count2 ) ; 
       break ;
     case  6 :
-      password_to_string_templ  ( 37 ) ( & main_shifr . raspr6  . pass ,
+      password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr6  . pass ,
         & main_shifr  . password_letters3 , & main_shifr . letters , letters_count ) ;
-      password_to_string_templ  ( 37 ) ( & main_shifr . raspr6  . pass ,
+      password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr6  . pass ,
         & password_letters62 , & main_shifr . letters2 , letters_count2 ) ; 
       break ;
     default :
@@ -478,11 +478,11 @@ int main  ( int argc , char * argv [ ] )  {
   password_load_uni ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 6 )  { 
-    printarr  ( & "shifr" , & main_shifr . shifr6 , shifr_deshi_size6 ,stderr) ;
-    printarr  ( & "deshi" , & main_shifr . deshi6 , shifr_deshi_size6 ,stderr) ;  }
+    printarr  ( & "shifr" , & main_shifr . shifr6 , deshi_size6 ,stderr) ;
+    printarr  ( & "deshi" , & main_shifr . deshi6 , deshi_size6 ,stderr) ;  }
   else  {
-    printarr  ( & "shifr" , & main_shifr . shifr , shifr_deshi_size2 ,stderr) ;
-    printarr  ( & "deshi" , & main_shifr . deshi , shifr_deshi_size2 ,stderr) ; }
+    printarr  ( & "shifr" , & main_shifr . shifr , deshi_size2 ,stderr) ;
+    printarr  ( & "deshi" , & main_shifr . deshi , deshi_size2 ,stderr) ; }
 # endif
   if ( flagenc )
     shifr_encrypt ( & main_shifr ) ;

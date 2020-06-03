@@ -33,10 +33,10 @@ void  shifr_number ## N ## _mul_byte ( number_type ( N ) * const restrict  np  ,
     } while ( i < N ) ; } }
 # define  number_def_mul_byte shifr_number_def_mul_byte
 
-number_def_set0 ( 6 )
-number_def_mul_byte ( 6 )
-number_def_set0 ( 37 )
-number_def_mul_byte ( 37 )
+number_def_set0 ( number_size2 )
+number_def_mul_byte ( number_size2 )
+number_def_set0 ( number_size3 )
+number_def_mul_byte ( number_size3 )
 # undef number_array
   
 # ifdef SHIFR_DEBUG
@@ -110,8 +110,8 @@ void  shifr_password##N##_to_string_templ ( \
     } while ( number_not_zero ( N ) ( & password ) ) ; }  \
   ( * stringi ) = '\00' ;  }
 # define  password_to_string_templ_def  shifr_password_to_string_templ_def
-password_to_string_templ_def  ( 6 )
-password_to_string_templ_def  ( 37 )
+password_to_string_templ_def  ( number_size2 )
+password_to_string_templ_def  ( number_size3 )
 
 # define  shifr_string_to_password_templ_def( N ) \
 void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp , \
@@ -145,8 +145,8 @@ found : ; \
   } while ( ( * stringi ) not_eq '\00' ) ;  \
   ( * password  ) = pass ; }
 # define  string_to_password_templ_def  shifr_string_to_password_templ_def
-string_to_password_templ_def  ( 6 )
-string_to_password_templ_def  ( 37 )
+string_to_password_templ_def  ( number_size2 )
+string_to_password_templ_def  ( number_size3 )
 
 static inline void datasole ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
@@ -705,36 +705,36 @@ void  shifr_generate_pass6 ( t_ns_shifr * const ns_shifrp ) {
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
 void  shifr_pass_to_array4 ( t_ns_shifr * const ns_shifrp ) {
-  number_set0 ( 6 ) ( & ns_shifrp -> raspr4  . pass  ) ;
-  number_type ( 6 ) mu  ;
-  number_set_byte ( 6 ) ( & mu , 1 ) ;
+  number_set0 ( number_size2 ) ( & ns_shifrp -> raspr4  . pass  ) ;
+  number_type ( number_size2 ) mu  ;
+  number_set_byte ( number_size2 ) ( & mu , 1 ) ;
   uint8_t in = 0 ;
   do {
-    { number_type ( 6 ) mux = mu ;
+    { number_type ( number_size2 ) mux = mu ;
       // re += dice [ in ] * mu ;
-      number_mul_byte ( 6 ) ( & mux  ,  ns_shifrp -> raspr4  . dice [ in ] ) ;
-      number_add  ( 6 ) ( & ns_shifrp -> raspr4  . pass , & mux ) ; }
+      number_mul_byte ( number_size2 ) ( & mux  ,  ns_shifrp -> raspr4  . dice [ in ] ) ;
+      number_add  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass , & mux ) ; }
     //$mu *=  16 - $in ;
-    number_mul_byte ( 6 ) ( & mu , 16 - in  ) ;
+    number_mul_byte ( number_size2 ) ( & mu , 0x10 - in  ) ;
     ++  in ;
-  } while ( in < 15 ) ; }
+  } while ( in < 0x10 - 1 ) ; }
 
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
 void  shifr_pass_to_array6 ( t_ns_shifr * const ns_shifrp ) {
-  number_set0 ( 37 ) ( & ns_shifrp -> raspr6  . pass  ) ;
-  number_type ( 37 ) mu  ;
-  number_set_byte ( 37 ) ( & mu , 1 ) ;
+  number_set0 ( number_size3 ) ( & ns_shifrp -> raspr6  . pass  ) ;
+  number_type ( number_size3 ) mu  ;
+  number_set_byte ( number_size3 ) ( & mu , 1 ) ;
   uint8_t in = 0 ;
   do {
-    { number_type ( 37 ) mux = mu ;
+    { number_type ( number_size3 ) mux = mu ;
       // re += dice [ in ] * mu ;
-      number_mul_byte ( 37 ) ( & mux  ,  ns_shifrp -> raspr6  . dice [ in ] ) ;
-      number_add  ( 37 ) ( & ns_shifrp -> raspr6  . pass , & mux ) ; }
+      number_mul_byte ( number_size3 ) ( & mux  ,  ns_shifrp -> raspr6  . dice [ in ] ) ;
+      number_add  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass , & mux ) ; }
     //$mu *=  64 - $in ;
-    number_mul_byte ( 37 ) ( & mu , 64 - in  ) ;
+    number_mul_byte ( number_size3 ) ( & mu , 0x40 - in  ) ;
     ++  in ;
-  } while ( in < 63 ) ; }
+  } while ( in < 0x40 - 1 ) ; }
 
 # ifdef SHIFR_DEBUG
 
@@ -750,8 +750,8 @@ void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  
   fputs ( "]" , fs ) ; }
 # define  number_def_princ shifr_number_def_princ
 
-number_def_princ  ( 6 )
-number_def_princ  ( 37 )
+number_def_princ  ( number_size2 )
+number_def_princ  ( number_size3 )
 
 # endif // SHIFR_DEBUG
 
@@ -759,24 +759,24 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
       switch ( ns_shifrp -> use_version ) {
       case 4 :
         if ( ns_shifrp -> password_alphabet == 95 )
-          string_to_password_templ  ( 6 ) ( ns_shifrp ,
+          string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
             & ns_shifrp  -> password_letters2 ,
             & ns_shifrp -> raspr4  . pass ,
             & ns_shifrp -> letters ,  letters_count ) ;
         else
-          string_to_password_templ  ( 6 ) ( ns_shifrp ,
+          string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
             & ns_shifrp  -> password_letters2 ,
             & ns_shifrp -> raspr4  . pass ,
             & ns_shifrp -> letters2 , letters_count2 ) ;
       break ;
       case 6 : {
         if ( ns_shifrp -> password_alphabet == 95 )
-          string_to_password_templ  ( 37 ) ( ns_shifrp ,
+          string_to_password_templ  ( number_size3 ) ( ns_shifrp ,
             & ns_shifrp  -> password_letters3 ,
             & ns_shifrp -> raspr6  . pass ,
             & ns_shifrp -> letters ,  letters_count ) ;
         else
-          string_to_password_templ  ( 37 ) ( ns_shifrp , 
+          string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
             & ns_shifrp  -> password_letters3 ,
             & ns_shifrp -> raspr6  . pass ,
             & ns_shifrp -> letters2 , letters_count2 ) ; }
@@ -823,11 +823,11 @@ void  shifr_decrypt ( t_ns_shifr * const ns_shifrp ) {
 void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {
   case 4 :
-      password_load ( 6 ) ( & ns_shifrp -> raspr4  . pass , & ns_shifrp  -> shifr ,
+      password_load ( number_size2 ) ( & ns_shifrp -> raspr4  . pass , & ns_shifrp  -> shifr ,
         & ns_shifrp  -> deshi ) ;
       break ;
   case 6 :
-      password_load ( 37 ) ( & ns_shifrp -> raspr6  . pass , & ns_shifrp  -> shifr6 ,
+      password_load ( number_size3 ) ( & ns_shifrp -> raspr6  . pass , & ns_shifrp  -> shifr6 ,
         & ns_shifrp  -> deshi6 ) ;
       break ;
   default :
@@ -843,21 +843,21 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version ) {
   case  4 : {
         if ( ns_shifrp -> password_alphabet == 95 )
-          password_to_string_templ  ( 6 ) ( & ns_shifrp -> raspr4  . pass ,
+          password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
             & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters ,
             letters_count ) ;
         else
-          password_to_string_templ  ( 6 ) ( & ns_shifrp -> raspr4  . pass ,
+          password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
             & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters2 ,
             letters_count2 ) ; 
         break ; }
    case 6 : {
         if ( ns_shifrp -> password_alphabet == 95 )
-          password_to_string_templ  ( 37 ) ( & ns_shifrp -> raspr6  . pass ,
+          password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
             & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters ,
             letters_count ) ;
         else
-          password_to_string_templ  ( 37 ) ( & ns_shifrp -> raspr6  . pass ,
+          password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
             & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters2 ,
             letters_count2 ) ;
         break ; }

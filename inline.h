@@ -211,19 +211,19 @@ uint8_t shifr_number ## N ## _div_mod ( \
 
 # define  number_array  shifr_number_array_pub
 
-static  inline  number_def_set_byte ( 6 )
-static  inline  number_def_elt_copy ( 6 )
-static  inline  number_def_add  ( 6 )
-static  inline  number_def_not_zero ( 6 )
-static  inline  number_def_dec  ( 6 )
-static  inline  number_def_div_mod  ( 6 )
+static  inline  number_def_set_byte ( number_size2 )
+static  inline  number_def_elt_copy ( number_size2 )
+static  inline  number_def_add  ( number_size2 )
+static  inline  number_def_not_zero ( number_size2 )
+static  inline  number_def_dec  ( number_size2 )
+static  inline  number_def_div_mod  ( number_size2 )
 
-static  inline  number_def_set_byte ( 37 )
-static  inline  number_def_elt_copy ( 37 )
-static  inline  number_def_add  ( 37 )
-static  inline  number_def_not_zero ( 37 )
-static  inline  number_def_dec  ( 37 )
-static  inline  number_def_div_mod  ( 37 )
+static  inline  number_def_set_byte ( number_size3 )
+static  inline  number_def_elt_copy ( number_size3 )
+static  inline  number_def_add  ( number_size3 )
+static  inline  number_def_not_zero ( number_size3 )
+static  inline  number_def_dec  ( number_size3 )
+static  inline  number_def_div_mod  ( number_size3 )
 
 # undef number_array
 
@@ -289,16 +289,16 @@ static  inline  void  enter_password6 ( t_ns_shifr * const ns_shifrp ) {
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   char  password_letters6 [ 100 ] ;
   if ( ns_shifrp -> password_alphabet == 95 ) {
-    string_to_password_templ  ( 37 ) ( ns_shifrp , p6 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , p6 ,
       & ns_shifrp -> raspr6  . pass ,
       & ns_shifrp -> letters ,  letters_count ) ;
-    password_to_string_templ  ( 37 ) ( & ns_shifrp -> raspr6  . pass ,
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
       & password_letters6 , & ns_shifrp -> letters , letters_count ) ; }
   else {
-    string_to_password_templ  ( 37 ) ( ns_shifrp , p6 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , p6 ,
       & ns_shifrp -> raspr6  . pass ,
       & ns_shifrp -> letters2 ,  letters_count2 ) ;
-    password_to_string_templ  ( 37 ) ( & ns_shifrp -> raspr6  . pass ,
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
       & password_letters6 , & ns_shifrp -> letters2 , letters_count2 ) ; }
   if  ( strcmp ( &  ( password_letters6 [ 0 ] ) , & ( ( * p6  ) [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifrp -> localerus ?
@@ -325,17 +325,17 @@ static  inline  void  enter_password4 ( t_ns_shifr * const ns_shifrp ) {
       ( strcp ) & "there is no end of line in the password" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   if ( ns_shifrp -> password_alphabet == 95 )
-    string_to_password_templ  ( 6 ) ( ns_shifrp , p4 , & ns_shifrp -> raspr4  . pass ,
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , p4 , & ns_shifrp -> raspr4  . pass ,
       & ns_shifrp -> letters ,  letters_count ) ;
   else
-    string_to_password_templ  ( 6 ) ( ns_shifrp , p4 , & ns_shifrp -> raspr4  . pass ,
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , p4 , & ns_shifrp -> raspr4  . pass ,
       & ns_shifrp -> letters2 ,  letters_count2 ) ;
   char  password_letters [ 20 ] ;
   if ( ns_shifrp -> password_alphabet == 95 )
-    password_to_string_templ  ( 6 ) ( & ns_shifrp -> raspr4  . pass ,
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
       & password_letters , & ns_shifrp -> letters , letters_count ) ;
   else
-    password_to_string_templ  ( 6 ) ( & ns_shifrp -> raspr4  . pass ,
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
       & password_letters , & ns_shifrp -> letters2 , letters_count2 ) ;
   if  ( strcmp ( &  ( password_letters  [ 0 ] ) , & ( ( * p4  ) [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifrp -> localerus ?
@@ -428,8 +428,8 @@ void  password_load ( N ) ( number_type ( N ) const * const password0 , \
         SDS  - inde  - cindex - 1 ) ; } \
     ++ inde  ;  \
   } while ( inde < SDS ) ; }
-static  inline  shifr_password_load_def (  6 , shifr_deshi_size2 )
-static  inline  shifr_password_load_def (  37 , shifr_deshi_size6 )
+static  inline  shifr_password_load_def (  number_size2 , deshi_size2 )
+static  inline  shifr_password_load_def (  number_size3 , deshi_size6 )
   
 # include "define.h"
 
@@ -443,7 +443,7 @@ static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
         "generate_password:internal password = " ) , stderr ) ;
-      number_princ  ( 6 ) ( & ns_shifrp -> raspr4  . pass , stderr  ) ;
+      number_princ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif
       break ;
@@ -454,7 +454,7 @@ static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
         "generate_password:internal password = " ) , stderr ) ;
-      number_princ  ( 37 ) ( & ns_shifrp -> raspr6  . pass , stderr  ) ;
+      number_princ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif
       break ;
