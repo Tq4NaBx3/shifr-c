@@ -27,8 +27,8 @@ int main  ( int argc , char * argv [ ] )  {
   bool  flagreadinput = false ;
   bool  flagreadoutput = false ;
   bool  flagreadpasswdfromfile  = false ;
-  strcp inputfilename = & u8""  ;
-  strcp outputfilename  = & u8""  ;
+  strcp inputfilename = ( strcp ) & u8""  ;
+  strcp outputfilename  = ( strcp ) & u8""  ;
   bool  flaginputfromfile = false ;
   bool  flagoutputtofile  = false ;
   bool  flagclosefilefrom = false ;

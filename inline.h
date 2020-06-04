@@ -233,10 +233,6 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
   ( * ns_shifrp ) = ( t_ns_shifr ) {
     . use_version  = 6 ,
     . flagtext = false ,
-    . shifr = { } ,
-    . deshi = { } ,
-    . shifr6 = { } ,
-    . deshi6 = { } ,
     . password_alphabet = 62 ,
     } ;
   { char * j = & ( ns_shifrp -> letters [ 0 ] ) ;
@@ -289,15 +285,15 @@ static  inline  void  enter_password6 ( t_ns_shifr * const ns_shifrp ) {
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   char  password_letters6 [ 100 ] ;
   if ( ns_shifrp -> password_alphabet == 95 ) {
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , p6 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
       & ns_shifrp -> raspr6  . pass ,
-      & ns_shifrp -> letters ,  letters_count ) ;
+      ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
       & password_letters6 , & ns_shifrp -> letters , letters_count ) ; }
   else {
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , p6 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
       & ns_shifrp -> raspr6  . pass ,
-      & ns_shifrp -> letters2 ,  letters_count2 ) ;
+      ( strcp ) & ns_shifrp -> letters2 ,  letters_count2 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
       & password_letters6 , & ns_shifrp -> letters2 , letters_count2 ) ; }
   if  ( strcmp ( &  ( password_letters6 [ 0 ] ) , & ( ( * p6  ) [ 0 ] ) ) )
@@ -325,11 +321,13 @@ static  inline  void  enter_password4 ( t_ns_shifr * const ns_shifrp ) {
       ( strcp ) & "there is no end of line in the password" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   if ( ns_shifrp -> password_alphabet == 95 )
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , p4 , & ns_shifrp -> raspr4  . pass ,
-      & ns_shifrp -> letters ,  letters_count ) ;
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
+      & ns_shifrp -> raspr4  . pass , ( strcp ) & ns_shifrp -> letters ,
+      letters_count ) ;
   else
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , p4 , & ns_shifrp -> raspr4  . pass ,
-      & ns_shifrp -> letters2 ,  letters_count2 ) ;
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
+      & ns_shifrp -> raspr4  . pass , ( strcp ) & ns_shifrp -> letters2 ,
+      letters_count2 ) ;
   char  password_letters [ 20 ] ;
   if ( ns_shifrp -> password_alphabet == 95 )
     password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,

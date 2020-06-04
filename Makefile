@@ -1,8 +1,12 @@
 GCC = gcc
 #GCC = gcc-8
+#GCC = gcc-9
+CSTANDARD = -std=c11
+#CSTANDARD = -std=c18
 SHIFR_OBJECTS = shifr.o main.o
 SHIFR_ASM = shifr.s main.s
-SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wno-clobbered -std=c11 -Os
+SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wno-clobbered -Wpedantic \
+ $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDstructh = struct.h type.h
 DEPENDpublich = public.h type.h define.h
@@ -23,9 +27,9 @@ clean:
 	@rm -f libshifr.so
 asm: $(SHIFR_ASM)
 shifr.s: $(DEPENDshifrc)
-	@$(SHIFR_GCCRUN) shifr.c -S
+	@$(SHIFR_GCCRUN) shifr.c -S -fverbose-asm
 main.s: $(DEPENDmainc)
-	@$(SHIFR_GCCRUN) main.c -S
+	@$(SHIFR_GCCRUN) main.c -S -fverbose-asm
 lib: SHIFR_COMPILE += -mtune=native -fPIC
 lib: $(SHIFR_OBJECTS)
 	@$(GCC) -shared -fPIC $(SHIFR_OBJECTS) -o libshifr.so
