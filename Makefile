@@ -5,6 +5,7 @@ CSTANDARD = -std=c11
 #CSTANDARD = -std=c18
 SHIFR_OBJECTS = shifr.o main.o
 SHIFR_ASM = shifr.s main.s
+SHIFR_ASM_OPTIONS = -S -fverbose-asm
 SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wno-clobbered -Wpedantic \
  $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
@@ -27,9 +28,9 @@ clean:
 	@rm -f libshifr.so
 asm: $(SHIFR_ASM)
 shifr.s: $(DEPENDshifrc)
-	@$(SHIFR_GCCRUN) shifr.c -S -fverbose-asm
+	@$(SHIFR_GCCRUN) shifr.c $(SHIFR_ASM_OPTIONS)
 main.s: $(DEPENDmainc)
-	@$(SHIFR_GCCRUN) main.c -S -fverbose-asm
+	@$(SHIFR_GCCRUN) main.c $(SHIFR_ASM_OPTIONS)
 lib: SHIFR_COMPILE += -mtune=native -fPIC
 lib: $(SHIFR_OBJECTS)
 	@$(GCC) -shared -fPIC $(SHIFR_OBJECTS) -o libshifr.so

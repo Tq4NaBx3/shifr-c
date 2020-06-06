@@ -1,3 +1,6 @@
+# ifndef  SHIFRPUBLICH
+# define  SHIFRPUBLICH
+
 # include "type.h"
 # include "define.h"
 
@@ -82,6 +85,11 @@ void set_keypress ( t_ns_shifr * ) ;
 # define  reset_keypress  shifr_reset_keypress
 void reset_keypress ( t_ns_shifr * ) ;
 
+/*
+...
+Перевод внутреннего пароля '-> raspr  . pass' в таблицы шифрования '-> shifr' ,
+ дешифровки '-> deshi'
+*/
 # define  password_load_uni shifr_password_load_uni
 void  password_load_uni ( t_ns_shifr * ) ;
 
@@ -114,3 +122,5 @@ Reads data from '->filefrom', writes to '->fileto'
 Читает данные из '->filefrom' , записывает в '->fileto'
 */
 void  shifr_decrypt ( t_ns_shifr * ) ;
+
+# endif // SHIFRPUBLICH
