@@ -128,13 +128,24 @@ returns output_buffer0 size data written
 size_t  shifr_encrypt2  ( t_ns_shifr * , arrcp input_buffer  ,
   size_t  input_buffer_size , arrp output_buffer0 )  ;
 
+// ! аргумент размер выхода
+// ! возвращаем количество прочитаных данных + записанных
+// ! размеры могут быть разными
+  
 /*
 Finished buffer encryption, returns output_buffer size written
 Заканчивает шифрование буфера, возвращает размер записаных данных.
 */
-size_t  shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
-  uint8_t * const output_buffer0 )  ;
+size_t  shifr_encrypt2_flush  ( t_ns_shifr * ,
+  arrp output_buffer0 )  ;
 
+// ! аргумент размер выхода
+// ! возвращаем количество прочитаных данных + записанных
+// ! размеры могут быть разными
+  
+size_t shifr_decrypt2  ( t_ns_shifr * , arrcp input_buffer  ,
+  size_t  input_buffer_size , arrp output_buffer0 ) ;
+  
 /*
 Decryption
 Reads data from '->filefrom', writes to '->fileto'

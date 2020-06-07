@@ -516,7 +516,7 @@ int main  ( int argc , char * argv [ ] )  {
           break ; }
       } while ( true ) ;
       sizeout = shifr_encrypt2_flush  ( & main_shifr ,
-        & ( outputbuffer [ 0 ] ) ) ;
+        & ( outputbuffer ) ) ;
       if  ( sizeout ) {
         writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeout , 1 ,
           main_shifr . fileto ) ;

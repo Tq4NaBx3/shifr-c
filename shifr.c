@@ -496,10 +496,10 @@ size_t  shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcp const input_buffe
 
 // returns output_buffer size 
 size_t  shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
-  uint8_t * const output_buffer0 ) {
+  arrp const output_buffer0 ) {
   if ( ns_shifrp  -> flagtext and ns_shifrp  -> charcount ) {
     ns_shifrp  -> charcount = 0 ;
-    * output_buffer0 = '\n' ;
+    ( * output_buffer0  ) [ 0 ] = '\n' ;
     return  1 ; }
   return  0 ; }
 
@@ -592,12 +592,12 @@ sole_xor_crypt_write  :
     goto  addr_sole_xor_crypt_write0  ;
   goto  addr_sole_xor_crypt_write1  ; }
 
-void shifr_decrypt2  ( t_ns_shifr * const ns_shifrp ) {
-  uint8_t old_last_data = 0 ;
-  uint8_t old_last_sole = 0 ;
+size_t  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcp const input_buffer0  ,
+  size_t  input_buffer_size , arrp const output_buffer0 ) {
+  uint8_t const * input_buffer = &((*input_buffer0)[0]);
+  uint8_t * output_buffer = &((*output_buffer0)[0]);
   do {
     char buf [ 2 ] ;
-    size_t readcount ;
     if  ( ns_shifrp  -> flagtext  ) {
 // 2^16 ^ 1/3 = 40.32
 // 2^16 % 40 = 0 .. 39
@@ -613,15 +613,10 @@ void shifr_decrypt2  ( t_ns_shifr * const ns_shifrp ) {
       uint8_t buf3index = 0 ;
       do {
         do {
-          readcount = fread ( & ( buf3 [ buf3index ] ) , 1 , 1 ,
-            ns_shifrp  -> filefrom ) ;
-          if ( readcount == 0 ) {
-            if ( feof ( ns_shifrp  -> filefrom ) )
-              return ;
-            ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-              ( strcp ) & u8"ошибка чтения данных" :
-              ( strcp ) & "error data reading" ) ;
-            longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+          if ( input_buffer >= &((*input_buffer0)[input_buffer_size]) )
+            return  output_buffer - &((*output_buffer0)[0]) ;
+          buf3 [ buf3index ] = ( * input_buffer ) ;
+          ++  input_buffer  ;
         } while ( buf3  [ buf3index ] < 'R' or
           buf3  [ buf3index ] > 'z' ) ;
         ++  buf3index ;
@@ -630,40 +625,28 @@ void shifr_decrypt2  ( t_ns_shifr * const ns_shifrp ) {
         40U * ( ( ( uint16_t  ) ( buf3  [ 1 ] - 'R' ) ) +
         40U * ( ( uint16_t  ) ( buf3  [ 2 ] - 'R' ) ) ) ;
       buf [ 0 ] = u16 bitand 0xff ;
-      buf [ 1 ] = u16 >> 8 ; }
+      buf [ 1 ] = u16 >> 8 ; } // flagtext
     else {
-        readcount = fread ( & ( buf [ 0 ] ) , 1 , 2 , ns_shifrp  -> filefrom ) ;
-        if ( readcount < 2 ) {
-          if ( feof ( ns_shifrp  -> filefrom  ) )
-            break ;
-          if ( ferror ( ns_shifrp  -> filefrom ) ) {
-            clearerr ( ns_shifrp  -> filefrom ) ;
-            ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-              ( strcp ) & u8"ошибка чтения файла" :
-              ( strcp ) & "error reading file" ) ;
-            longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-          break ; } }
-      uint8_t secretdata  [ 4 ] = { [ 0 ] = buf [ 0 ] bitand  0xf ,
-        [ 1 ] = ( buf [ 0 ] >>  4 ) bitand  0xf ,
-        [ 2 ] = buf [ 1 ] bitand  0xf ,
-        [ 3 ] = ( buf [ 1 ] >>  4 ) bitand  0xf  } ;
-      uint8_t decrypteddata [ 4 ] ;
-      decrypt_sole ( & secretdata , ( arrcp ) & ( ns_shifrp  -> deshi ) ,
-        & decrypteddata , 4 , & old_last_sole , & old_last_data ) ;
-      buf [ 0 ] = ( decrypteddata [ 0 ] bitand 0x3  ) bitor
-        ( ( decrypteddata [ 1 ] bitand 0x3  ) << 2  )
-        bitor ( ( decrypteddata [ 2 ] bitand 0x3  ) <<  4 ) bitor
-        ( ( decrypteddata [ 3 ] bitand 0x3  ) << 6  ) ;
-      size_t writecount = fwrite ( & (  buf [ 0 ] ) , 1 , 1 , ns_shifrp  -> fileto ) ;
-      if ( writecount == 0 ) {
-        if ( ferror ( ns_shifrp  -> fileto ) ) {
-          clearerr ( ns_shifrp  -> fileto ) ;
-          ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-            ( strcp ) & u8"ошибка записи файла" :
-            ( strcp ) & "error writing file" ) ;
-          longjmp(ns_shifrp  -> jump,1); }
-        break ; }
-    } while ( true ) ; }
+      if ( input_buffer + 1 >= &((*input_buffer0)[input_buffer_size]) )
+        return output_buffer - &((*output_buffer0)[0]) ;
+      buf [ 0 ] = ( * input_buffer ) ;
+      ++  input_buffer  ;
+      buf [ 1 ] = ( * input_buffer ) ;
+      ++  input_buffer  ; }
+    uint8_t secretdata  [ 4 ] = { [ 0 ] = buf [ 0 ] bitand  0xf ,
+      [ 1 ] = ( buf [ 0 ] >>  4 ) bitand  0xf ,
+      [ 2 ] = buf [ 1 ] bitand  0xf ,
+      [ 3 ] = ( buf [ 1 ] >>  4 ) bitand  0xf  } ;
+    uint8_t decrypteddata [ 4 ] ;
+    decrypt_sole ( & secretdata , ( arrcp ) & ( ns_shifrp  -> deshi ) ,
+      & decrypteddata , 4 , & ns_shifrp  -> old_last_sole ,
+      & ns_shifrp  -> old_last_data ) ;
+    ( * output_buffer ) = ( decrypteddata [ 0 ] bitand 0x3  ) bitor
+      ( ( decrypteddata [ 1 ] bitand 0x3  ) << 2  )
+      bitor ( ( decrypteddata [ 2 ] bitand 0x3  ) <<  4 ) bitor
+      ( ( decrypteddata [ 3 ] bitand 0x3  ) << 6  ) ;
+    ++  output_buffer ;
+  } while ( true ) ; }
 
 void shifr_decode4  ( t_ns_shifr * const ns_shifrp ) {
   uint8_t old_last_data = 0 ;
