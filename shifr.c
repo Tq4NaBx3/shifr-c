@@ -148,7 +148,7 @@ found : ; \
 string_to_password_templ_def  ( number_size2 )
 string_to_password_templ_def  ( number_size3 )
 
-static inline void datasole ( arrcp const secretdata , arrp const secretdatasole ,
+static  void datasole ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
@@ -435,6 +435,74 @@ static inline void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
 # undef streambuf_bufbitsize
 # undef streambuf_bytecount
 
+// returns output_buffer size 
+size_t  shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcp const input_buffer0  ,
+  size_t  const input_buffer_size , arrp const output_buffer0 ) {
+  uint8_t const * input_buffer = &((*input_buffer0)[0]) ;
+  uint8_t * output_buffer = &((*output_buffer0)[0]) ;
+  size_t  reads = 0 ;
+  while ( reads < input_buffer_size )  {
+    char const  buf = * input_buffer  ;
+    ++  input_buffer  ;
+    ++  reads ;
+    uint8_t const secretdata  [ 4 ] = { [ 0 ]  = buf  bitand 0x3 ,
+      [ 1 ] = ( buf >>  2 ) bitand 0x3 , [ 2 ] = ( buf >>  4 ) bitand 0x3 ,
+      [ 3 ] = ( buf >>  6 ) bitand 0x3 } ;
+    uint8_t secretdatasole  [ 4 ] ;
+    datasole ( & secretdata , & secretdatasole , 4 )  ;
+    // после подсоления, данные переворачиваем предыдущим ксором
+    data_xor ( & ns_shifrp  -> old_last_data , & ns_shifrp  -> old_last_sole ,
+      & secretdatasole , 4 )  ;
+    uint8_t encrypteddata [ 4 ] ;
+    crypt_decrypt ( & secretdatasole , ( arrcp ) & ns_shifrp  -> shifr ,
+      & encrypteddata , 4 ) ;
+// 2^16 ^ 1/3 = 40.32
+// 2^16 % 40 = 0 .. 39
+// 2^16 / 40 = 1638.4
+// 1639 ^ 1/2 = 40.48
+// 1639 % 40 = 0 .. 39
+// 1639 / 40 = 40.97
+// делаем [0] % 40 , [1] % 40 , [2] % 41
+// 'R' = 82 .. 'z' = 122
+    if  ( ns_shifrp  -> flagtext  ) {
+      uint16_t buf16 = ((uint16_t)( encrypteddata [ 0 ] bitand 0xf )) bitor
+        ( ((uint16_t)( encrypteddata [ 1 ] bitand 0xf )) << 4  )  bitor
+        ( ((uint16_t)( encrypteddata [ 2 ] bitand 0xf )) << 8  )  bitor
+        ( ((uint16_t)( encrypteddata [ 3 ] bitand 0xf )) << 12  ) ;
+      char buf3 [ 4 ] ;
+      buf3 [ 0 ] = 'R' + ( buf16 % 40 ) ;
+      buf16 /= 40 ;
+      buf3 [ 1 ] = 'R' + ( buf16 % 40 ) ;
+      buf16 /= 40 ;
+      buf3 [ 2 ] = 'R' + buf16 ;
+      ns_shifrp  -> charcount += 3 ;
+      if ( ns_shifrp  -> charcount == 60 )  {
+        ns_shifrp  -> charcount = 0 ;
+        buf3  [ 3 ] = '\n' ;
+        memcpy  ( output_buffer , & ( buf3 [ 0 ] )  , 4 ) ;
+        output_buffer +=  4 ; }
+      else {
+        memcpy  ( output_buffer , & ( buf3 [ 0 ] )  , 3 ) ;
+        output_buffer +=  3 ; } }
+    else {
+      char buf2 [ 2 ] = {
+        [ 0 ] = ((uint16_t)( encrypteddata [ 0 ] & 0xf )) bitor
+          ( ((uint16_t)( encrypteddata [ 1 ] & 0xf )) << 4  ) ,
+        [ 1 ] = ((uint16_t)( encrypteddata [ 2 ] & 0xf )) bitor
+          ( ((uint16_t)( encrypteddata [ 3 ] & 0xf )) << 4 ) } ;
+      memcpy  ( output_buffer , & ( buf2 [ 0 ] )  , 2 ) ;
+      output_buffer +=  2 ; } }
+  return  output_buffer - &((*output_buffer0)[0])  ; }
+
+// returns output_buffer size 
+size_t  shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
+  uint8_t * const output_buffer0 ) {
+  if ( ns_shifrp  -> flagtext and ns_shifrp  -> charcount ) {
+    ns_shifrp  -> charcount = 0 ;
+    * output_buffer0 = '\n' ;
+    return  1 ; }
+  return  0 ; }
+
 void  shifr_encode4 ( t_ns_shifr * const ns_shifrp ) {
     int charcount = 0 ;
     uint8_t old_last_data = 0 ;
@@ -509,7 +577,7 @@ void  shifr_encode4 ( t_ns_shifr * const ns_shifrp ) {
           ( strcp ) & "error writing to file" ) ;
         longjmp ( ns_shifrp  -> jump  , 1 ) ; } } }
 
-void  shifr_encode6 ( t_ns_shifr * const ns_shifrp ) {
+void  shifr_encrypt6 ( t_ns_shifr * const ns_shifrp ) {
   // версия 6 шифруем ...
   int bitscount  = 0 ;
   uint8_t secretdata  [ 4 ] ;
@@ -791,21 +859,6 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
           ( strcp ) & u8"версия не поддерживается" :
           ( strcp ) & "version is not supported" ) ;
         longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
-
-void  shifr_encrypt ( t_ns_shifr * const ns_shifrp ) {
-  switch  ( ns_shifrp -> use_version  ) {
-  case  4 : shifr_encode4 ( ns_shifrp ) ;
-    break ;
-  case  6 : shifr_encode6 ( ns_shifrp ) ; 
-    break ;
-  default :
-    fprintf ( stderr  , ( ns_shifrp -> localerus ?
-        u8"encode:версия %d не поддерживается\n" :
-        "encode:version %d is not supported" ) , ns_shifrp -> use_version )  ;
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( strcp ) & u8"encode:версия не поддерживается" :
-      ( strcp ) & "encode:version is not supported" ) ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
 void  shifr_decrypt ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version  ) {

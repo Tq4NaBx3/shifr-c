@@ -111,4 +111,8 @@ struct  s_ns_shifr  {
   char  password_letters3 [ 100 ] ;
   t_streambuf filebuffrom ;
   t_streambuf filebufto ;
+  uint8_t old_last_data ;
+  uint8_t old_last_sole ;
+  // text mode remember string place
+  int charcount ;
   } ;

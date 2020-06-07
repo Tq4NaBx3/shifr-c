@@ -484,8 +484,50 @@ int main  ( int argc , char * argv [ ] )  {
     printarr  ( & "shifr" , & main_shifr . shifr , deshi_size2 ,stderr) ;
     printarr  ( & "deshi" , & main_shifr . deshi , deshi_size2 ,stderr) ; }
 # endif
-  if ( flagenc )
-    shifr_encrypt ( & main_shifr ) ;
+  if ( flagenc ) {
+    if ( main_shifr . use_version == 4 )  {
+      uint8_t inputbuffer [ 0x1000  ] ;
+      size_t  outputbuffersize ;
+      if ( main_shifr . flagtext )
+        outputbuffersize  = 0x3100  ;
+      else
+        outputbuffersize  = 0x2000  ;
+      uint8_t outputbuffer  [ outputbuffersize ] ;
+      size_t  writecount  ;
+      size_t sizeout  ;
+      do  {
+        size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , 0x1000 ,
+          main_shifr . filefrom ) ;
+        if ( readcount  ) {
+          sizeout = shifr_encrypt2  ( & main_shifr , ( arrcp ) & inputbuffer  ,
+            readcount , & outputbuffer ) ;
+          writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeout , 1 ,
+            main_shifr . fileto ) ;
+          if ( writecount == 0 )
+            goto Exc ;
+          if ( feof ( main_shifr . filefrom ) )
+            break ; }
+        else {
+          if ( ferror ( main_shifr . filefrom ) ) {
+            main_shifr . string_exception  = ( main_shifr . localerus ?
+              ( strcp ) & u8"ошибка чтения файла" :
+              ( strcp ) & "error reading the file" ) ;
+            longjmp ( main_shifr . jump  , 1 ) ; }
+          break ; }
+      } while ( true ) ;
+      sizeout = shifr_encrypt2_flush  ( & main_shifr ,
+        & ( outputbuffer [ 0 ] ) ) ;
+      if  ( sizeout ) {
+        writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeout , 1 ,
+          main_shifr . fileto ) ;
+        if ( writecount == 0 ) {
+Exc :
+          main_shifr . string_exception  = ( main_shifr . localerus ?
+            ( strcp ) & u8"ошибка записи в файл" :
+            ( strcp ) & "error writing to file" ) ;
+          longjmp ( main_shifr . jump  , 1 ) ; } } }
+    else
+      shifr_encrypt6 ( & main_shifr  ) ; }
   else
     shifr_decrypt ( & main_shifr ) ;
   int resulterror  = 0 ;

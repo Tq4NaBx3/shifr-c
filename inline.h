@@ -234,6 +234,9 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
     . use_version  = 6 ,
     . flagtext = false ,
     . password_alphabet = 62 ,
+    . old_last_data = 0 ,
+    . old_last_sole = 0 ,
+    . charcount = 0 ,
     } ;
   { char * j = & ( ns_shifrp -> letters [ 0 ] ) ;
     uint8_t i = ' ' ;

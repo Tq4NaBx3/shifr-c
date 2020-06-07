@@ -113,7 +113,27 @@ Reads data from '->filefrom', writes to '->fileto'
 Шифрование
 Читает данные из '->filefrom' , записывает в '->fileto'
 */
-void  shifr_encrypt ( t_ns_shifr * ) ;
+void  shifr_encrypt6 ( t_ns_shifr * ) ;
+
+/*
+Encryption
+Reads data from 'input_buffer' size of 'input_buffer_size' bytes ,
+writes to 'output_buffer0'
+returns output_buffer0 size data written
+Шифрование
+Читает данные из 'input_buffer' размера 'input_buffer_size' байт ,
+записывает в 'output_buffer0'
+возвращает размер записаных данных в output_buffer0
+*/
+size_t  shifr_encrypt2  ( t_ns_shifr * , arrcp input_buffer  ,
+  size_t  input_buffer_size , arrp output_buffer0 )  ;
+
+/*
+Finished buffer encryption, returns output_buffer size written
+Заканчивает шифрование буфера, возвращает размер записаных данных.
+*/
+size_t  shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
+  uint8_t * const output_buffer0 )  ;
 
 /*
 Decryption
