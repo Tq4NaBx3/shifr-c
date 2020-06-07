@@ -528,8 +528,23 @@ Exc :
           longjmp ( main_shifr . jump  , 1 ) ; } } }
     else
       shifr_encrypt6 ( & main_shifr  ) ; }
-  else
-    shifr_decrypt ( & main_shifr ) ;
+  else {/*
+    if ( main_shifr . use_version == 4 )  {
+      uint8_t inputbuffer [ 0x1000  ] ;
+      size_t  outputbuffersize ;
+      if ( main_shifr . flagtext )
+        outputbuffersize  = 0x555 ;
+      else
+        outputbuffersize  = 0x800  ;
+      uint8_t outputbuffer  [ outputbuffersize ] ;
+      size_t  writecount  ;
+      size_t sizeout  ;
+      sizeout = shifr_decrypt2  ( & main_shifr , ( arrcp ) & inputbuffer  ,
+        readcount , & outputbuffer ) ;
+...
+      }
+    else*/
+      shifr_decrypt ( & main_shifr ) ; }
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
     if  ( fclose  ( main_shifr  . fileto  ) ) {
