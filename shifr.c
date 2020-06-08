@@ -436,12 +436,12 @@ static inline void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
 # undef streambuf_bytecount
 
 // returns output_buffer size 
-size_t  shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcp const input_buffer0  ,
-  size_t  const input_buffer_size , arrp const output_buffer0 ) {
-  uint8_t const * input_buffer = &((*input_buffer0)[0]) ;
+size_t  shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcps input ,
+  arrp const output_buffer0 ) {
+  uint8_t const * input_buffer = &((* input . cp)[0]) ;
   uint8_t * output_buffer = &((*output_buffer0)[0]) ;
   size_t  reads = 0 ;
-  while ( reads < input_buffer_size )  {
+  while ( reads < input . s )  {
     char const  buf = * input_buffer  ;
     ++  input_buffer  ;
     ++  reads ;

@@ -15,6 +15,18 @@ typedef uint8_t ( * arrp ) [ ] ;
 # define  arrcp  shifr_arrcp
 typedef uint8_t const ( * arrcp ) [ ] ;
 
+# define  s_arrcps  shifr_s_arrcps
+struct  s_arrcps  ;
+
+# define  arrcps  shifr_arrcps
+typedef struct  s_arrcps  arrcps  ;
+
+# define  s_arrps  shifr_s_arrps
+struct  s_arrps  ;
+
+# define  arrps  shifr_arrps
+typedef struct  s_arrps arrps ;
+
 # define  shifr_number_structtype( N ) \
   struct  shifr_s_number ## N ;
 

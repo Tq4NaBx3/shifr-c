@@ -499,8 +499,9 @@ int main  ( int argc , char * argv [ ] )  {
         size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , 0x1000 ,
           main_shifr . filefrom ) ;
         if ( readcount  ) {
-          sizeout = shifr_encrypt2  ( & main_shifr , ( arrcp ) & inputbuffer  ,
-            readcount , & outputbuffer ) ;
+          sizeout = shifr_encrypt2  ( & main_shifr ,
+            ( arrcps ) { .cp = ( arrcp ) & inputbuffer , .s = readcount } ,
+            & outputbuffer ) ;
           writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeout , 1 ,
             main_shifr . fileto ) ;
           if ( writecount == 0 )

@@ -116,3 +116,13 @@ struct  s_ns_shifr  {
   // text mode remember string place
   int charcount ;
   } ;
+
+struct  s_arrcps {
+  arrcp cp  ;
+  size_t  s ;
+} ;
+
+struct  s_arrps {
+  arrp  p ;
+  size_t  s ;
+} ;

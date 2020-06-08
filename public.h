@@ -125,8 +125,7 @@ returns output_buffer0 size data written
 записывает в 'output_buffer0'
 возвращает размер записаных данных в output_buffer0
 */
-size_t  shifr_encrypt2  ( t_ns_shifr * , arrcp input_buffer  ,
-  size_t  input_buffer_size , arrp output_buffer0 )  ;
+size_t  shifr_encrypt2  ( t_ns_shifr * , arrcps input , arrp output_buffer0 )  ;
 
 // ! аргумент размер выхода
 // ! возвращаем количество прочитаных данных + записанных
