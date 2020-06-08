@@ -27,6 +27,12 @@ struct  s_arrps  ;
 # define  arrps  shifr_arrps
 typedef struct  s_arrps arrps ;
 
+# define  s_size_io shifr_s_size_io
+struct  s_size_io ;
+
+# define  size_io shifr_size_io
+typedef struct  s_size_io size_io ;
+
 # define  shifr_number_structtype( N ) \
   struct  shifr_s_number ## N ;
 

@@ -214,7 +214,7 @@ int main  ( int argc , char * argv [ ] )  {
       fputs ( ( main_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
-      number_princ  ( 6 ) ( & main_shifr . raspr4  . pass , stderr  ) ;
+      number_princ  ( number_size2 ) ( & main_shifr . raspr4  . pass , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif      
         }
@@ -225,7 +225,7 @@ int main  ( int argc , char * argv [ ] )  {
       fputs ( ( main_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
-      number_princ  ( 37 ) ( & main_shifr . raspr6  . pass , stderr  ) ;
+      number_princ  ( number_size3 ) ( & main_shifr . raspr6  . pass , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif                    
         }
@@ -321,14 +321,14 @@ int main  ( int argc , char * argv [ ] )  {
     fputs ( ( main_shifr . localerus ?
       u8"внутренний пароль = " :
       "internal password = " ) , stderr ) ;
-    number_princ  ( 6 ) ( & main_shifr . raspr4  . pass , stderr  ) ;
+    number_princ  ( number_size2 ) ( & main_shifr . raspr4  . pass , stderr  ) ;
     fputs ( "\n" , stderr ) ;
     break ;
   case  6 :
     fputs ( ( main_shifr . localerus ?
       u8"внутренний пароль = " :
       "internal password = " ) , stderr ) ;
-    number_princ  ( 37 ) ( & main_shifr . raspr6  . pass , stderr  ) ;
+    number_princ  ( number_size3 ) ( & main_shifr . raspr6  . pass , stderr  ) ;
     fputs ( "\n" , stderr ) ;
     break ;
   default :
@@ -375,43 +375,45 @@ int main  ( int argc , char * argv [ ] )  {
         password_letters2 )  [ 0 ] ) ) ;
     switch  ( main_shifr . use_version ) {
     case  4 :
-      { number_type ( 6 ) password2 ;
-        string_to_password_templ  ( 6 ) ( & main_shifr ,
-          & main_shifr  . password_letters2 ,
-          & password2 , & main_shifr . letters ,
+      { number_type ( number_size2 ) password2 ;
+        string_to_password_templ  ( number_size2 ) ( & main_shifr ,
+          ( strcp ) & main_shifr  . password_letters2 ,
+          & password2 , ( strcp ) & main_shifr . letters ,
           letters_count ) ; 
         fputs ( ( main_shifr . localerus ?
           u8"из строки95 во внутренний пароль = " :
           "from string95 to internal password = " ) , stderr ) ;
-        number_princ  ( 6 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size2 ) ( & password2 , stderr  ) ;
         fputs ( "\n" , stderr ) ;
-        string_to_password_templ  ( 6 ) ( & main_shifr , & password_letters2 ,
-          & password2 , & main_shifr . letters2 ,
+        string_to_password_templ  ( number_size2 ) ( & main_shifr ,
+          ( strcp ) & password_letters2 ,
+          & password2 , ( strcp ) & main_shifr . letters2 ,
           letters_count2 ) ;
         fputs ( ( main_shifr . localerus ?
           u8"из строки62 во внутренний пароль = " :
           "from string62 to internal password = " ) , stderr ) ;
-        number_princ  ( 6 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size2 ) ( & password2 , stderr  ) ;
         fputs ( "\n" , stderr ) ;  }
       break ;
     case  6 :
-      { number_type ( 37 ) password2 ;
-        string_to_password_templ  ( 37 ) ( & main_shifr ,
-          & main_shifr  . password_letters3 ,
-          & password2 , & main_shifr . letters ,
+      { number_type ( number_size3 ) password2 ;
+        string_to_password_templ  ( number_size3 ) ( & main_shifr ,
+          ( strcp ) & main_shifr  . password_letters3 ,
+          & password2 , ( strcp ) & main_shifr . letters ,
           letters_count ) ; 
         fputs ( ( main_shifr . localerus ?
           u8"из строки95 во внутренний пароль = " :
           "from string95 to internal password = " ) , stderr ) ;
-        number_princ  ( 37 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size3 ) ( & password2 , stderr  ) ;
         fputs ( "\n" , stderr ) ;
-        string_to_password_templ  ( 37 ) ( & main_shifr , & password_letters62 ,
-          & password2 , & main_shifr . letters2 ,
+        string_to_password_templ  ( number_size3 ) ( & main_shifr ,
+          ( strcp ) & password_letters62 ,
+          & password2 , ( strcp ) & main_shifr . letters2 ,
           letters_count2 ) ;
         fputs ( ( main_shifr . localerus ?
           u8"из строки62 во внутренний пароль = " :
           "from string62 to internal password = " ) , stderr ) ;
-        number_princ  ( 37 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size3 ) ( & password2 , stderr  ) ;
         fputs ( "\n" , stderr ) ;  }
       break ;
     default :
@@ -478,12 +480,16 @@ int main  ( int argc , char * argv [ ] )  {
   password_load_uni ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 6 )  { 
-    printarr  ( & "shifr" , & main_shifr . shifr6 , deshi_size6 ,stderr) ;
-    printarr  ( & "deshi" , & main_shifr . deshi6 , deshi_size6 ,stderr) ;  }
+    printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr6 ,
+      deshi_size6 , stderr  ) ;
+    printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi6 , deshi_size6 ,
+      stderr  ) ; }
   else  {
-    printarr  ( & "shifr" , & main_shifr . shifr , deshi_size2 ,stderr) ;
-    printarr  ( & "deshi" , & main_shifr . deshi , deshi_size2 ,stderr) ; }
-# endif
+    printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr , deshi_size2 ,
+      stderr  ) ;
+    printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi , deshi_size2 ,
+      stderr  ) ; }
+# endif // SHIFR_DEBUG
   if ( flagenc ) {
     if ( main_shifr . use_version == 4 )  {
       uint8_t inputbuffer [ 0x1000  ] ;
@@ -491,18 +497,25 @@ int main  ( int argc , char * argv [ ] )  {
       if ( main_shifr . flagtext )
         outputbuffersize  = 0x3100  ;
       else
-        outputbuffersize  = 0x2000  ;
+        outputbuffersize  = 0x2100  ;
       uint8_t outputbuffer  [ outputbuffersize ] ;
       size_t  writecount  ;
-      size_t sizeout  ;
+      size_io sizeio  ;
       do  {
         size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , 0x1000 ,
           main_shifr . filefrom ) ;
         if ( readcount  ) {
-          sizeout = shifr_encrypt2  ( & main_shifr ,
+          sizeio  = shifr_encrypt2  ( & main_shifr ,
             ( arrcps ) { .cp = ( arrcp ) & inputbuffer , .s = readcount } ,
-            & outputbuffer ) ;
-          writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeout , 1 ,
+            ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
+# ifdef SHIFR_DEBUG
+          if ( sizeio . i < readcount ) {
+            fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
+              readcount ) ;
+            main_shifr . string_exception  = ( strcp ) & "sizeio . i < readcount" ;
+            longjmp ( main_shifr . jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
+          writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeio . o , 1 ,
             main_shifr . fileto ) ;
           if ( writecount == 0 )
             goto Exc ;
@@ -516,8 +529,9 @@ int main  ( int argc , char * argv [ ] )  {
             longjmp ( main_shifr . jump  , 1 ) ; }
           break ; }
       } while ( true ) ;
+      size_t sizeout  ;
       sizeout = shifr_encrypt2_flush  ( & main_shifr ,
-        & ( outputbuffer ) ) ;
+        ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize }  ) ;
       if  ( sizeout ) {
         writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeout , 1 ,
           main_shifr . fileto ) ;

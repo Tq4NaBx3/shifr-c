@@ -435,13 +435,14 @@ static inline void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
 # undef streambuf_bufbitsize
 # undef streambuf_bytecount
 
-// returns output_buffer size 
-size_t  shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcps input ,
-  arrp const output_buffer0 ) {
-  uint8_t const * input_buffer = &((* input . cp)[0]) ;
-  uint8_t * output_buffer = &((*output_buffer0)[0]) ;
+// returns size loads & writes
+size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
+  arrps const output  ) {
+  uint8_t const * restrict  input_buffer = &((* input . cp)[0]) ;
+  uint8_t * restrict  output_buffer = &((*  output  . p)[0]) ;
   size_t  reads = 0 ;
-  while ( reads < input . s )  {
+  size_t  writes  = 0 ;
+  while ( reads < input . s and writes + 4 <= output . s ) {
     char const  buf = * input_buffer  ;
     ++  input_buffer  ;
     ++  reads ;
@@ -480,9 +481,11 @@ size_t  shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcps input ,
         ns_shifrp  -> charcount = 0 ;
         buf3  [ 3 ] = '\n' ;
         memcpy  ( output_buffer , & ( buf3 [ 0 ] )  , 4 ) ;
+        writes  +=  4 ;
         output_buffer +=  4 ; }
       else {
         memcpy  ( output_buffer , & ( buf3 [ 0 ] )  , 3 ) ;
+        writes  +=  3 ;
         output_buffer +=  3 ; } }
     else {
       char buf2 [ 2 ] = {
@@ -491,15 +494,25 @@ size_t  shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcps input ,
         [ 1 ] = ((uint16_t)( encrypteddata [ 2 ] & 0xf )) bitor
           ( ((uint16_t)( encrypteddata [ 3 ] & 0xf )) << 4 ) } ;
       memcpy  ( output_buffer , & ( buf2 [ 0 ] )  , 2 ) ;
+      writes  +=  2 ;
       output_buffer +=  2 ; } }
-  return  output_buffer - &((*output_buffer0)[0])  ; }
+  return  ( size_io ) { .i  = reads , .o  = writes  } ; }
 
-// returns output_buffer size 
+/*
+Finished buffer encryption, returns output_buffer size written
+Заканчивает шифрование буфера, возвращает размер записаных данных.
+*/
 size_t  shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
-  arrp const output_buffer0 ) {
+  arrps const output ) {
+# ifdef SHIFR_DEBUG
+  if ( output . s == 0 ) {
+    ns_shifrp ->  string_exception  = ( strcp ) &
+      "shifr_encrypt2_flush:output . s == 0" ;
+    longjmp ( ns_shifrp ->  jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
   if ( ns_shifrp  -> flagtext and ns_shifrp  -> charcount ) {
     ns_shifrp  -> charcount = 0 ;
-    ( * output_buffer0  ) [ 0 ] = '\n' ;
+    ( * output . p ) [ 0 ] = '\n' ;
     return  1 ; }
   return  0 ; }
 

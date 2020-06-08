@@ -86,9 +86,10 @@ void set_keypress ( t_ns_shifr * ) ;
 void reset_keypress ( t_ns_shifr * ) ;
 
 /*
-...
-Перевод внутреннего пароля '-> raspr  . pass' в таблицы шифрования '-> shifr' ,
- дешифровки '-> deshi'
+ Translation of the internal password '-> raspr. pass' 
+to the encryption table '-> shifr', decryption '-> deshi'
+ Перевод внутреннего пароля '-> raspr  . pass' в таблицы шифрования '-> shifr' ,
+дешифровки '-> deshi'
 */
 # define  password_load_uni shifr_password_load_uni
 void  password_load_uni ( t_ns_shifr * ) ;
@@ -117,26 +118,21 @@ void  shifr_encrypt6 ( t_ns_shifr * ) ;
 
 /*
 Encryption
-Reads data from 'input_buffer' size of 'input_buffer_size' bytes ,
-writes to 'output_buffer0'
-returns output_buffer0 size data written
+Reads data from 'input.cp' of size 'input.s' bytes,
+writes to 'output.p' of size 'output.s' bytes,
+returns the size of read and written data
 Шифрование
-Читает данные из 'input_buffer' размера 'input_buffer_size' байт ,
-записывает в 'output_buffer0'
-возвращает размер записаных данных в output_buffer0
+Читает данные из 'input.cp' размера 'input.s' байт ,
+записывает в 'output.p' размера 'output.s' байт ,
+возвращает размер считаных и записаных данных
 */
-size_t  shifr_encrypt2  ( t_ns_shifr * , arrcps input , arrp output_buffer0 )  ;
-
-// ! аргумент размер выхода
-// ! возвращаем количество прочитаных данных + записанных
-// ! размеры могут быть разными
+size_io shifr_encrypt2  ( t_ns_shifr * , arrcps input , arrps output )  ;
   
 /*
 Finished buffer encryption, returns output_buffer size written
 Заканчивает шифрование буфера, возвращает размер записаных данных.
 */
-size_t  shifr_encrypt2_flush  ( t_ns_shifr * ,
-  arrp output_buffer0 )  ;
+size_t  shifr_encrypt2_flush  ( t_ns_shifr * , arrps output )  ;
 
 // ! аргумент размер выхода
 // ! возвращаем количество прочитаных данных + записанных

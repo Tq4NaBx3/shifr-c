@@ -126,3 +126,8 @@ struct  s_arrps {
   arrp  p ;
   size_t  s ;
 } ;
+
+struct  s_size_io  {
+  size_t  i ;
+  size_t  o ;
+} ;
