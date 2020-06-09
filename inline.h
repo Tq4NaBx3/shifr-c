@@ -237,6 +237,7 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
     . old_last_data = 0 ,
     . old_last_sole = 0 ,
     . charcount = 0 ,
+    . buf3index = 0 ,
     } ;
   { char * j = & ( ns_shifrp -> letters [ 0 ] ) ;
     uint8_t i = ' ' ;

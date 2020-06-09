@@ -134,12 +134,17 @@ Finished buffer encryption, returns output_buffer size written
 */
 size_t  shifr_encrypt2_flush  ( t_ns_shifr * , arrps output )  ;
 
-// ! аргумент размер выхода
-// ! возвращаем количество прочитаных данных + записанных
-// ! размеры могут быть разными
-  
-size_t shifr_decrypt2  ( t_ns_shifr * , arrcp input_buffer  ,
-  size_t  input_buffer_size , arrp output_buffer0 ) ;
+/*
+Decryption
+Reads data from 'input.cp' of size 'input.s' bytes,
+writes to 'output.p' of size 'output.s' bytes,
+returns the size of read and written data
+Расшифровка
+Читает данные из 'input.cp' размера 'input.s' байт ,
+записывает в 'output.p' размера 'output.s' байт ,
+возвращает размер считаных и записаных данных
+*/
+size_io  shifr_decrypt2 ( t_ns_shifr * , arrcps input , arrps output ) ;
   
 /*
 Decryption
@@ -147,6 +152,6 @@ Reads data from '->filefrom', writes to '->fileto'
 Расшифровка
 Читает данные из '->filefrom' , записывает в '->fileto'
 */
-void  shifr_decrypt ( t_ns_shifr * ) ;
+void  shifr_decode6 ( t_ns_shifr * ) ;
 
 # endif // SHIFRPUBLICH

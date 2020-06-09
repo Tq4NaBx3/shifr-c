@@ -72,8 +72,8 @@ static inline void  decrypt_sole ( arrp const datap , arrcp const tablep ,
   do {
     { uint8_t const data_sole = ( * tablep ) [ * id ] ;
       ( * ide ) = ( data_sole >>  2 ) xor ( * old_last_sole ) ;
-      ( * old_last_sole ) = (  data_sole bitand  0x3 ) xor ( * old_last_data ) ;
-      ( * old_last_data ) = ( * ide ) ; }
+      ( * old_last_sole ) = (  data_sole bitand  0x3 ) xor ( * old_last_data ) ; }
+    ( * old_last_data ) = ( * ide ) ;
     ++  id  ;
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
@@ -605,11 +605,14 @@ sole_xor_crypt_write  :
     goto  addr_sole_xor_crypt_write0  ;
   goto  addr_sole_xor_crypt_write1  ; }
 
-size_t  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcp const input_buffer0  ,
-  size_t  input_buffer_size , arrp const output_buffer0 ) {
-  uint8_t const * input_buffer = &((*input_buffer0)[0]);
-  uint8_t * output_buffer = &((*output_buffer0)[0]);
-  do {
+// returns size loads & writes
+size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
+  arrps const output  ) {
+  uint8_t const * restrict  input_buffer = &((* input . cp)[0]) ;
+  uint8_t * restrict  output_buffer = &((*  output  . p)[0]) ;
+  size_t  reads = 0 ;
+  size_t  writes  = 0 ;
+  while ( reads < input . s and writes < output . s ) {
     char buf [ 2 ] ;
     if  ( ns_shifrp  -> flagtext  ) {
 // 2^16 ^ 1/3 = 40.32
@@ -622,30 +625,34 @@ size_t  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcp const input_buffe
 // 'R' = 82 .. 'z' = 122
       // читаем три буквы ' a 1 b' -> декодируем в два байта "XY"
       // reads three letters ' a 1 b' -> decode to two bytes "XY"
-      char  buf3  [ 3 ] ;
-      uint8_t buf3index = 0 ;
       do {
         do {
-          if ( input_buffer >= &((*input_buffer0)[input_buffer_size]) )
-            return  output_buffer - &((*output_buffer0)[0]) ;
-          buf3 [ buf3index ] = ( * input_buffer ) ;
+          if ( reads >= input . s or writes >= output . s )
+            goto Exit ;
+          ( ns_shifrp  -> buf3 ) [ ns_shifrp  -> buf3index ] = ( * input_buffer ) ;
           ++  input_buffer  ;
-        } while ( buf3  [ buf3index ] < 'R' or
-          buf3  [ buf3index ] > 'z' ) ;
-        ++  buf3index ;
-      } while ( buf3index < 3 ) ;
-      uint16_t u16 = (  ( uint16_t  ) ( buf3  [ 0 ] - 'R' ) ) +
-        40U * ( ( ( uint16_t  ) ( buf3  [ 1 ] - 'R' ) ) +
-        40U * ( ( uint16_t  ) ( buf3  [ 2 ] - 'R' ) ) ) ;
+          ++  reads ;
+        } while ( ( ns_shifrp  -> buf3 ) [ ns_shifrp  -> buf3index ] < 'R' or
+          ( ns_shifrp  -> buf3 ) [ ns_shifrp  -> buf3index ] > 'z' ) ;
+        ++ ( ns_shifrp  -> buf3index ) ;
+      } while ( ns_shifrp  -> buf3index < 3 ) ;
+      // next letters begins with zero index
+      // следующие буквы начинают с нулевого индекса
+      ns_shifrp  -> buf3index = 0 ;
+      uint16_t u16 = (  ( uint16_t  ) ( ( ns_shifrp  -> buf3 ) [ 0 ] - 'R' ) ) +
+        40U * ( ( ( uint16_t  ) ( ( ns_shifrp  -> buf3 ) [ 1 ] - 'R' ) ) +
+        40U * ( ( uint16_t  ) ( ( ns_shifrp  -> buf3 ) [ 2 ] - 'R' ) ) ) ;
       buf [ 0 ] = u16 bitand 0xff ;
       buf [ 1 ] = u16 >> 8 ; } // flagtext
     else {
-      if ( input_buffer + 1 >= &((*input_buffer0)[input_buffer_size]) )
-        return output_buffer - &((*output_buffer0)[0]) ;
+      if ( reads + 1 >= input . s )
+        goto Exit ;
       buf [ 0 ] = ( * input_buffer ) ;
       ++  input_buffer  ;
+      ++  reads ;
       buf [ 1 ] = ( * input_buffer ) ;
-      ++  input_buffer  ; }
+      ++  input_buffer  ;
+      ++  reads ; } // flag digit
     uint8_t secretdata  [ 4 ] = { [ 0 ] = buf [ 0 ] bitand  0xf ,
       [ 1 ] = ( buf [ 0 ] >>  4 ) bitand  0xf ,
       [ 2 ] = buf [ 1 ] bitand  0xf ,
@@ -658,81 +665,10 @@ size_t  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcp const input_buffe
       ( ( decrypteddata [ 1 ] bitand 0x3  ) << 2  )
       bitor ( ( decrypteddata [ 2 ] bitand 0x3  ) <<  4 ) bitor
       ( ( decrypteddata [ 3 ] bitand 0x3  ) << 6  ) ;
-    ++  output_buffer ;
-  } while ( true ) ; }
-
-void shifr_decode4  ( t_ns_shifr * const ns_shifrp ) {
-  uint8_t old_last_data = 0 ;
-  uint8_t old_last_sole = 0 ;
-  do {
-    char buf [ 2 ] ;
-    size_t readcount ;
-    if  ( ns_shifrp  -> flagtext  ) {
-// 2^16 ^ 1/3 = 40.32
-// 2^16 % 40 = 0 .. 39
-// 2^16 / 40 = 1638.4
-// 1639 ^ 1/2 = 40.48
-// 1639 % 40 = 0 .. 39
-// 1639 / 40 = 40.97
-// делаем [0] % 40 , [1] % 40 , [2] % 41
-// 'R' = 82 .. 'z' = 122
-      // читаем три буквы ' a 1 b' -> декодируем в два байта "XY"
-      // reads three letters ' a 1 b' -> decode to two bytes "XY"
-      char  buf3  [ 3 ] ;
-      uint8_t buf3index = 0 ;
-      do {
-        do {
-          readcount = fread ( & ( buf3 [ buf3index ] ) , 1 , 1 ,
-            ns_shifrp  -> filefrom ) ;
-          if ( readcount == 0 ) {
-            if ( feof ( ns_shifrp  -> filefrom ) )
-              return ;
-            ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-              ( strcp ) & u8"ошибка чтения данных" :
-              ( strcp ) & "error data reading" ) ;
-            longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-        } while ( buf3  [ buf3index ] < 'R' or
-          buf3  [ buf3index ] > 'z' ) ;
-        ++  buf3index ;
-      } while ( buf3index < 3 ) ;
-      uint16_t u16 = (  ( uint16_t  ) ( buf3  [ 0 ] - 'R' ) ) +
-        40U * ( ( ( uint16_t  ) ( buf3  [ 1 ] - 'R' ) ) +
-        40U * ( ( uint16_t  ) ( buf3  [ 2 ] - 'R' ) ) ) ;
-      buf [ 0 ] = u16 bitand 0xff ;
-      buf [ 1 ] = u16 >> 8 ; }
-    else {
-        readcount = fread ( & ( buf [ 0 ] ) , 1 , 2 , ns_shifrp  -> filefrom ) ;
-        if ( readcount < 2 ) {
-          if ( feof ( ns_shifrp  -> filefrom  ) )
-            break ;
-          if ( ferror ( ns_shifrp  -> filefrom ) ) {
-            clearerr ( ns_shifrp  -> filefrom ) ;
-            ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-              ( strcp ) & u8"ошибка чтения файла" :
-              ( strcp ) & "error reading file" ) ;
-            longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-          break ; } }
-      uint8_t secretdata  [ 4 ] = { [ 0 ] = buf [ 0 ] bitand  0xf ,
-        [ 1 ] = ( buf [ 0 ] >>  4 ) bitand  0xf ,
-        [ 2 ] = buf [ 1 ] bitand  0xf ,
-        [ 3 ] = ( buf [ 1 ] >>  4 ) bitand  0xf  } ;
-      uint8_t decrypteddata [ 4 ] ;
-      decrypt_sole ( & secretdata , ( arrcp ) & ( ns_shifrp  -> deshi ) ,
-        & decrypteddata , 4 , & old_last_sole , & old_last_data ) ;
-      buf [ 0 ] = ( decrypteddata [ 0 ] bitand 0x3  ) bitor
-        ( ( decrypteddata [ 1 ] bitand 0x3  ) << 2  )
-        bitor ( ( decrypteddata [ 2 ] bitand 0x3  ) <<  4 ) bitor
-        ( ( decrypteddata [ 3 ] bitand 0x3  ) << 6  ) ;
-      size_t writecount = fwrite ( & (  buf [ 0 ] ) , 1 , 1 , ns_shifrp  -> fileto ) ;
-      if ( writecount == 0 ) {
-        if ( ferror ( ns_shifrp  -> fileto ) ) {
-          clearerr ( ns_shifrp  -> fileto ) ;
-          ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-            ( strcp ) & u8"ошибка записи файла" :
-            ( strcp ) & "error writing file" ) ;
-          longjmp(ns_shifrp  -> jump,1); }
-        break ; }
-    } while ( true ) ; }
+    ++  writes  ;
+    ++  output_buffer ; }
+Exit :
+  return  ( size_io ) { .i  = reads , .o  = writes  } ; }
 
 void shifr_decode6 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t secretdata [ 1 ] ;
@@ -854,21 +790,6 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
           ( strcp ) & u8"версия не поддерживается" :
           ( strcp ) & "version is not supported" ) ;
         longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
-
-void  shifr_decrypt ( t_ns_shifr * const ns_shifrp ) {
-  switch  ( ns_shifrp -> use_version  ) {
-  case  4 : shifr_decode4 ( ns_shifrp ) ;
-    break ;
-  case  6 : shifr_decode6 ( ns_shifrp ) ; 
-    break ;
-  default :
-    fprintf ( stderr  , ( ns_shifrp -> localerus ?
-        u8"decode:версия %d не поддерживается\n" :
-        "decode:version %d is not supported" ) , ns_shifrp -> use_version )  ;
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( strcp ) & u8"decode:версия не поддерживается" :
-      ( strcp ) & "decode:version is not supported" ) ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
 void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {

@@ -115,6 +115,10 @@ struct  s_ns_shifr  {
   uint8_t old_last_sole ;
   // text mode remember string place
   int charcount ;
+  // stream buffer ver 2 for decrypt text mode
+  // буфер потока вер 2 для расшифровки текстового режима
+  char  buf3  [ 3 ] ;
+  uint8_t buf3index ;
   } ;
 
 struct  s_arrcps {
