@@ -109,6 +109,7 @@ struct  s_ns_shifr  {
   char  password_letters2 [ 20  ] ;
   // ver3
   char  password_letters3 [ 100 ] ;
+// private :
   t_streambuf filebuffrom ;
   t_streambuf filebufto ;
   uint8_t old_last_data ;
@@ -119,6 +120,9 @@ struct  s_ns_shifr  {
   // буфер потока вер 2 для расшифровки текстового режима
   char  buf3  [ 3 ] ;
   uint8_t buf3index ;
+  // ver3
+  int bitscount ;
+  uint8_t secretdata  [ 4 ] ;
   } ;
 
 struct  s_arrcps {

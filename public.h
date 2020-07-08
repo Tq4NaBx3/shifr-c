@@ -127,6 +127,7 @@ returns the size of read and written data
 возвращает размер считаных и записаных данных
 */
 size_io shifr_encrypt2  ( t_ns_shifr * , arrcps input , arrps output )  ;
+size_io shifr_encrypt3  ( t_ns_shifr * , arrcps input , arrps output )  ;
   
 /*
 Finished buffer encryption, returns output_buffer size written
@@ -152,6 +153,6 @@ Reads data from '->filefrom', writes to '->fileto'
 Расшифровка
 Читает данные из '->filefrom' , записывает в '->fileto'
 */
-void  shifr_decode6 ( t_ns_shifr * ) ;
+void  shifr_decrypt6 ( t_ns_shifr * ) ;
 
 # endif // SHIFRPUBLICH

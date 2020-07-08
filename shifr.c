@@ -516,8 +516,96 @@ size_t  shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
     return  1 ; }
   return  0 ; }
 
+// returns size loads & writes
+size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
+  arrps const output  ) {
+  uint8_t secretdatasole  [ 3 ] ;
+  uint8_t secretdatasolesize  ;
+  uint8_t encrypteddata [ 3 ] ;
+  size_t  reads = 0 ;
+  size_t  writes  = 0 ;
+  uint8_t const * restrict  input_buffer = &((* input . cp)[0]) ;
+  uint8_t * restrict  output_buffer = &((*  output  . p)[0]) ;
+  while ( reads < input . s and writes < output . s ) {
+    unsigned  char buf = ( * input_buffer ) ;
+    ++  input_buffer  ;
+    ++  reads ;
+    switch  ( ns_shifrp -> bitscount  ) {
+    case  0 :
+        // <= [ [1 0] [2 1 0] [2 1 0] ]
+        ( ns_shifrp -> secretdata ) [ 0 ]  = buf  bitand 0x7 ;
+        ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  3 ) bitand 0x7 ;
+        ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  6 ;
+        ns_shifrp -> bitscount  = 2 ; // 0 + 8 - 6
+        secretdatasolesize  = 2 ;
+        break ;
+    case  1 : 
+        // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
+        ( ns_shifrp -> secretdata ) [ 0 ] = ( ns_shifrp -> secretdata ) [ 3 ] bitor
+          (( buf  bitand 0x3 )<<1) ;
+        ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  2 ) bitand 0x7 ;
+        ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  5 ;
+        ns_shifrp -> bitscount  = 0 ;   // 1 + 8 - 9
+        secretdatasolesize  = 3 ;
+        break ;
+    case  2 :
+        // <= [ [0] [2 1 0] [2 1 0] [2] ] <= [ [1 0] ..
+        ( ns_shifrp -> secretdata ) [ 0 ] = ( ns_shifrp -> secretdata ) [ 2 ] bitor
+          (( buf  bitand 0x1 )<<2) ;
+        ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  1 ) bitand 0x7 ;
+        ( ns_shifrp -> secretdata ) [ 2 ] = ( buf >>  4 ) bitand 0x7 ;
+        ( ns_shifrp -> secretdata ) [ 3 ] = buf >>  7 ;
+        ns_shifrp -> bitscount  = 1 ; // 2 + 8 - 9
+        secretdatasolesize  = 3 ;
+        break ;
+    default :
+      fprintf ( stderr  , ( ns_shifrp -> localerus ?
+        u8"неожиданное значение bitscount = %d\n":
+        "unexpected value bitscount = %d\n" ) , ns_shifrp -> bitscount ) ;
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
+        ( strcp ) & u8"неожиданное значение bitscount" :
+        ( strcp ) & "unexpected value bitscount" ) ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; } // switch  ( ns_shifrp -> bitscount  )
+    datasole6 ( ( arrcp ) & ( ns_shifrp -> secretdata ) , & secretdatasole ,
+      secretdatasolesize )  ;
+    // после подсоления, данные переворачиваем предыдущим ксором
+    data_xor6 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
+      & secretdatasole , secretdatasolesize )  ;
+    crypt_decrypt ( & secretdatasole , ( arrcp ) & ns_shifrp  -> shifr6 ,
+      & encrypteddata , secretdatasolesize ) ;
+    streambuf_write6 ( ns_shifrp , & ns_shifrp -> filebufto ,
+      ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
+      secretdatasolesize , ns_shifrp  -> flagtext )  ; } // while
+  return ( size_io ) { .i  = reads , .o  = writes  }  ; }
+
+/*
+void  shifr_flush3(t_ns_shifr * const ns_shifrp){
+  buf = 0 ;
+  feof  = true  ; 
+  if  ( bitscount ==  0 ) {
+    secretdatasolesize  = 0 ;
+    goto Ret ; }
+  secretdatasolesize  = 1 ;
+  if  ( bitscount ==  1 )
+    secretdata [ 0 ] = secretdata [ 3 ] ;
+  else
+    secretdata [ 0 ] = secretdata [ 2 ] ;
+  datasole6 ( ( arrcp ) & secretdata , & secretdatasole , secretdatasolesize )  ;
+  // после подсоления, данные переворачиваем предыдущим ксором
+  data_xor6 ( & old_last_data , & old_last_sole , & secretdatasole ,
+    secretdatasolesize )  ;
+  crypt_decrypt ( & secretdatasole , ( arrcp ) & ns_shifrp  -> shifr6 ,
+    & encrypteddata , secretdatasolesize ) ;
+  streambuf_write6 ( ns_shifrp , & ns_shifrp -> filebufto ,
+    ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
+  secretdatasolesize , ns_shifrp  -> flagtext )  ;
+Ret :
+
+  streambuf_writeflushzero ( ns_shifrp , & ns_shifrp -> filebufto ) ; 
+
+ }
+*/
 void  shifr_encrypt6 ( t_ns_shifr * const ns_shifrp ) {
-  // версия 6 шифруем ...
   int bitscount  = 0 ;
   uint8_t secretdata  [ 4 ] ;
   uint8_t secretdatasole  [ 3 ] ;
@@ -540,7 +628,7 @@ void  shifr_encrypt6 ( t_ns_shifr * const ns_shifrp ) {
       buf = 0 ;
       feof  = true  ; 
       if  ( bitscount ==  0 ) {
-        secretdatasolesize  = 0 ;
+        //secretdatasolesize  = 0 ;
         break ; }
       secretdatasolesize  = 1 ;
       if  ( bitscount ==  1 )
@@ -550,7 +638,7 @@ void  shifr_encrypt6 ( t_ns_shifr * const ns_shifrp ) {
       addr_sole_xor_crypt_write =  1  ;
       goto  sole_xor_crypt_write  ;
       addr_sole_xor_crypt_write1  : ;
-      break ; }
+      break ; } // if ( readcount == 0 )
     switch  ( bitscount  ) {
     case  0 :
         // <= [ [1 0] [2 1 0] [2 1 0] ]
@@ -584,7 +672,7 @@ void  shifr_encrypt6 ( t_ns_shifr * const ns_shifrp ) {
         ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
           ( strcp ) & u8"неожиданное значение bitscount" :
           ( strcp ) & "unexpected value bitscount" ) ;
-        longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+        longjmp ( ns_shifrp  -> jump  , 1 ) ; } // switch  ( bitscount  )
     addr_sole_xor_crypt_write =  0  ;
     goto  sole_xor_crypt_write  ;
     addr_sole_xor_crypt_write0  : ;
@@ -670,7 +758,7 @@ size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
 Exit :
   return  ( size_io ) { .i  = reads , .o  = writes  } ; }
 
-void shifr_decode6 ( t_ns_shifr * const ns_shifrp ) {
+void shifr_decrypt6 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t secretdata [ 1 ] ;
   uint8_t old_last_data = 0 ;
   uint8_t old_last_sole = 0 ;
