@@ -123,6 +123,7 @@ struct  s_ns_shifr  {
   // ver3
   int bitscount ;
   uint8_t secretdata  [ 4 ] ;
+  uint8_t secretdatasole  [ 3 ] ;
   } ;
 
 struct  s_arrcps {

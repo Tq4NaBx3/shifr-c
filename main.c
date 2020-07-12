@@ -78,8 +78,8 @@ int main  ( int argc , char * argv [ ] )  {
       u8"  --4\tиспользовать четырёх битное шифрование, ключ = 45 бит ( шесть-восемь букв )." :
       "  --4\tusing four bit encryption, key = 45 bits ( six-eight letters )." ) ;
     puts  ( main_shifr . localerus ?
-      u8"  --6\tиспользовать шести битное шифрование, ключ = 296 бит ( 45 - 50 букв ). ( по-умолчанию )" :
-      "  --6\tusing six bit encryption, key = 296 bits ( 45 - 50 letters ). ( by default )") ;
+      u8"  --6 --3\tиспользовать шести трёх битное шифрование, ключ = 296 бит ( 45 - 50 букв ). ( по-умолчанию )" :
+      "  --6 --3\tusing six three bit encryption, key = 296 bits ( 45 - 50 letters ). ( by default )") ;
     fputs  ( main_shifr . localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
@@ -291,6 +291,9 @@ int main  ( int argc , char * argv [ ] )  {
           ( strcmp ( argv[argj] , "--text" ) ==  0 )){ 
           main_shifr  . flagtext = true  ; }
         else
+        if ( strcmp ( argv[argj] , u8"--3" ) ==  0 ){ 
+          main_shifr . use_version = 3 ; }
+        else
         if ( strcmp ( argv[argj] , u8"--4" ) ==  0 ){ 
           main_shifr . use_version = 4 ; }
         else
@@ -324,6 +327,7 @@ int main  ( int argc , char * argv [ ] )  {
     number_princ  ( number_size2 ) ( & main_shifr . raspr4  . pass , stderr  ) ;
     fputs ( "\n" , stderr ) ;
     break ;
+  case  3 :
   case  6 :
     fputs ( ( main_shifr . localerus ?
       u8"внутренний пароль = " :
@@ -333,11 +337,11 @@ int main  ( int argc , char * argv [ ] )  {
     break ;
   default :
     fprintf ( stderr , ( main_shifr . localerus ?
-      u8"неопознанная версия : \'%d\'\n" :
-      "unrecognized version : \'%d\'\n" ) , main_shifr . use_version ) ;
+      u8"flaggenpasswd : неопознанная версия : \'%d\'\n" :
+      "flaggenpasswd : unrecognized version : \'%d\'\n" ) , main_shifr . use_version ) ;
     main_shifr  . string_exception  = ( main_shifr . localerus ?
-      ( strcp ) & u8"неопознанная версия" :
-      ( strcp ) & "unrecognized version" ) ;
+      ( strcp ) & u8"flaggenpasswd : неопознанная версия" :
+      ( strcp ) & "flaggenpasswd : unrecognized version" ) ;
     longjmp ( main_shifr  . jump  , 1 ) ; }
 # endif
     char  password_letters2 [ 20 ] ;
@@ -349,6 +353,7 @@ int main  ( int argc , char * argv [ ] )  {
       password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr4  . pass ,
         & password_letters2 , & main_shifr . letters2 , letters_count2 ) ; 
       break ;
+    case  3 :
     case  6 :
       password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr6  . pass ,
         & main_shifr  . password_letters3 , & main_shifr . letters , letters_count ) ;
@@ -357,21 +362,21 @@ int main  ( int argc , char * argv [ ] )  {
       break ;
     default :
       fprintf ( stderr , ( main_shifr . localerus ?
-        u8"неопознанная версия : \'%d\'\n" :
-        "unrecognized version : \'%d\'\n" ) , main_shifr . use_version ) ;
+        u8"показать пароль : неопознанная версия : \'%d\'\n" :
+        "show password : unrecognized version : \'%d\'\n" ) , main_shifr . use_version ) ;
       main_shifr  . string_exception  = ( main_shifr . localerus ?
-        ( strcp ) & u8"неопознанная версия" :
-        ( strcp ) & "unrecognized version" ) ;
+        ( strcp ) & u8"показать пароль : неопознанная версия" :
+        ( strcp ) & "show password : unrecognized version" ) ;
       longjmp ( main_shifr  . jump  , 1 ) ; }
 # ifdef SHIFR_DEBUG        
     printf  ( ( main_shifr . localerus ? u8"--a95\tбуквами между кавычек = \'%s\'\n" : 
       "--a95\tby letters between quotes = \'%s\'\n"  ) ,
-      & ( ( ( main_shifr . use_version == 6 ) ? main_shifr  . password_letters3 :
+      & ( ( ( main_shifr . use_version == 6 or main_shifr . use_version == 3 ) ? main_shifr  . password_letters3 :
         main_shifr  . password_letters2 ) [ 0 ] ) ) ;
     printf  ( ( main_shifr . localerus ?
       u8"--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
       "--a62\tby letters between quotes = \'%s\' (by default)\n"  ) ,
-      & ( ( ( main_shifr . use_version == 6 ) ? password_letters62 :
+      & ( ( ( main_shifr . use_version == 6 or main_shifr . use_version == 3 ) ? password_letters62 :
         password_letters2 )  [ 0 ] ) ) ;
     switch  ( main_shifr . use_version ) {
     case  4 :
@@ -395,6 +400,7 @@ int main  ( int argc , char * argv [ ] )  {
         number_princ  ( number_size2 ) ( & password2 , stderr  ) ;
         fputs ( "\n" , stderr ) ;  }
       break ;
+    case  3 :
     case  6 :
       { number_type ( number_size3 ) password2 ;
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
@@ -480,7 +486,7 @@ int main  ( int argc , char * argv [ ] )  {
   streambuf_init  ( & main_shifr . filebufto , main_shifr  . fileto )  ;
   password_load_uni ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG    
-  if ( main_shifr . use_version == 6 )  {
+  if ( main_shifr . use_version == 6 or main_shifr . use_version == 3 )  {
     printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr6 ,
       deshi_size6 , stderr  ) ;
     printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi6 , deshi_size6 ,
@@ -492,6 +498,85 @@ int main  ( int argc , char * argv [ ] )  {
       stderr  ) ; }
 # endif // SHIFR_DEBUG
   if ( flagenc ) {
+
+  if ( main_shifr . use_version == 3 )  {
+    uint8_t inputbuffer [ 0x1000  ] ;
+    size_t  outputbuffersize ;
+    if ( main_shifr . flagtext )
+      outputbuffersize  = 0x3100  ;
+    else
+      outputbuffersize  = 0x2100  ;
+    uint8_t outputbuffer  [ outputbuffersize ] ;
+    size_t  writecount  ;
+    size_io sizeio  ;
+    do  {
+      size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , 0x1000 ,
+        main_shifr . filefrom ) ;
+      if ( readcount  ) {
+        //if ( main_shifr . use_version == 4 )
+          /*sizeio  = shifr_encrypt2  ( & main_shifr ,
+            ( arrcps ) { .cp = ( arrcp ) & inputbuffer , .s = readcount } ,
+            ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;*/
+        /*else*/
+          sizeio  = shifr_encrypt3  ( & main_shifr ,
+            ( arrcps ) { .cp = ( arrcp ) & inputbuffer , .s = readcount } ,
+            ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
+# ifdef SHIFR_DEBUG
+        if ( sizeio . i < readcount ) {
+          fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
+            readcount ) ;
+          main_shifr . string_exception  = ( strcp ) & "sizeio . i < readcount" ;
+          longjmp ( main_shifr . jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
+        writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeio . o , 1 ,
+          main_shifr . fileto ) ;
+        if ( writecount == 0 ) {
+          main_shifr . string_exception  = ( main_shifr . localerus ?
+            ( strcp ) & u8"v3:ошибка записи в файл" :
+            ( strcp ) & "v3:error writing to file" ) ;
+          longjmp ( main_shifr . jump  , 1 ) ; }
+        if ( feof ( main_shifr . filefrom ) )
+          break ; }
+      else {
+        if ( ferror ( main_shifr . filefrom ) ) {
+          main_shifr . string_exception  = ( main_shifr . localerus ?
+            ( strcp ) & u8"ошибка чтения файла" :
+            ( strcp ) & "error reading the file" ) ;
+          longjmp ( main_shifr . jump  , 1 ) ; }
+        break ; }
+    } while ( true ) ;
+    //size_t sizeout  ;
+    //if ( main_shifr . use_version == 4 )
+      /*sizeout = shifr_encrypt2_flush  ( & main_shifr ,
+        ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize }  ) ;*/
+    /*else*/
+//fprintf(stderr,u8"main:outputbuffersize = %zu\n",outputbuffersize);
+fprintf(stderr,u8"1.main:sizeio . o = %zu\n",sizeio . o);
+      streambuf_writeflushzero3 ( & main_shifr ,
+        ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
+fprintf(stderr,u8"2.main:sizeio . o = %zu\n",sizeio . o);
+      writecount = fwrite ( & ( outputbuffer [ 0 ] ) , 1/*sizeio . o*/ , 1 ,
+        main_shifr . fileto ) ;
+      if ( writecount == 0 ) {
+        main_shifr . string_exception  = ( main_shifr . localerus ?
+          ( strcp ) & u8"v3:ошибка записи в файл" :
+          ( strcp ) & "v3:error writing to file" ) ;
+        longjmp ( main_shifr . jump  , 1 ) ; }
+
+      //streambuf_writeflushzero ( & main_shifr , & main_shifr . filebufto ) ;
+      streambuf_writeflushzeroE ( & main_shifr , & main_shifr . filebufto ) ;
+  
+    /*if  ( sizeout ) {
+      writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeout , 1 ,
+        main_shifr . fileto ) ;
+      if ( writecount == 0 ) {
+Exc3 :
+        main_shifr . string_exception  = ( main_shifr . localerus ?
+          ( strcp ) & u8"ошибка записи в файл" :
+          ( strcp ) & "error writing to file" ) ;
+        longjmp ( main_shifr . jump  , 1 ) ; } }*/ } // use_version == 3
+    else
+
     if ( main_shifr . use_version == 4 )  {
     uint8_t inputbuffer [ 0x1000  ] ;
     size_t  outputbuffersize ;
@@ -551,7 +636,7 @@ Exc :
           ( strcp ) & u8"ошибка записи в файл" :
           ( strcp ) & "error writing to file" ) ;
         longjmp ( main_shifr . jump  , 1 ) ; } } } // use_version == 4
-    else 
+    else
       shifr_encrypt6 ( & main_shifr  ) ; } // flagenc
   else { // flagdec
     if ( main_shifr . use_version == 4 )  {

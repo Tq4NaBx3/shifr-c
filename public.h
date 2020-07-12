@@ -155,4 +155,12 @@ Reads data from '->filefrom', writes to '->fileto'
 */
 void  shifr_decrypt6 ( t_ns_shifr * ) ;
 
+void  streambuf_writeflushzero3 ( t_ns_shifr * , arrps ) ;
+
+void  streambuf_writeflushzero ( t_ns_shifr * const ns_shifrp ,
+  t_streambuf * const restrict me ) ;
+  
+void  streambuf_writeflushzeroE ( t_ns_shifr * const ns_shifrp ,
+  t_streambuf * const restrict me ) ;
+
 # endif // SHIFRPUBLICH

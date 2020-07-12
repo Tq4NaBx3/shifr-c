@@ -349,6 +349,7 @@ static  inline  void  enter_password4 ( t_ns_shifr * const ns_shifrp ) {
 # define  enter_password  shifr_enter_password
 static  inline  void  enter_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
+    case  3 :
     case  6 :
       enter_password6  ( ns_shifrp ) ;
       break ;
@@ -450,6 +451,7 @@ static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
       fputs ( "\n" , stderr ) ;
 # endif
       break ;
+    case 3 :
     case 6 :
       shifr_generate_pass6  ( ns_shifrp ) ;
       shifr_pass_to_array6  ( ns_shifrp ) ;
