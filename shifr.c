@@ -167,10 +167,10 @@ static  void datasole ( arrcp const secretdata , arrp const secretdatasole ,
 
 static void datasole6 ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
-fprintf ( stderr  , u8"datasole6:data_size = %zu\n" , data_size ) ;
+/*fprintf ( stderr  , u8"datasole6:data_size = %zu\n" , data_size ) ;
 fputs ( u8"datasole6:secretdata = [ " , stderr  ) ;
 {size_t ii = 0 ;while(ii<data_size){fprintf ( stderr  , u8"0x%x , " , ( * secretdata  ) [ ii ] ) ;++ii;}}
-fputs ( u8"]\n" , stderr  ) ;
+fputs ( u8"]\n" , stderr  ) ;*/
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
   int ran = rand ( )  ;
@@ -185,9 +185,9 @@ fputs ( u8"]\n" , stderr  ) ;
       ( ran bitand  0x7 ) ;
     ran >>= 3 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ;
-fputs ( u8"datasole6:secretdatasole = [ " , stderr  ) ;
+/*fputs ( u8"datasole6:secretdatasole = [ " , stderr  ) ;
 {size_t ii = 0 ;while(ii<data_size){fprintf ( stderr  , u8"0x%x , " , ( * secretdatasole  ) [ ii ] ) ;++ii;}}
-fputs ( u8"]\n" , stderr  ) ;
+fputs ( u8"]\n" , stderr  ) ;*/
  }
 
 static inline void  data_xor  ( uint8_t * const restrict  old_last_data ,
@@ -450,8 +450,8 @@ static void  streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
 
 void  streambuf_writeflushzero ( t_ns_shifr * const ns_shifrp ,
   t_streambuf * const restrict me ) {
-fprintf ( stderr , u8"streambuf_writeflushzero:streambuf_bufbitsize  ( me  )=%u\n" ,
-  (unsigned int)streambuf_bufbitsize  ( me  ) ) ;
+/*fprintf ( stderr , u8"streambuf_writeflushzero:streambuf_bufbitsize  ( me  )=%u\n" ,
+  (unsigned int)streambuf_bufbitsize  ( me  ) ) ;*/
   if  ( streambuf_bufbitsize  ( me  ) ) {
     size_t  writen_count  ;
       writen_count = fwrite ( & streambuf_buf ( me  ) , 1 , 1 ,
@@ -475,20 +475,22 @@ fprintf ( stderr , u8"streambuf_writeflushzero:streambuf_bufbitsize  ( me  )=%u\
         ( strcp ) & "streambuf_writeflushzero: byte write error" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } } }
   
-void  streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
+uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
   arrps arrpsp ) {
-fprintf ( stderr  , u8"1.ns_shifrp -> bitscount = %d\n" , ns_shifrp -> bitscount ) ;
+//fprintf ( stderr  , u8"1.ns_shifrp -> bitscount = %d\n" , ns_shifrp -> bitscount ) ;
+  uint8_t result  = 0 ;
+  uint8_t * restrict  output_buffer = &((*  arrpsp  . p)[0]) ;
   if  ( ns_shifrp -> bitscount ==  0 )
     goto  lbreak ;
   uint8_t secretdatasolesize  = 1 ;
-fprintf ( stderr  , u8"1.secretdatasolesize = %u\n" ,
-  (unsigned int )secretdatasolesize ) ;
+/*fprintf ( stderr  , u8"1.secretdatasolesize = %u\n" ,
+  (unsigned int )secretdatasolesize ) ;*/
   if  ( ns_shifrp -> bitscount ==  1 )
     ns_shifrp -> secretdata [ 0 ] = ns_shifrp -> secretdata [ 3 ] ;
   else
     ns_shifrp -> secretdata [ 0 ] = ns_shifrp -> secretdata [ 2 ] ;
-fprintf ( stderr  , u8"1.ns_shifrp -> secretdata = [ [0] = 0x%x ]\n" ,
-  (unsigned int )(ns_shifrp -> secretdata [ 0 ]) ) ;
+/*fprintf ( stderr  , u8"1.ns_shifrp -> secretdata = [ [0] = 0x%x ]\n" ,
+  (unsigned int )(ns_shifrp -> secretdata [ 0 ]) ) ;*/
 
   datasole6 ( ( arrcp ) & ns_shifrp -> secretdata , & ns_shifrp -> secretdatasole ,
     secretdatasolesize )  ;
@@ -498,60 +500,30 @@ fprintf ( stderr  , u8"1.ns_shifrp -> secretdata = [ [0] = 0x%x ]\n" ,
   uint8_t encrypteddata [ 3 ] ;
   crypt_decrypt ( & ns_shifrp -> secretdatasole , ( arrcp ) & ns_shifrp  -> shifr6 ,
     & encrypteddata , secretdatasolesize ) ;
-  uint8_t * restrict  output_buffer = &((*  arrpsp  . p)[0]) ;
+  
   size_t  writes  = 0 ;
   streambuf_write3 ( ns_shifrp , & ns_shifrp -> filebufto ,
     ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
     secretdatasolesize , ns_shifrp  -> flagtext , & output_buffer , & writes ,
     arrpsp . s )  ;
-fprintf(stderr,u8"streambuf_writeflushzero3:writes=%zu\n",writes);
-fprintf(stderr,u8"streambuf_writeflushzero3:encrypteddata[0] = 0x%x\n",
+  ++  result  ;
+//fprintf(stderr,u8"streambuf_writeflushzero3:writes=%zu\n",writes);
+/*fprintf(stderr,u8"streambuf_writeflushzero3:encrypteddata[0] = 0x%x\n",
   (unsigned int)(encrypteddata[0]));
 fprintf(stderr,u8"streambuf_writeflushzero3:(*  arrpsp  . p)[0] = 0x%x\n",
-  (unsigned int)((*  arrpsp  . p)[0]));
+  (unsigned int)((*  arrpsp  . p)[0]));*/
 lbreak  : ;
 
   t_streambuf * const restrict me = & ns_shifrp ->  filebufto ;
-fprintf ( stderr , u8"streambuf_writeflushzero3:streambuf_bufbitsize  ( me  )=%u\n" ,
-  (unsigned int)streambuf_bufbitsize  ( me  ) ) ;
-/*
-  if  ( arrpsp . s ) {
-    size_t  writen_count  ;
-      writen_count = fwrite ( & arrpsp . p , 1 , 1 ,
-        streambuf_file  ( me  ) ) ;
-    if ( writen_count < 1 ) {
-      clearerr ( streambuf_file  ( me  ) ) ; 
-      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-        ( strcp ) & u8"streambuf_writeflushzero3: ошибка записи байта" :
-        ( strcp ) & "streambuf_writeflushzero3: byte write error" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
-  if ( ns_shifrp  -> flagtext and streambuf_bytecount ( me  ) )  {
-    streambuf_bytecount ( me  ) = 0 ;
-    char  buf2 = '\n' ;
-    size_t  const writen_count = fwrite ( & buf2 , 1 , 1 , 
-      streambuf_file  ( me  ) ) ;
-    if ( writen_count < 1 ) {
-      clearerr ( streambuf_file  ( me  ) ) ; 
-      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-        ( strcp ) & u8"streambuf_writeflushzero3: ошибка записи байта" :
-        ( strcp ) & "streambuf_writeflushzero3: byte write error" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; } }*/ }
+/*fprintf ( stderr , u8"streambuf_writeflushzero3:streambuf_bufbitsize  ( me  )=%u\n" ,
+  (unsigned int)streambuf_bufbitsize  ( me  ) ) ;*/
 
-void  streambuf_writeflushzeroE ( t_ns_shifr * const ns_shifrp ,
-  t_streambuf * const restrict me ) {
-fprintf ( stderr , u8"streambuf_writeflushzeroE:streambuf_bufbitsize  ( me  )=%u\n" ,
-  (unsigned int)streambuf_bufbitsize  ( me  ) ) ;
   if ( ns_shifrp  -> flagtext and streambuf_bytecount ( me  ) )  {
     streambuf_bytecount ( me  ) = 0 ;
-    char  buf2 = '\n' ;
-    size_t  const writen_count = fwrite ( & buf2 , 1 , 1 , 
-      streambuf_file  ( me  ) ) ;
-    if ( writen_count < 1 ) {
-      clearerr ( streambuf_file  ( me  ) ) ; 
-      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-        ( strcp ) & u8"streambuf_writeflushzeroE: ошибка записи байта" :
-        ( strcp ) & "streambuf_writeflushzeroE: byte write error" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; } } }
+    ( * output_buffer ) = '\n' ;
+    ++  output_buffer ;
+    ++  result  ; }
+  return  result  ; }
 
 // версия 6 пишу три бита для расшифровки
 // version 6 write three bits to decode
@@ -678,8 +650,8 @@ size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
     unsigned  char buf = ( * input_buffer ) ;
     ++  input_buffer  ;
     ++  reads ;
-fprintf ( stderr  , u8"buf = 0x%x\n" , (unsigned int )buf ) ;
-fprintf ( stderr  , u8"0.ns_shifrp -> bitscount = %d\n" , ns_shifrp -> bitscount ) ;
+//fprintf ( stderr  , u8"buf = 0x%x\n" , (unsigned int )buf ) ;
+//fprintf ( stderr  , u8"0.ns_shifrp -> bitscount = %d\n" , ns_shifrp -> bitscount ) ;
     switch  ( ns_shifrp -> bitscount  ) {
     case  0 :
         // <= [ [1 0] [2 1 0] [2 1 0] ]
@@ -688,11 +660,11 @@ fprintf ( stderr  , u8"0.ns_shifrp -> bitscount = %d\n" , ns_shifrp -> bitscount
         ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  6 ;
         ns_shifrp -> bitscount  = 2 ; // 0 + 8 - 6
         secretdatasolesize  = 2 ;
-fprintf ( stderr  , u8"0.ns_shifrp -> secretdata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
+/*fprintf ( stderr  , u8"0.ns_shifrp -> secretdata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
   (unsigned int )(ns_shifrp -> secretdata [ 0 ]) , (unsigned int )(ns_shifrp -> secretdata [ 1 ]) ,
  (unsigned int )( ns_shifrp -> secretdata [ 2 ]) ) ;
 fprintf ( stderr  , u8"0.secretdatasolesize = %u\n" ,
-  (unsigned int )secretdatasolesize ) ;
+  (unsigned int )secretdatasolesize ) ;*/
         break ;
     case  1 : 
         // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
@@ -735,33 +707,6 @@ fprintf ( stderr  , u8"0.secretdatasolesize = %u\n" ,
     } // while
   return ( size_io ) { .i  = reads , .o  = writes  }  ; }
 
-/*
-void  shifr_flush3(t_ns_shifr * const ns_shifrp){
-  buf = 0 ;
-  feof  = true  ; 
-  if  ( bitscount ==  0 ) {
-    secretdatasolesize  = 0 ;
-    goto Ret ; }
-  secretdatasolesize  = 1 ;
-  if  ( bitscount ==  1 )
-    secretdata [ 0 ] = secretdata [ 3 ] ;
-  else
-    secretdata [ 0 ] = secretdata [ 2 ] ;
-  datasole6 ( ( arrcp ) & secretdata , & secretdatasole , secretdatasolesize )  ;
-  // после подсоления, данные переворачиваем предыдущим ксором
-  data_xor6 ( & old_last_data , & old_last_sole , & secretdatasole ,
-    secretdatasolesize )  ;
-  crypt_decrypt ( & secretdatasole , ( arrcp ) & ns_shifrp  -> shifr6 ,
-    & encrypteddata , secretdatasolesize ) ;
-  streambuf_write6 ( ns_shifrp , & ns_shifrp -> filebufto ,
-    ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
-  secretdatasolesize , ns_shifrp  -> flagtext )  ;
-Ret :
-
-  streambuf_writeflushzero ( ns_shifrp , & ns_shifrp -> filebufto ) ; 
-
- }
-*/
 void  shifr_encrypt6 ( t_ns_shifr * const ns_shifrp ) {
   int bitscount  = 0 ;
   uint8_t secretdata  [ 4 ] ;
@@ -784,25 +729,25 @@ void  shifr_encrypt6 ( t_ns_shifr * const ns_shifrp ) {
         longjmp ( ns_shifrp  -> jump  , 1 ) ; }
       buf = 0 ;
       feof  = true  ; 
-fprintf ( stderr  , u8"1.bitscount = %d\n" , bitscount ) ;
+//fprintf ( stderr  , u8"1.bitscount = %d\n" , bitscount ) ;
       if  ( bitscount ==  0 ) {
         //secretdatasolesize  = 0 ;
         break ; }
       secretdatasolesize  = 1 ;
-fprintf ( stderr  , u8"1.secretdatasolesize = %u\n" ,
-  (unsigned int )secretdatasolesize ) ;
+/*fprintf ( stderr  , u8"1.secretdatasolesize = %u\n" ,
+  (unsigned int )secretdatasolesize ) ;*/
       if  ( bitscount ==  1 )
         secretdata [ 0 ] = secretdata [ 3 ] ;
       else
         secretdata [ 0 ] = secretdata [ 2 ] ;
-fprintf ( stderr  , u8"1.secretdata = [ [0] = 0x%x ]\n" ,
-  (unsigned int )(secretdata [ 0 ]) ) ;
+/*fprintf ( stderr  , u8"1.secretdata = [ [0] = 0x%x ]\n" ,
+  (unsigned int )(secretdata [ 0 ]) ) ;*/
       addr_sole_xor_crypt_write =  1  ;
       goto  sole_xor_crypt_write  ;
       addr_sole_xor_crypt_write1  : ;
       break ; } // if ( readcount == 0 )
-fprintf ( stderr  , u8"buf = 0x%x\n" , (unsigned int )buf ) ;
-fprintf ( stderr  , u8"0.bitscount = %d\n" , bitscount ) ;
+//fprintf ( stderr  , u8"buf = 0x%x\n" , (unsigned int )buf ) ;
+//fprintf ( stderr  , u8"0.bitscount = %d\n" , bitscount ) ;
     switch  ( bitscount  ) {
     case  0 :
         // [ [0 1 2] [0 1 2] [0 1] ] =>
@@ -811,11 +756,11 @@ fprintf ( stderr  , u8"0.bitscount = %d\n" , bitscount ) ;
         secretdata [ 2 ] = buf >>  6 ;
         bitscount  = 2 ; // 0 + 8 - 6
         secretdatasolesize  = 2 ;
-fprintf ( stderr  , u8"0.secretdata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
+/*fprintf ( stderr  , u8"0.secretdata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
   (unsigned int )(secretdata [ 0 ]) , (unsigned int )(secretdata [ 1 ]) ,
  (unsigned int )( secretdata [ 2 ]) ) ;
 fprintf ( stderr  , u8"0.secretdatasolesize = %u\n" ,
-  (unsigned int )secretdatasolesize ) ;
+  (unsigned int )secretdatasolesize ) ;*/
         break ;
     case  1 : 
         // .. [0] ] => [ [1 2] [0 1 2] [0 1 2] ] =>

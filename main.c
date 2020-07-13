@@ -513,11 +513,6 @@ int main  ( int argc , char * argv [ ] )  {
       size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , 0x1000 ,
         main_shifr . filefrom ) ;
       if ( readcount  ) {
-        //if ( main_shifr . use_version == 4 )
-          /*sizeio  = shifr_encrypt2  ( & main_shifr ,
-            ( arrcps ) { .cp = ( arrcp ) & inputbuffer , .s = readcount } ,
-            ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;*/
-        /*else*/
           sizeio  = shifr_encrypt3  ( & main_shifr ,
             ( arrcps ) { .cp = ( arrcp ) & inputbuffer , .s = readcount } ,
             ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
@@ -526,6 +521,11 @@ int main  ( int argc , char * argv [ ] )  {
           fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
             readcount ) ;
           main_shifr . string_exception  = ( strcp ) & "sizeio . i < readcount" ;
+          longjmp ( main_shifr . jump  , 1 ) ; }
+        if ( sizeio . o > outputbuffersize ) {
+          fprintf ( stderr  , "sizeio . o = %zu , outputbuffersize = %zu\n"  , sizeio . o ,
+            outputbuffersize ) ;
+          main_shifr . string_exception  = ( strcp ) & "sizeio . o > outputbuffersize" ;
           longjmp ( main_shifr . jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
         writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeio . o , 1 ,
@@ -544,37 +544,19 @@ int main  ( int argc , char * argv [ ] )  {
             ( strcp ) & "error reading the file" ) ;
           longjmp ( main_shifr . jump  , 1 ) ; }
         break ; }
-    } while ( true ) ;
-    //size_t sizeout  ;
-    //if ( main_shifr . use_version == 4 )
-      /*sizeout = shifr_encrypt2_flush  ( & main_shifr ,
-        ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize }  ) ;*/
-    /*else*/
-//fprintf(stderr,u8"main:outputbuffersize = %zu\n",outputbuffersize);
-fprintf(stderr,u8"1.main:sizeio . o = %zu\n",sizeio . o);
-      streambuf_writeflushzero3 ( & main_shifr ,
-        ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
-fprintf(stderr,u8"2.main:sizeio . o = %zu\n",sizeio . o);
-      writecount = fwrite ( & ( outputbuffer [ 0 ] ) , 1/*sizeio . o*/ , 1 ,
-        main_shifr . fileto ) ;
+    } while ( true ) ;      
+//fprintf(stderr,u8"1.main:sizeio . o = %zu\n",sizeio . o);
+      { uint8_t bytes = streambuf_writeflushzero3 ( & main_shifr ,
+          ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
+//fprintf(stderr,u8"2.main:bytes = %u\n",(unsigned int)bytes);
+        writecount = fwrite ( & ( outputbuffer [ 0 ] ) , bytes , 1 ,
+          main_shifr . fileto ) ; } // bytes
       if ( writecount == 0 ) {
         main_shifr . string_exception  = ( main_shifr . localerus ?
           ( strcp ) & u8"v3:ошибка записи в файл" :
           ( strcp ) & "v3:error writing to file" ) ;
         longjmp ( main_shifr . jump  , 1 ) ; }
-
-      //streambuf_writeflushzero ( & main_shifr , & main_shifr . filebufto ) ;
-      streambuf_writeflushzeroE ( & main_shifr , & main_shifr . filebufto ) ;
-  
-    /*if  ( sizeout ) {
-      writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeout , 1 ,
-        main_shifr . fileto ) ;
-      if ( writecount == 0 ) {
-Exc3 :
-        main_shifr . string_exception  = ( main_shifr . localerus ?
-          ( strcp ) & u8"ошибка записи в файл" :
-          ( strcp ) & "error writing to file" ) ;
-        longjmp ( main_shifr . jump  , 1 ) ; } }*/ } // use_version == 3
+      } // use_version == 3
     else
 
     if ( main_shifr . use_version == 4 )  {
