@@ -528,6 +528,7 @@ int main  ( int argc , char * argv [ ] )  {
           main_shifr . string_exception  = ( strcp ) & "sizeio . o > outputbuffersize" ;
           longjmp ( main_shifr . jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
+fprintf(stderr,u8"0.main:sizeio . o = %zu\n",sizeio . o);
         writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeio . o , 1 ,
           main_shifr . fileto ) ;
         if ( writecount == 0 ) {
@@ -545,10 +546,10 @@ int main  ( int argc , char * argv [ ] )  {
           longjmp ( main_shifr . jump  , 1 ) ; }
         break ; }
     } while ( true ) ;      
-//fprintf(stderr,u8"1.main:sizeio . o = %zu\n",sizeio . o);
+fprintf(stderr,u8"1.main:sizeio . o = %zu\n",sizeio . o);
       { uint8_t bytes = streambuf_writeflushzero3 ( & main_shifr ,
           ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
-//fprintf(stderr,u8"2.main:bytes = %u\n",(unsigned int)bytes);
+fprintf(stderr,u8"2.main:bytes = %u\n",(unsigned int)bytes);
         writecount = fwrite ( & ( outputbuffer [ 0 ] ) , bytes , 1 ,
           main_shifr . fileto ) ; } // bytes
       if ( writecount == 0 ) {
