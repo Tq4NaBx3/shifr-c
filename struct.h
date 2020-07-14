@@ -74,8 +74,8 @@ struct  s_ns_shifr  {
   // ver3
   t_raspr6 raspr6 ;
 
-  //  4 or 6
-  //  4 или 6
+  //  2 or 3
+  //  2 или 3
   int use_version ; 
 
   FILE  * filefrom  ;

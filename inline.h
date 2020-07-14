@@ -231,7 +231,7 @@ static  inline  number_def_div_mod  ( number_size3 )
 
 static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
   ( * ns_shifrp ) = ( t_ns_shifr ) {
-    . use_version  = 6 ,
+    . use_version  = 3 ,
     . flagtext = false ,
     . password_alphabet = 62 ,
     . old_last_data = 0 ,
@@ -350,10 +350,9 @@ static  inline  void  enter_password4 ( t_ns_shifr * const ns_shifrp ) {
 static  inline  void  enter_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
     case  3 :
-    case  6 :
       enter_password6  ( ns_shifrp ) ;
       break ;
-    case 4 :
+    case 2 :
       enter_password4  ( ns_shifrp ) ;
       break ;
     default :
@@ -440,7 +439,7 @@ static  inline  shifr_password_load_def (  number_size3 , deshi_size6 )
 # define  generate_password shifr_generate_password
 static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version  ) {
-    case  4 : 
+    case  2 : 
       shifr_generate_pass4  ( ns_shifrp ) ;
       shifr_pass_to_array4  ( ns_shifrp ) ;
 # ifdef SHIFR_DEBUG
@@ -452,7 +451,6 @@ static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
 # endif
       break ;
     case 3 :
-    case 6 :
       shifr_generate_pass6  ( ns_shifrp ) ;
       shifr_pass_to_array6  ( ns_shifrp ) ;
 # ifdef SHIFR_DEBUG

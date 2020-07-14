@@ -506,7 +506,7 @@ uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
     ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
     secretdatasolesize , ns_shifrp  -> flagtext , & output_buffer , & writes ,
     arrpsp . s )  ;
-fprintf(stderr,u8"streambuf_writeflushzero3:writes=%zu\n",writes);
+//fprintf(stderr,u8"streambuf_writeflushzero3:writes=%zu\n",writes);
   ++  result  ;
 /*fprintf(stderr,u8"streambuf_writeflushzero3:encrypteddata[0] = 0x%x\n",
   (unsigned int)(encrypteddata[0]));
@@ -515,8 +515,8 @@ fprintf(stderr,u8"streambuf_writeflushzero3:(*  arrpsp  . p)[0] = 0x%x\n",
 lbreak  : ;
 
   t_streambuf * const restrict me = & ns_shifrp ->  filebufto ;
-fprintf ( stderr , u8"streambuf_writeflushzero3:streambuf_bufbitsize  ( me  )=%u\n" ,
-  (unsigned int)streambuf_bufbitsize  ( me  ) ) ;
+/*fprintf ( stderr , u8"streambuf_writeflushzero3:streambuf_bufbitsize  ( me  )=%u\n" ,
+  (unsigned int)streambuf_bufbitsize  ( me  ) ) ;*/
 
   if  ( streambuf_bufbitsize  ( me  ) ) {
     ( * output_buffer ) = streambuf_buf ( me  ) ;
@@ -666,11 +666,13 @@ size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
         ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  6 ;
         ns_shifrp -> bitscount  = 2 ; // 0 + 8 - 6
         secretdatasolesize  = 2 ;
-fprintf ( stderr  , u8"0.ns_shifrp -> secretdata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
-  (unsigned int )(ns_shifrp -> secretdata [ 0 ]) , (unsigned int )(ns_shifrp -> secretdata [ 1 ]) ,
- (unsigned int )( ns_shifrp -> secretdata [ 2 ]) ) ;
+/*fprintf ( stderr  ,
+  u8"0.ns_shifrp -> secretdata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
+  (unsigned int )(ns_shifrp -> secretdata [ 0 ]) ,
+  (unsigned int )(ns_shifrp -> secretdata [ 1 ]) ,
+  (unsigned int )( ns_shifrp -> secretdata [ 2 ]) ) ;
 fprintf ( stderr  , u8"0.secretdatasolesize = %u\n" ,
-  (unsigned int )secretdatasolesize ) ;
+  (unsigned int )secretdatasolesize ) ;*/
         break ;
     case  1 : 
         // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
@@ -706,16 +708,16 @@ fprintf ( stderr  , u8"0.secretdatasolesize = %u\n" ,
       & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
     crypt_decrypt ( & ns_shifrp -> secretdatasole , ( arrcp ) & ns_shifrp  -> shifr6 ,
       & encrypteddata , secretdatasolesize ) ;
-fprintf ( stderr  ,
+/*fprintf ( stderr  ,
   u8"shifr_encrypt3:encrypteddata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
   (unsigned int )(encrypteddata [ 0 ]) , (unsigned int )(encrypteddata [ 1 ]) ,
  (unsigned int )( encrypteddata [ 2 ]) ) ;
-fprintf(stderr,u8"shifr_encrypt3:0.writes=%zu\n",writes);
+fprintf(stderr,u8"shifr_encrypt3:0.writes=%zu\n",writes);*/
     streambuf_write3 ( ns_shifrp , & ns_shifrp -> filebufto ,
       ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
       secretdatasolesize , ns_shifrp  -> flagtext , & output_buffer , & writes ,
       output . s )  ;
-fprintf(stderr,u8"shifr_encrypt3:1.writes=%zu\n",writes);
+//fprintf(stderr,u8"shifr_encrypt3:1.writes=%zu\n",writes);
     } // while
   return ( size_io ) { .i  = reads , .o  = writes  }  ; }
 
@@ -972,7 +974,7 @@ number_def_princ  ( number_size3 )
 
 void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
       switch ( ns_shifrp -> use_version ) {
-      case 4 :
+      case 2 :
         if ( ns_shifrp -> password_alphabet == 95 )
           string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
             ( strcp ) & ns_shifrp  -> password_letters2 ,
@@ -985,7 +987,6 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
             ( strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
       break ;
       case 3 :
-      case 6 : 
         if ( ns_shifrp -> password_alphabet == 95 )
           string_to_password_templ  ( number_size3 ) ( ns_shifrp ,
             ( strcp ) & ns_shifrp  -> password_letters3 ,
@@ -1008,12 +1009,11 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
 
 void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {
-  case 4 :
+  case 2 :
     password_load ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
       & ns_shifrp  -> shifr , & ns_shifrp  -> deshi ) ;
     break ;
   case 3 :
-  case 6 :
     password_load ( number_size3 ) ( & ns_shifrp -> raspr6  . pass , 
       & ns_shifrp  -> shifr6 , & ns_shifrp  -> deshi6 ) ;
     break ;
@@ -1028,7 +1028,7 @@ void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
 
 void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version ) {
-  case  4 : {
+  case  2 : {
         if ( ns_shifrp -> password_alphabet == 95 )
           password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
             & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters ,
@@ -1038,7 +1038,7 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
             & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters2 ,
             letters_count2 ) ; 
         break ; }
-   case 6 : {
+   case 3 : {
         if ( ns_shifrp -> password_alphabet == 95 )
           password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
             & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters ,
@@ -1057,4 +1057,3 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
         ( strcp ) & u8"password_to_string:версия не поддерживается" :
         ( strcp ) & "password_to_string:version is not supported" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
-
