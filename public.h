@@ -62,18 +62,18 @@ password_to_string_templ_dec  ( number_size3 )
 # define  password_to_string_templ  shifr_password_to_string_templ
 
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass4 ( t_ns_shifr * ) ;
+void  shifr_generate_pass2 ( t_ns_shifr * ) ;
 
 // inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass6 ( t_ns_shifr * ) ;
+void  shifr_generate_pass3 ( t_ns_shifr * ) ;
 
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
-void  shifr_pass_to_array4 ( t_ns_shifr * ) ;
+void  shifr_pass_to_array2 ( t_ns_shifr * ) ;
 
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
-void  shifr_pass_to_array6 ( t_ns_shifr * ) ;
+void  shifr_pass_to_array3 ( t_ns_shifr * ) ;
 
 // Disable ping and input buffering
 // Отключить эхо-вывод и буферизацию ввода
@@ -107,14 +107,6 @@ Translation of the internal password '-> raspr. pass' to letters '-> password_le
 */
 # define  password_to_string  shifr_password_to_string
 void  password_to_string  ( t_ns_shifr * ) ;
-
-/*
-Encryption
-Reads data from '->filefrom', writes to '->fileto'
-Шифрование
-Читает данные из '->filefrom' , записывает в '->fileto'
-*/
-void  shifr_encrypt6 ( t_ns_shifr * ) ;
 
 /*
 Encryption
@@ -153,11 +145,8 @@ Reads data from '->filefrom', writes to '->fileto'
 Расшифровка
 Читает данные из '->filefrom' , записывает в '->fileto'
 */
-void  shifr_decrypt6 ( t_ns_shifr * ) ;
+void  shifr_decrypt3 ( t_ns_shifr * ) ;
 
 uint8_t  streambuf_writeflushzero3 ( t_ns_shifr * , arrps ) ;
 
-void  streambuf_writeflushzero ( t_ns_shifr * const ns_shifrp ,
-  t_streambuf * const restrict me ) ;
-  
 # endif // SHIFRPUBLICH

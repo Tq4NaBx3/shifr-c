@@ -10,15 +10,15 @@
 
 number_def  ( number_size2 )
 
-struct  s_raspr4 {
+struct  s_raspr2 {
   uint8_t dice  [ deshi_size2 - 1  ] ;
   number_type ( number_size2 ) pass  ;
   } ;
 
 number_def  ( number_size3 )
 
-struct  s_raspr6 {
-  uint8_t dice  [ deshi_size6 - 1 ] ;
+struct  s_raspr3 {
+  uint8_t dice  [ deshi_size3 - 1 ] ;
   number_type ( number_size3 ) pass  ;
   } ;
 
@@ -70,9 +70,9 @@ struct  s_ns_shifr  {
   strcp string_exception ;
 
   // ver2
-  t_raspr4 raspr4 ;
+  t_raspr2 raspr2 ;
   // ver3
-  t_raspr6 raspr6 ;
+  t_raspr3 raspr3 ;
 
   //  2 or 3
   //  2 или 3
@@ -82,15 +82,15 @@ struct  s_ns_shifr  {
   FILE  * fileto  ;
   bool  flagtext  ;
 
-  uint8_t shifr [ deshi_size2 ] ;
-  uint8_t shifr6 [ deshi_size6 ] ;
+  uint8_t shifr2 [ deshi_size2 ] ;
+  uint8_t shifr3 [ deshi_size3 ] ;
   // secret code options for letters
   // варианты секретных кодов для буквы
   // 0 .. 3 - 0
   // 4 .. 7 - 1
   // 8 .. b - 2
   // c .. f - 3
-  uint8_t deshi [ deshi_size2 ] ;
+  uint8_t deshi2 [ deshi_size2 ] ;
   // secret code options for letters
   // варианты секретных кодов для буквы
   // 0 .. 7 -  0
@@ -101,7 +101,7 @@ struct  s_ns_shifr  {
   // 28 .. 2f -  5
   // 30 .. 37 -  6
   // 38 .. 3f -  7
-  uint8_t deshi6 [ deshi_size6 ] ;
+  uint8_t deshi3 [ deshi_size3 ] ;
   // 62 or 95 
   // алфавит пароля 62 или 95
   int password_alphabet ; 
@@ -118,8 +118,8 @@ struct  s_ns_shifr  {
   int charcount ;
   // stream buffer ver 2 for decrypt text mode
   // буфер потока вер 2 для расшифровки текстового режима
-  char  buf3  [ 3 ] ;
-  uint8_t buf3index ;
+  char  buf2  [ 3 ] ;
+  uint8_t buf2index ;
   // ver3
   int bitscount ;
   uint8_t secretdata  [ 4 ] ;

@@ -62,8 +62,8 @@ static inline void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
     ( * ied ) = ( * tablep ) [ * id ] ;
   } while ( id not_eq & ( ( * datap ) [ 0 ] ) ) ; }
   
-# define  decrypt_sole  shifr_decrypt_sole
-static inline void  decrypt_sole ( arrp const datap , arrcp const tablep ,
+# define  decrypt_sole2  shifr_decrypt_sole2
+static inline void  decrypt_sole2 ( arrp const datap , arrcp const tablep ,
   arrp const decrp , size_t const data_size ,
   uint8_t * const restrict old_last_sole ,
   uint8_t * const restrict old_last_data ) {
@@ -78,8 +78,8 @@ static inline void  decrypt_sole ( arrp const datap , arrcp const tablep ,
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
 
-# define  decrypt_sole6  shifr_decrypt_sole6
-static inline void  decrypt_sole6 ( arrp const datap , arrcp const tablep ,
+# define  decrypt_sole3  shifr_decrypt_sole3
+static inline void  decrypt_sole3 ( arrp const datap , arrcp const tablep ,
   arrp const decrp , size_t const data_size ,
   uint8_t * const restrict old_last_sole ,
   uint8_t * const restrict old_last_data ) {
@@ -148,7 +148,7 @@ found : ; \
 string_to_password_templ_def  ( number_size2 )
 string_to_password_templ_def  ( number_size3 )
 
-static  void datasole ( arrcp const secretdata , arrp const secretdatasole ,
+static  void datasole2 ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
@@ -165,12 +165,8 @@ static  void datasole ( arrcp const secretdata , arrp const secretdatasole ,
     ran >>= 2 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
-static void datasole6 ( arrcp const secretdata , arrp const secretdatasole ,
+static void datasole3 ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
-/*fprintf ( stderr  , u8"datasole6:data_size = %zu\n" , data_size ) ;
-fputs ( u8"datasole6:secretdata = [ " , stderr  ) ;
-{size_t ii = 0 ;while(ii<data_size){fprintf ( stderr  , u8"0x%x , " , ( * secretdata  ) [ ii ] ) ;++ii;}}
-fputs ( u8"]\n" , stderr  ) ;*/
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
   int ran = rand ( )  ;
@@ -184,13 +180,9 @@ fputs ( u8"]\n" , stderr  ) ;*/
       ( ( * id  ) <<  3 ) bitor
       ( ran bitand  0x7 ) ;
     ran >>= 3 ;
-  } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ;
-/*fputs ( u8"datasole6:secretdatasole = [ " , stderr  ) ;
-{size_t ii = 0 ;while(ii<data_size){fprintf ( stderr  , u8"0x%x , " , ( * secretdatasole  ) [ ii ] ) ;++ii;}}
-fputs ( u8"]\n" , stderr  ) ;*/
- }
+  } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
-static inline void  data_xor  ( uint8_t * const restrict  old_last_data ,
+static inline void  data_xor2  ( uint8_t * const restrict  old_last_data ,
   uint8_t * const restrict  old_last_sole ,
   arrp  const secretdatasole  , size_t  const data_size ) {
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
@@ -209,7 +201,7 @@ static inline void  data_xor  ( uint8_t * const restrict  old_last_data ,
     ++  ids ;
   } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
-void  data_xor6  ( uint8_t * const restrict  old_last_data ,
+void  data_xor3  ( uint8_t * const restrict  old_last_data ,
   uint8_t * const restrict  old_last_sole ,
   arrp  const secretdatasole  , size_t  const data_size ) {
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
@@ -332,60 +324,6 @@ static inline bool  isEOFstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
       ( 6 - streambuf_bufbitsize  ( me  ) ) ;
     streambuf_bufbitsize  ( me  ) +=  2 ; } // + 8 - 6
   return  false ; }
-        
-// пишу по шесть бит
-// secretdatasolesize - количество шести-битных отделов (2 или 3)
-// encrypteddata - массив шести-битных чисел
-// I write in six bits
-// secretdatasolesize - the number of six-bit divisions (2 or 3)
-// encrypteddata - array of six-bit numbers
-static void  streambuf_write6 ( t_ns_shifr * const ns_shifrp ,
-  t_streambuf * const restrict me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
-  uint8_t const secretdatasolesize , bool const  flagtext ) {
-  if  ( flagtext  ) {
-    uint8_t i = 0 ;
-    do {
-      char  buf2  = bits6_to_letter ( ( * encrypteddata ) [ i ] ) ;
-        size_t  writen_count  ;
-        writen_count  = fwrite  ( & buf2  , 1 , 1 , streambuf_file  ( me  ) ) ;
-        if  ( writen_count  ==  0 ) {
-          clearerr  ( streambuf_file  ( me  ) ) ; 
-          ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-            ( strcp ) & u8"streambuf_write6: ошибка записи байта"  :
-            ( strcp ) & "streambuf_write6: byte write error" ) ;
-          longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-        ++  streambuf_bytecount ( me  ) ;
-        if  ( streambuf_bytecount ( me  ) >=  60  ) {
-          streambuf_bytecount ( me  ) = 0 ;
-          buf2  = '\n'  ;
-          writen_count  = fwrite  ( & buf2  , 1 , 1 ,
-            streambuf_file  ( me  ) ) ; }
-      ++  i ;
-    } while ( i < secretdatasolesize ) ; }
-  else  {
-    uint8_t i = 0 ;
-    do {
-      if  ( streambuf_bufbitsize  ( me  ) < 2 ) {
-        streambuf_buf ( me  ) or_eq
-          ( ( ( * encrypteddata ) [ i ] ) << streambuf_bufbitsize  ( me  ) ) ;
-        streambuf_bufbitsize  ( me  ) +=  6 ; }
-      else  {
-        uint8_t const to_write  = ( ( ( * encrypteddata ) [ i ] ) <<
-          streambuf_bufbitsize  ( me  ) ) bitor streambuf_buf ( me  ) ;
-        size_t  writen_count  ;
-        writen_count = fwrite ( & to_write , 1 , 1 , streambuf_file  ( me  ) ) ;
-        if ( writen_count < 1 ) {
-          clearerr ( streambuf_file  ( me  ) ) ; 
-          ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-            ( strcp ) & u8"streambuf_write6: ошибка записи байта" :
-            ( strcp ) & "streambuf_write6: byte write error" ) ;
-          longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-        // + 6 - 8
-        streambuf_bufbitsize  ( me  ) -= 2 ;
-        streambuf_buf ( me  ) = ( ( * encrypteddata ) [ i ] ) >>
-          ( 6 - streambuf_bufbitsize  ( me  ) ) ;  } 
-        ++  i ;
-      } while ( i < secretdatasolesize ) ; } }
 
 // пишу по шесть бит
 // secretdatasolesize - количество шести-битных отделов (2 или 3)
@@ -447,58 +385,26 @@ static void  streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
           ( 6 - streambuf_bufbitsize  ( me  ) ) ;  } 
         ++  i ;
       } while ( i < secretdatasolesize ) ; } }
-
-void  streambuf_writeflushzero ( t_ns_shifr * const ns_shifrp ,
-  t_streambuf * const restrict me ) {
-/*fprintf ( stderr , u8"streambuf_writeflushzero:streambuf_bufbitsize  ( me  )=%u\n" ,
-  (unsigned int)streambuf_bufbitsize  ( me  ) ) ;*/
-  if  ( streambuf_bufbitsize  ( me  ) ) {
-    size_t  writen_count  ;
-      writen_count = fwrite ( & streambuf_buf ( me  ) , 1 , 1 ,
-        streambuf_file  ( me  ) ) ;
-    if ( writen_count < 1 ) {
-      clearerr ( streambuf_file  ( me  ) ) ; 
-      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-        ( strcp ) & u8"streambuf_writeflushzero: ошибка записи байта" :
-        ( strcp ) & "streambuf_writeflushzero: byte write error" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-    streambuf_bufbitsize  ( me  ) = 0 ; }
-  if ( ns_shifrp  -> flagtext and streambuf_bytecount ( me  ) )  {
-    streambuf_bytecount ( me  ) = 0 ;
-    char  buf2 = '\n' ;
-    size_t  const writen_count = fwrite ( & buf2 , 1 , 1 , 
-      streambuf_file  ( me  ) ) ;
-    if ( writen_count < 1 ) {
-      clearerr ( streambuf_file  ( me  ) ) ; 
-      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-        ( strcp ) & u8"streambuf_writeflushzero: ошибка записи байта" :
-        ( strcp ) & "streambuf_writeflushzero: byte write error" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; } } }
   
 uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
   arrps arrpsp ) {
-//fprintf ( stderr  , u8"1.ns_shifrp -> bitscount = %d\n" , ns_shifrp -> bitscount ) ;
   uint8_t result  = 0 ;
   uint8_t * restrict  output_buffer = &((*  arrpsp  . p)[0]) ;
   if  ( ns_shifrp -> bitscount ==  0 )
     goto  lbreak ;
   uint8_t secretdatasolesize  = 1 ;
-/*fprintf ( stderr  , u8"1.secretdatasolesize = %u\n" ,
-  (unsigned int )secretdatasolesize ) ;*/
   if  ( ns_shifrp -> bitscount ==  1 )
     ns_shifrp -> secretdata [ 0 ] = ns_shifrp -> secretdata [ 3 ] ;
   else
     ns_shifrp -> secretdata [ 0 ] = ns_shifrp -> secretdata [ 2 ] ;
-/*fprintf ( stderr  , u8"1.ns_shifrp -> secretdata = [ [0] = 0x%x ]\n" ,
-  (unsigned int )(ns_shifrp -> secretdata [ 0 ]) ) ;*/
 
-  datasole6 ( ( arrcp ) & ns_shifrp -> secretdata , & ns_shifrp -> secretdatasole ,
+  datasole3 ( ( arrcp ) & ns_shifrp -> secretdata , & ns_shifrp -> secretdatasole ,
     secretdatasolesize )  ;
   // после подсоления, данные переворачиваем предыдущим ксором
-  data_xor6 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
+  data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
     & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
   uint8_t encrypteddata [ 3 ] ;
-  crypt_decrypt ( & ns_shifrp -> secretdatasole , ( arrcp ) & ns_shifrp  -> shifr6 ,
+  crypt_decrypt ( & ns_shifrp -> secretdatasole , ( arrcp ) & ns_shifrp  -> shifr3 ,
     & encrypteddata , secretdatasolesize ) ;
   
   size_t  writes  = 0 ;
@@ -506,17 +412,11 @@ uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
     ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
     secretdatasolesize , ns_shifrp  -> flagtext , & output_buffer , & writes ,
     arrpsp . s )  ;
-//fprintf(stderr,u8"streambuf_writeflushzero3:writes=%zu\n",writes);
   ++  result  ;
-/*fprintf(stderr,u8"streambuf_writeflushzero3:encrypteddata[0] = 0x%x\n",
-  (unsigned int)(encrypteddata[0]));
-fprintf(stderr,u8"streambuf_writeflushzero3:(*  arrpsp  . p)[0] = 0x%x\n",
-  (unsigned int)((*  arrpsp  . p)[0]));*/
+
 lbreak  : ;
 
   t_streambuf * const restrict me = & ns_shifrp ->  filebufto ;
-/*fprintf ( stderr , u8"streambuf_writeflushzero3:streambuf_bufbitsize  ( me  )=%u\n" ,
-  (unsigned int)streambuf_bufbitsize  ( me  ) ) ;*/
 
   if  ( streambuf_bufbitsize  ( me  ) ) {
     ( * output_buffer ) = streambuf_buf ( me  ) ;
@@ -577,12 +477,12 @@ size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
       [ 1 ] = ( buf >>  2 ) bitand 0x3 , [ 2 ] = ( buf >>  4 ) bitand 0x3 ,
       [ 3 ] = ( buf >>  6 ) bitand 0x3 } ;
     uint8_t secretdatasole  [ 4 ] ;
-    datasole ( & secretdata , & secretdatasole , 4 )  ;
+    datasole2 ( & secretdata , & secretdatasole , 4 )  ;
     // после подсоления, данные переворачиваем предыдущим ксором
-    data_xor ( & ns_shifrp  -> old_last_data , & ns_shifrp  -> old_last_sole ,
+    data_xor2 ( & ns_shifrp  -> old_last_data , & ns_shifrp  -> old_last_sole ,
       & secretdatasole , 4 )  ;
     uint8_t encrypteddata [ 4 ] ;
-    crypt_decrypt ( & secretdatasole , ( arrcp ) & ns_shifrp  -> shifr ,
+    crypt_decrypt ( & secretdatasole , ( arrcp ) & ns_shifrp  -> shifr2 ,
       & encrypteddata , 4 ) ;
 // 2^16 ^ 1/3 = 40.32
 // 2^16 % 40 = 0 .. 39
@@ -656,8 +556,6 @@ size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
     unsigned  char buf = ( * input_buffer ) ;
     ++  input_buffer  ;
     ++  reads ;
-//fprintf ( stderr  , u8"buf = 0x%x\n" , (unsigned int )buf ) ;
-//fprintf ( stderr  , u8"0.ns_shifrp -> bitscount = %d\n" , ns_shifrp -> bitscount ) ;
     switch  ( ns_shifrp -> bitscount  ) {
     case  0 :
         // <= [ [1 0] [2 1 0] [2 1 0] ]
@@ -666,13 +564,6 @@ size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
         ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  6 ;
         ns_shifrp -> bitscount  = 2 ; // 0 + 8 - 6
         secretdatasolesize  = 2 ;
-/*fprintf ( stderr  ,
-  u8"0.ns_shifrp -> secretdata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
-  (unsigned int )(ns_shifrp -> secretdata [ 0 ]) ,
-  (unsigned int )(ns_shifrp -> secretdata [ 1 ]) ,
-  (unsigned int )( ns_shifrp -> secretdata [ 2 ]) ) ;
-fprintf ( stderr  , u8"0.secretdatasolesize = %u\n" ,
-  (unsigned int )secretdatasolesize ) ;*/
         break ;
     case  1 : 
         // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
@@ -701,125 +592,18 @@ fprintf ( stderr  , u8"0.secretdatasolesize = %u\n" ,
         ( strcp ) & u8"неожиданное значение bitscount" :
         ( strcp ) & "unexpected value bitscount" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } // switch  ( ns_shifrp -> bitscount  )
-    datasole6 ( ( arrcp ) & ( ns_shifrp -> secretdata ) ,
+    datasole3 ( ( arrcp ) & ( ns_shifrp -> secretdata ) ,
       & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
     // после подсоления, данные переворачиваем предыдущим ксором
-    data_xor6 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
+    data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
       & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
-    crypt_decrypt ( & ns_shifrp -> secretdatasole , ( arrcp ) & ns_shifrp  -> shifr6 ,
+    crypt_decrypt ( & ns_shifrp -> secretdatasole , ( arrcp ) & ns_shifrp  -> shifr3 ,
       & encrypteddata , secretdatasolesize ) ;
-/*fprintf ( stderr  ,
-  u8"shifr_encrypt3:encrypteddata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
-  (unsigned int )(encrypteddata [ 0 ]) , (unsigned int )(encrypteddata [ 1 ]) ,
- (unsigned int )( encrypteddata [ 2 ]) ) ;
-fprintf(stderr,u8"shifr_encrypt3:0.writes=%zu\n",writes);*/
     streambuf_write3 ( ns_shifrp , & ns_shifrp -> filebufto ,
       ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
       secretdatasolesize , ns_shifrp  -> flagtext , & output_buffer , & writes ,
-      output . s )  ;
-//fprintf(stderr,u8"shifr_encrypt3:1.writes=%zu\n",writes);
-    } // while
+      output . s ) ; } // while
   return ( size_io ) { .i  = reads , .o  = writes  }  ; }
-
-void  shifr_encrypt6 ( t_ns_shifr * const ns_shifrp ) {
-  int bitscount  = 0 ;
-  uint8_t secretdata  [ 4 ] ;
-  uint8_t secretdatasole  [ 3 ] ;
-  uint8_t secretdatasolesize  ;
-  uint8_t encrypteddata [ 3 ] ;
-  bool  feof  = false ;
-  uint8_t old_last_data = 0 ;
-  uint8_t old_last_sole = 0 ;
-  uint8_t addr_sole_xor_crypt_write ;
-  do {
-    unsigned  char buf ;
-    size_t readcount = fread ( & buf , 1 , 1 , ns_shifrp  -> filefrom ) ;
-    if ( readcount == 0 ) {
-      if ( ferror ( ns_shifrp  -> filefrom ) ) {
-        clearerr ( ns_shifrp  -> filefrom ) ;
-        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-          ( strcp ) & u8"ошибка чтения файла" :
-          ( strcp ) & "error reading file" ) ;
-        longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-      buf = 0 ;
-      feof  = true  ; 
-//fprintf ( stderr  , u8"1.bitscount = %d\n" , bitscount ) ;
-      if  ( bitscount ==  0 ) {
-        //secretdatasolesize  = 0 ;
-        break ; }
-      secretdatasolesize  = 1 ;
-/*fprintf ( stderr  , u8"1.secretdatasolesize = %u\n" ,
-  (unsigned int )secretdatasolesize ) ;*/
-      if  ( bitscount ==  1 )
-        secretdata [ 0 ] = secretdata [ 3 ] ;
-      else
-        secretdata [ 0 ] = secretdata [ 2 ] ;
-/*fprintf ( stderr  , u8"1.secretdata = [ [0] = 0x%x ]\n" ,
-  (unsigned int )(secretdata [ 0 ]) ) ;*/
-      addr_sole_xor_crypt_write =  1  ;
-      goto  sole_xor_crypt_write  ;
-      addr_sole_xor_crypt_write1  : ;
-      break ; } // if ( readcount == 0 )
-//fprintf ( stderr  , u8"buf = 0x%x\n" , (unsigned int )buf ) ;
-//fprintf ( stderr  , u8"0.bitscount = %d\n" , bitscount ) ;
-    switch  ( bitscount  ) {
-    case  0 :
-        // [ [0 1 2] [0 1 2] [0 1] ] =>
-        secretdata [ 0 ]  = buf  bitand 0x7 ;
-        secretdata [ 1 ] = ( buf >>  3 ) bitand 0x7 ;
-        secretdata [ 2 ] = buf >>  6 ;
-        bitscount  = 2 ; // 0 + 8 - 6
-        secretdatasolesize  = 2 ;
-/*fprintf ( stderr  , u8"0.secretdata = [ [0] = 0x%x , [1] = 0x%x , [2] = 0x%x ]\n" ,
-  (unsigned int )(secretdata [ 0 ]) , (unsigned int )(secretdata [ 1 ]) ,
- (unsigned int )( secretdata [ 2 ]) ) ;
-fprintf ( stderr  , u8"0.secretdatasolesize = %u\n" ,
-  (unsigned int )secretdatasolesize ) ;*/
-        break ;
-    case  1 : 
-        // .. [0] ] => [ [1 2] [0 1 2] [0 1 2] ] =>
-        secretdata [ 0 ] = secretdata [ 3 ] bitor (( buf  bitand 0x3 )<<1) ;
-        secretdata [ 1 ] = ( buf >>  2 ) bitand 0x7 ;
-        secretdata [ 2 ] = buf >>  5 ;
-        bitscount  = 0 ;   // 1 + 8 - 9
-        secretdatasolesize  = 3 ;
-        break ;
-    case  2 :
-        // .. [0 1] ] => [ [2] [0 1 2] [0 1 2] [0] ] =>
-        secretdata [ 0 ] = secretdata [ 2 ] bitor (( buf  bitand 0x1 )<<2) ;
-        secretdata [ 1 ] = ( buf >>  1 ) bitand 0x7 ;
-        secretdata [ 2 ] = ( buf >>  4 ) bitand 0x7 ;
-        secretdata [ 3 ] = buf >>  7 ;
-        bitscount  = 1 ; // 2 + 8 - 9
-        secretdatasolesize  = 3 ;
-        break ;
-    default :
-        fprintf ( stderr  , ( ns_shifrp -> localerus ?
-          u8"неожиданное значение bitscount = %d\n":
-          "unexpected value bitscount = %d\n" ) , bitscount ) ;
-        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-          ( strcp ) & u8"неожиданное значение bitscount" :
-          ( strcp ) & "unexpected value bitscount" ) ;
-        longjmp ( ns_shifrp  -> jump  , 1 ) ; } // switch  ( bitscount  )
-    addr_sole_xor_crypt_write =  0  ;
-    goto  sole_xor_crypt_write  ;
-    addr_sole_xor_crypt_write0  : ;
-  } while ( not feof ) ; 
-  streambuf_writeflushzero ( ns_shifrp , & ns_shifrp -> filebufto ) ;
-  return  ;
-sole_xor_crypt_write  :
-  datasole6 ( ( arrcp ) & secretdata , & secretdatasole , secretdatasolesize )  ;
-  // после подсоления, данные переворачиваем предыдущим ксором
-  data_xor6 ( & old_last_data , & old_last_sole , & secretdatasole ,
-    secretdatasolesize )  ;
-  crypt_decrypt ( & secretdatasole , ( arrcp ) & ns_shifrp  -> shifr6 ,
-    & encrypteddata , secretdatasolesize ) ;
-  streambuf_write6 ( ns_shifrp , & ns_shifrp -> filebufto ,
-    ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
-    secretdatasolesize , ns_shifrp  -> flagtext )  ;
-  if (  addr_sole_xor_crypt_write ==  0 )
-    goto  addr_sole_xor_crypt_write0  ;
-  goto  addr_sole_xor_crypt_write1  ; }
 
 // returns size loads & writes
 size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
@@ -845,19 +629,19 @@ size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
         do {
           if ( reads >= input . s or writes >= output . s )
             goto Exit ;
-          ( ns_shifrp  -> buf3 ) [ ns_shifrp  -> buf3index ] = ( * input_buffer ) ;
+          ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ] = ( * input_buffer ) ;
           ++  input_buffer  ;
           ++  reads ;
-        } while ( ( ns_shifrp  -> buf3 ) [ ns_shifrp  -> buf3index ] < 'R' or
-          ( ns_shifrp  -> buf3 ) [ ns_shifrp  -> buf3index ] > 'z' ) ;
-        ++ ( ns_shifrp  -> buf3index ) ;
-      } while ( ns_shifrp  -> buf3index < 3 ) ;
+        } while ( ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ] < 'R' or
+          ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ] > 'z' ) ;
+        ++ ( ns_shifrp  -> buf2index ) ;
+      } while ( ns_shifrp  -> buf2index < 3 ) ;
       // next letters begins with zero index
       // следующие буквы начинают с нулевого индекса
-      ns_shifrp  -> buf3index = 0 ;
-      uint16_t u16 = (  ( uint16_t  ) ( ( ns_shifrp  -> buf3 ) [ 0 ] - 'R' ) ) +
-        40U * ( ( ( uint16_t  ) ( ( ns_shifrp  -> buf3 ) [ 1 ] - 'R' ) ) +
-        40U * ( ( uint16_t  ) ( ( ns_shifrp  -> buf3 ) [ 2 ] - 'R' ) ) ) ;
+      ns_shifrp  -> buf2index = 0 ;
+      uint16_t u16 = (  ( uint16_t  ) ( ( ns_shifrp  -> buf2 ) [ 0 ] - 'R' ) ) +
+        40U * ( ( ( uint16_t  ) ( ( ns_shifrp  -> buf2 ) [ 1 ] - 'R' ) ) +
+        40U * ( ( uint16_t  ) ( ( ns_shifrp  -> buf2 ) [ 2 ] - 'R' ) ) ) ;
       buf [ 0 ] = u16 bitand 0xff ;
       buf [ 1 ] = u16 >> 8 ; } // flagtext
     else {
@@ -874,7 +658,7 @@ size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
       [ 2 ] = buf [ 1 ] bitand  0xf ,
       [ 3 ] = ( buf [ 1 ] >>  4 ) bitand  0xf  } ;
     uint8_t decrypteddata [ 4 ] ;
-    decrypt_sole ( & secretdata , ( arrcp ) & ( ns_shifrp  -> deshi ) ,
+    decrypt_sole2 ( & secretdata , ( arrcp ) & ( ns_shifrp  -> deshi2 ) ,
       & decrypteddata , 4 , & ns_shifrp  -> old_last_sole ,
       & ns_shifrp  -> old_last_data ) ;
     ( * output_buffer ) = ( decrypteddata [ 0 ] bitand 0x3  ) bitor
@@ -886,21 +670,21 @@ size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
 Exit :
   return  ( size_io ) { .i  = reads , .o  = writes  } ; }
 
-void shifr_decrypt6 ( t_ns_shifr * const ns_shifrp ) {
+void shifr_decrypt3 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t secretdata [ 1 ] ;
   uint8_t old_last_data = 0 ;
   uint8_t old_last_sole = 0 ;
   while ( not isEOFstreambuf_read6bits ( ns_shifrp , & ns_shifrp -> filebuffrom ,
     & ( secretdata [ 0 ] ) ) ) {
     uint8_t decrypteddata [ 1 ] ;
-    decrypt_sole6 ( & secretdata , ( arrcp ) & ns_shifrp  -> deshi6 , & decrypteddata ,
+    decrypt_sole3 ( & secretdata , ( arrcp ) & ns_shifrp  -> deshi3 , & decrypteddata ,
       1 , & old_last_sole , & old_last_data ) ;
     streambuf_write3bits (
       ns_shifrp , & ns_shifrp -> filebufto , decrypteddata [ 0 ] ) ; } }
 
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass4 ( t_ns_shifr * const ns_shifrp ) {
-  uint8_t * j = & ( ns_shifrp -> raspr4  . dice [ 0 ] ) ;
+void  shifr_generate_pass2 ( t_ns_shifr * const ns_shifrp ) {
+  uint8_t * j = & ( ns_shifrp -> raspr2  . dice [ 0 ] ) ;
   uint8_t i  = 16 ;
   do {
     ( * j ) = rand  ( ) % i ;
@@ -909,8 +693,8 @@ void  shifr_generate_pass4 ( t_ns_shifr * const ns_shifrp ) {
   } while ( i >= 2 ) ; }
 
 // inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass6 ( t_ns_shifr * const ns_shifrp ) {
-  uint8_t * j = & ( ns_shifrp -> raspr6  . dice [ 0 ] ) ;
+void  shifr_generate_pass3 ( t_ns_shifr * const ns_shifrp ) {
+  uint8_t * j = & ( ns_shifrp -> raspr3  . dice [ 0 ] ) ;
   uint8_t i  = 64 ;
   do {
     ( * j ) = rand  ( ) % i ;
@@ -920,16 +704,17 @@ void  shifr_generate_pass6 ( t_ns_shifr * const ns_shifrp ) {
 
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
-void  shifr_pass_to_array4 ( t_ns_shifr * const ns_shifrp ) {
-  number_set0 ( number_size2 ) ( & ns_shifrp -> raspr4  . pass  ) ;
+void  shifr_pass_to_array2 ( t_ns_shifr * const ns_shifrp ) {
+  number_set0 ( number_size2 ) ( & ns_shifrp -> raspr2  . pass  ) ;
   number_type ( number_size2 ) mu  ;
   number_set_byte ( number_size2 ) ( & mu , 1 ) ;
   uint8_t in = 0 ;
   do {
     { number_type ( number_size2 ) mux = mu ;
       // re += dice [ in ] * mu ;
-      number_mul_byte ( number_size2 ) ( & mux  ,  ns_shifrp -> raspr4  . dice [ in ] ) ;
-      number_add  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass , & mux ) ; }
+      number_mul_byte ( number_size2 ) ( & mux  ,
+        ns_shifrp -> raspr2  . dice [ in ] ) ;
+      number_add  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass , & mux ) ; }
     //$mu *=  16 - $in ;
     number_mul_byte ( number_size2 ) ( & mu , 0x10 - in  ) ;
     ++  in ;
@@ -937,8 +722,8 @@ void  shifr_pass_to_array4 ( t_ns_shifr * const ns_shifrp ) {
 
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
-void  shifr_pass_to_array6 ( t_ns_shifr * const ns_shifrp ) {
-  number_set0 ( number_size3 ) ( & ns_shifrp -> raspr6  . pass  ) ;
+void  shifr_pass_to_array3 ( t_ns_shifr * const ns_shifrp ) {
+  number_set0 ( number_size3 ) ( & ns_shifrp -> raspr3  . pass  ) ;
   number_type ( number_size3 ) mu  ;
   number_set_byte ( number_size3 ) ( & mu , 1 ) ;
   uint8_t in = 0 ;
@@ -946,8 +731,8 @@ void  shifr_pass_to_array6 ( t_ns_shifr * const ns_shifrp ) {
     { number_type ( number_size3 ) mux = mu ;
       // re += dice [ in ] * mu ;
       number_mul_byte ( number_size3 ) (
-        & mux  ,  ns_shifrp -> raspr6  . dice [ in ] ) ;
-      number_add  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass , & mux ) ; }
+        & mux  ,  ns_shifrp -> raspr3  . dice [ in ] ) ;
+      number_add  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass , & mux ) ; }
     //$mu *=  64 - $in ;
     number_mul_byte ( number_size3 ) ( & mu , 0x40 - in  ) ;
     ++  in ;
@@ -978,30 +763,31 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
         if ( ns_shifrp -> password_alphabet == 95 )
           string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
             ( strcp ) & ns_shifrp  -> password_letters2 ,
-            & ns_shifrp -> raspr4  . pass ,
+            & ns_shifrp -> raspr2  . pass ,
             ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
         else
           string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
             ( strcp ) & ns_shifrp  -> password_letters2 ,
-            & ns_shifrp -> raspr4  . pass ,
+            & ns_shifrp -> raspr2  . pass ,
             ( strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
       break ;
       case 3 :
         if ( ns_shifrp -> password_alphabet == 95 )
           string_to_password_templ  ( number_size3 ) ( ns_shifrp ,
             ( strcp ) & ns_shifrp  -> password_letters3 ,
-            & ns_shifrp -> raspr6  . pass ,
+            & ns_shifrp -> raspr3  . pass ,
             ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
         else
           string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
             ( strcp ) & ns_shifrp  -> password_letters3 ,
-            & ns_shifrp -> raspr6  . pass ,
+            & ns_shifrp -> raspr3  . pass ,
             ( strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
       break ;
       default :
         fprintf ( stderr  , ( ns_shifrp -> localerus ?
           u8"string_to_password : версия %d не поддерживается\n" :
-          "string_to_password : version %d is not supported" ) , ns_shifrp -> use_version )  ;
+          "string_to_password : version %d is not supported" ) ,
+          ns_shifrp -> use_version )  ;
         ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
           ( strcp ) & u8"string_to_password : версия не поддерживается" :
           ( strcp ) & "string_to_password : version is not supported" ) ;
@@ -1010,12 +796,12 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
 void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {
   case 2 :
-    password_load ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
-      & ns_shifrp  -> shifr , & ns_shifrp  -> deshi ) ;
+    password_load ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+      & ns_shifrp  -> shifr2 , & ns_shifrp  -> deshi2 ) ;
     break ;
   case 3 :
-    password_load ( number_size3 ) ( & ns_shifrp -> raspr6  . pass , 
-      & ns_shifrp  -> shifr6 , & ns_shifrp  -> deshi6 ) ;
+    password_load ( number_size3 ) ( & ns_shifrp -> raspr3  . pass , 
+      & ns_shifrp  -> shifr3 , & ns_shifrp  -> deshi3 ) ;
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
@@ -1030,21 +816,21 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version ) {
   case  2 : {
         if ( ns_shifrp -> password_alphabet == 95 )
-          password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
+          password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
             & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters ,
             letters_count ) ;
         else
-          password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
+          password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
             & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters2 ,
             letters_count2 ) ; 
         break ; }
    case 3 : {
         if ( ns_shifrp -> password_alphabet == 95 )
-          password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
+          password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
             & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters ,
             letters_count ) ;
         else
-          password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
+          password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
             & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters2 ,
             letters_count2 ) ;
         break ; }

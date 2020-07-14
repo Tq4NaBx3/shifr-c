@@ -1,7 +1,7 @@
 // Шифр ©2020 Глебов А.Н.
 // Shifr ©2020 Glebe A.N.
 
-// Version 4
+// Version 2
 
 // RUS
 // 2 бита соль
@@ -81,7 +81,7 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 
 */
 
-// Version 6
+// Version 3
 
 // RUS
 // 3 бита соль
@@ -237,7 +237,7 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
     . old_last_data = 0 ,
     . old_last_sole = 0 ,
     . charcount = 0 ,
-    . buf3index = 0 ,
+    . buf2index = 0 ,
     . bitscount = 0 ,
     } ;
   { char * j = & ( ns_shifrp -> letters [ 0 ] ) ;
@@ -270,7 +270,7 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
   ns_shifrp  -> filefrom  = stdin ;
   ns_shifrp  -> fileto = stdout ; }
 
-static  inline  void  enter_password6 ( t_ns_shifr * const ns_shifrp ) {
+static  inline  void  enter_password3 ( t_ns_shifr * const ns_shifrp ) {
   char p60 [ 100 ] ;
   set_keypress  ( ns_shifrp ) ;
   char ( * const p6 ) [ 100 ] = (char(*const)[100])
@@ -291,15 +291,15 @@ static  inline  void  enter_password6 ( t_ns_shifr * const ns_shifrp ) {
   char  password_letters6 [ 100 ] ;
   if ( ns_shifrp -> password_alphabet == 95 ) {
     string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
-      & ns_shifrp -> raspr6  . pass ,
+      & ns_shifrp -> raspr3  . pass ,
       ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
-    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
       & password_letters6 , & ns_shifrp -> letters , letters_count ) ; }
   else {
     string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
-      & ns_shifrp -> raspr6  . pass ,
+      & ns_shifrp -> raspr3  . pass ,
       ( strcp ) & ns_shifrp -> letters2 ,  letters_count2 ) ;
-    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass ,
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
       & password_letters6 , & ns_shifrp -> letters2 , letters_count2 ) ; }
   if  ( strcmp ( &  ( password_letters6 [ 0 ] ) , & ( ( * p6  ) [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifrp -> localerus ?
@@ -307,7 +307,7 @@ static  inline  void  enter_password6 ( t_ns_shifr * const ns_shifrp ) {
       "Warning! Password \'%s\' is very large. Same as \'%s\'.\n" )
       , & ( ( * p6  ) [ 0 ] ) , & ( password_letters6  [ 0 ] ) ) ; }
       
-static  inline  void  enter_password4 ( t_ns_shifr * const ns_shifrp ) {
+static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   char p40 [ 20 ] ;
   set_keypress  ( ns_shifrp ) ;
   char ( * const p4 ) [ 20 ] = (  char  ( * const ) [ 20  ] )
@@ -327,18 +327,18 @@ static  inline  void  enter_password4 ( t_ns_shifr * const ns_shifrp ) {
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   if ( ns_shifrp -> password_alphabet == 95 )
     string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
-      & ns_shifrp -> raspr4  . pass , ( strcp ) & ns_shifrp -> letters ,
+      & ns_shifrp -> raspr2  . pass , ( strcp ) & ns_shifrp -> letters ,
       letters_count ) ;
   else
     string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
-      & ns_shifrp -> raspr4  . pass , ( strcp ) & ns_shifrp -> letters2 ,
+      & ns_shifrp -> raspr2  . pass , ( strcp ) & ns_shifrp -> letters2 ,
       letters_count2 ) ;
   char  password_letters [ 20 ] ;
   if ( ns_shifrp -> password_alphabet == 95 )
-    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
       & password_letters , & ns_shifrp -> letters , letters_count ) ;
   else
-    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass ,
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
       & password_letters , & ns_shifrp -> letters2 , letters_count2 ) ;
   if  ( strcmp ( &  ( password_letters  [ 0 ] ) , & ( ( * p4  ) [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifrp -> localerus ?
@@ -350,10 +350,10 @@ static  inline  void  enter_password4 ( t_ns_shifr * const ns_shifrp ) {
 static  inline  void  enter_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
     case  3 :
-      enter_password6  ( ns_shifrp ) ;
+      enter_password3  ( ns_shifrp ) ;
       break ;
     case 2 :
-      enter_password4  ( ns_shifrp ) ;
+      enter_password2  ( ns_shifrp ) ;
       break ;
     default :
       fprintf ( stderr  , ( ns_shifrp -> localerus ?
@@ -432,7 +432,7 @@ void  password_load ( N ) ( number_type ( N ) const * const password0 , \
     ++ inde  ;  \
   } while ( inde < SDS ) ; }
 static  inline  shifr_password_load_def (  number_size2 , deshi_size2 )
-static  inline  shifr_password_load_def (  number_size3 , deshi_size6 )
+static  inline  shifr_password_load_def (  number_size3 , deshi_size3 )
   
 # include "define.h"
 
@@ -440,24 +440,24 @@ static  inline  shifr_password_load_def (  number_size3 , deshi_size6 )
 static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version  ) {
     case  2 : 
-      shifr_generate_pass4  ( ns_shifrp ) ;
-      shifr_pass_to_array4  ( ns_shifrp ) ;
+      shifr_generate_pass2  ( ns_shifrp ) ;
+      shifr_pass_to_array2  ( ns_shifrp ) ;
 # ifdef SHIFR_DEBUG
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
         "generate_password:internal password = " ) , stderr ) ;
-      number_princ  ( number_size2 ) ( & ns_shifrp -> raspr4  . pass , stderr  ) ;
+      number_princ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif
       break ;
     case 3 :
-      shifr_generate_pass6  ( ns_shifrp ) ;
-      shifr_pass_to_array6  ( ns_shifrp ) ;
+      shifr_generate_pass3  ( ns_shifrp ) ;
+      shifr_pass_to_array3  ( ns_shifrp ) ;
 # ifdef SHIFR_DEBUG
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
         "generate_password:internal password = " ) , stderr ) ;
-      number_princ  ( number_size3 ) ( & ns_shifrp -> raspr6  . pass , stderr  ) ;
+      number_princ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif
       break ;

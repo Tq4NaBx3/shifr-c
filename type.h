@@ -52,15 +52,15 @@ shifr_number_typedef( number_size2 )
 shifr_number_structtype( number_size3 )
 shifr_number_typedef( number_size3 )
 
-# define  s_raspr4  shifr_s_raspr4
-struct  s_raspr4  ;
-# define  t_raspr4  shifr_t_raspr4
-typedef struct  s_raspr4  t_raspr4  ;
+# define  s_raspr2  shifr_s_raspr2
+struct  s_raspr2  ;
+# define  t_raspr2  shifr_t_raspr2
+typedef struct  s_raspr2  t_raspr2  ;
 
-# define  s_raspr6  shifr_s_raspr6
-struct  s_raspr6  ;
-# define  t_raspr6  shifr_t_raspr6
-typedef struct  s_raspr6  t_raspr6 ;
+# define  s_raspr3  shifr_s_raspr3
+struct  s_raspr3  ;
+# define  t_raspr3  shifr_t_raspr3
+typedef struct  s_raspr3  t_raspr3 ;
 
 struct  s_ns_shifr  ;
 typedef struct  s_ns_shifr  t_ns_shifr ;
@@ -74,8 +74,8 @@ typedef struct  s_streambuf t_streambuf ;
 # define  deshi_size2 shifr_deshi_size2
 
 // 8 * 8 = 64
-# define  deshi_size6 shifr_deshi_size6
+# define  deshi_size3 shifr_deshi_size3
 # define  e_deshi_size  shifr_e_deshi_size
-enum  e_deshi_size  { deshi_size2 = 0x10 , deshi_size6 = 0x40 }  ;
+enum  e_deshi_size  { deshi_size2 = 0x10 , deshi_size3 = 0x40 }  ;
 
 # endif //  SHIFRTYPEH
