@@ -1,8 +1,8 @@
-#GCC = gcc
+GCC = gcc
 #GCC = gcc-8
-GCC = gcc-9
-#CSTANDARD = -std=c11
-CSTANDARD = -std=c18
+#GCC = gcc-9
+CSTANDARD = -std=c11
+#CSTANDARD = -std=c18
 SHIFR_OBJECTS = shifr.o main.o
 SHIFR_ASM = shifr.s main.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm

@@ -606,9 +606,9 @@ Exc :
       uint8_t inputbuffer [ 0x1000  ] ;
       size_t  outputbuffersize ;
       if ( main_shifr . flagtext )
-        outputbuffersize  = 0x556  ;
+        outputbuffersize  = 0x560  ; // 0x556
       else
-        outputbuffersize  = 0x800  ;
+        outputbuffersize  = 0x810  ; // 0x800
       uint8_t outputbuffer  [ outputbuffersize ] ;
       size_t  writecount  ;
       size_io sizeio  ;
