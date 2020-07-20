@@ -433,7 +433,7 @@ int main  ( int argc , char * argv [ ] )  {
       password_letters2 ) [ 0 ] ) ) ;
 # endif    
     if ( not flagoutputtofile )
-      return  0 ;  }
+      return  0 ;  } // if flaggenpasswd
 # ifdef SHIFR_DEBUG        
   if  ( flagenc and flagdec ) {
     main_shifr  . string_exception  = ( main_shifr . localerus ?
@@ -518,8 +518,8 @@ int main  ( int argc , char * argv [ ] )  {
           main_shifr . string_exception  = ( strcp ) & "sizeio . i < readcount" ;
           longjmp ( main_shifr . jump  , 1 ) ; }
         if ( sizeio . o > outputbuffersize ) {
-          fprintf ( stderr  , "sizeio . o = %zu , outputbuffersize = %zu\n"  , sizeio . o ,
-            outputbuffersize ) ;
+          fprintf ( stderr  , "sizeio . o = %zu , outputbuffersize = %zu\n"  ,
+            sizeio . o , outputbuffersize ) ;
           main_shifr . string_exception  = ( strcp ) & "sizeio . o > outputbuffersize" ;
           longjmp ( main_shifr . jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
@@ -542,13 +542,15 @@ int main  ( int argc , char * argv [ ] )  {
     } while ( true ) ;      
       { uint8_t bytes = streambuf_writeflushzero3 ( & main_shifr ,
           ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
-        writecount = fwrite ( & ( outputbuffer [ 0 ] ) , bytes , 1 ,
-          main_shifr . fileto ) ; } // bytes
-      if ( writecount == 0 ) {
-        main_shifr . string_exception  = ( main_shifr . localerus ?
-          ( strcp ) & u8"v3:ошибка записи в файл" :
-          ( strcp ) & "v3:error writing to file" ) ;
-        longjmp ( main_shifr . jump  , 1 ) ; } } // use_version == 3
+//fprintf(stderr,"bytes = %u\n",(unsigned int)bytes);
+        if ( bytes ) {
+          writecount = fwrite ( & ( outputbuffer [ 0 ] ) , bytes , 1 ,
+            main_shifr . fileto ) ;
+          if ( writecount == 0 ) {
+            main_shifr . string_exception  = ( main_shifr . localerus ?
+              ( strcp ) & u8"v3:ошибка записи в файл ( writecount == 0 )" :
+              ( strcp ) & "v3:error writing to file ( writecount == 0 )" ) ;
+            longjmp ( main_shifr . jump  , 1 ) ; } } } } // use_version == 3
     else
     if ( main_shifr . use_version == 2 )  {
     uint8_t inputbuffer [ 0x1000  ] ;
@@ -600,7 +602,7 @@ Exc :
           ( strcp ) & u8"ошибка записи в файл" :
           ( strcp ) & "error writing to file" ) ;
         longjmp ( main_shifr . jump  , 1 ) ; } } } // use_version == 2
-    } // flagenc
+    } // if flagenc
   else { // flagdec
     if ( main_shifr . use_version == 2 )  {
       uint8_t inputbuffer [ 0x1000  ] ;
@@ -634,7 +636,7 @@ Exc :
               ( strcp ) & "error writing to file" ) ;
             longjmp ( main_shifr . jump  , 1 ) ; }
           if ( feof ( main_shifr . filefrom ) )
-            break ; }
+            break ; } // if readcount
         else {
           if ( ferror ( main_shifr . filefrom ) ) {
             main_shifr . string_exception  = ( main_shifr . localerus ?
@@ -643,8 +645,48 @@ Exc :
             longjmp ( main_shifr . jump  , 1 ) ; }
           break ; }
       } while ( true ) ; } // ver 2
-    else
-      shifr_decrypt3 ( & main_shifr ) ; }
+    else {
+      //shifr_decrypt3 ( & main_shifr ) ;
+      uint8_t inputbuffer [ 0x1000  ] ;
+      size_t  outputbuffersize ;
+      if ( main_shifr . flagtext )
+        outputbuffersize  = 0x610  ; // 0x600
+      else
+        outputbuffersize  = 0x810  ; // 0x7ff
+      uint8_t outputbuffer  [ outputbuffersize ] ;
+      size_t  writecount  ;
+      size_io sizeio  ;
+      do  {
+        size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , 0x1000 ,
+          main_shifr . filefrom ) ;
+        if ( readcount  ) {
+          sizeio  = shifr_decrypt3_  ( & main_shifr ,
+            ( arrcps  ) { . cp  = ( arrcp ) & inputbuffer , . s = readcount } ,
+            ( arrps ) { . p = ( arrp  ) & outputbuffer , . s = outputbuffersize } ) ;
+# ifdef SHIFR_DEBUG
+          if ( sizeio . i < readcount ) {
+            fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
+              readcount ) ;
+            main_shifr . string_exception  = ( strcp ) & "sizeio . i < readcount" ;
+            longjmp ( main_shifr . jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
+          writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeio . o , 1 ,
+            main_shifr . fileto ) ;
+          if ( writecount == 0 ) {
+            main_shifr . string_exception  = ( main_shifr . localerus ?
+              ( strcp ) & u8"ошибка записи в файл" :
+              ( strcp ) & "error writing to file" ) ;
+            longjmp ( main_shifr . jump  , 1 ) ; }
+          if ( feof ( main_shifr . filefrom ) )
+            break ; } // if readcount
+        else {
+          if ( ferror ( main_shifr . filefrom ) ) {
+            main_shifr . string_exception  = ( main_shifr . localerus ?
+              ( strcp ) & u8"ошибка чтения файла" :
+              ( strcp ) & "error reading the file" ) ;
+            longjmp ( main_shifr . jump  , 1 ) ; }
+          break ; }
+      } while ( true ) ; } }
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
     if  ( fclose  ( main_shifr  . fileto  ) ) {

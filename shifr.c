@@ -276,7 +276,7 @@ static  inline  uint8_t streambuf_Buf (
   
 // читаю 6 бит
 // 6 bits reads
-static inline bool  isEOFstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
+bool  isEOFstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   t_streambuf * const restrict me  , uint8_t * const encrypteddata ) {
   if  ( ( not ( ns_shifrp  -> flagtext ) ) and
     streambuf_bufbitsize  ( me  ) >= 6 ) {
@@ -323,6 +323,41 @@ static inline bool  isEOFstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
     streambuf_buf ( me  ) = buf >>
       ( 6 - streambuf_bufbitsize  ( me  ) ) ;
     streambuf_bufbitsize  ( me  ) +=  2 ; } // + 8 - 6
+  return  false ; }
+
+// читаю 6 бит
+// 6 bits reads
+bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
+  uint8_t * const encrypteddata , size_t * const  readsp ,
+  uint8_t const * restrict * const input_bufferp , size_t const inputs ) {
+  t_streambuf * const restrict me = & ns_shifrp -> filebuffrom ;
+  if  ( ns_shifrp  -> flagtext  ) {
+    uint8_t buf ;
+    do  {
+      if ( ( * readsp ) >= inputs )
+        return  true  ;
+      buf = * * input_bufferp  ;
+      ++  ( * input_bufferp  ) ;
+      ++  ( * readsp ) ;
+      // читаем одну букву ';'-'z' -> декодируем в шесть бит
+      // reads one letter ';'-'z' -> decode to six bits
+    } while ( ( buf < ( ( uint8_t ) ';' ) ) or
+      ( buf > ( ( uint8_t ) 'z' ) ) ) ;
+    ( * encrypteddata ) = letter_to_bits6 ( buf ) ;
+    return  false ; }
+  if  ( streambuf_bufbitsize  ( me  ) >= 6 ) {
+    streambuf_bufbitsize  ( me  ) -=  6 ;
+    ( * encrypteddata ) = streambuf_buf ( me  ) bitand ( 0x40 - 1 ) ;
+    streambuf_buf ( me  ) >>= 6 ;
+    if ( streambuf_bufbitsize  ( me  ) == 0 ) {
+      ++  ( * readsp ) ;
+      ++  ( * input_bufferp  ) ; }
+    return  false ; }
+  uint8_t buf = * * input_bufferp  ;
+  ( * encrypteddata ) = ( streambuf_buf ( me  ) bitor 
+    ( buf <<  streambuf_bufbitsize  ( me  ) ) ) bitand ( 0x40 - 1 )  ;
+  streambuf_buf ( me  ) = buf >> ( 6 - streambuf_bufbitsize  ( me  ) ) ;
+  streambuf_bufbitsize  ( me  ) +=  2 ; // + 8 - 6
   return  false ; }
 
 // пишу по шесть бит
@@ -431,9 +466,9 @@ lbreak  : ;
     ++  result  ; }
   return  result  ; }
 
-// версия 6 пишу три бита для расшифровки
-// version 6 write three bits to decode
-static inline void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
+// версия 3 пишу три бита для расшифровки
+// version 3 write three bits to decode
+void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
   t_streambuf * const restrict me  , uint8_t const encrypteddata ) {
     if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
       streambuf_buf ( me  ) or_eq
@@ -456,6 +491,26 @@ static inline void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
       streambuf_bufbitsize  ( me  ) -= 5 ;
       streambuf_buf ( me  ) =  encrypteddata   >>
         ( 3 - streambuf_bufbitsize  ( me  ) ) ; } }
+
+// версия 3 пишу три бита для расшифровки
+// version 3 write three bits to decode
+void  streambuf_write3bits_ ( t_ns_shifr * const ns_shifrp ,
+  uint8_t const encrypteddata , uint8_t * restrict * const output_bufferp ,
+  size_t * const writesp ) {
+  t_streambuf * const restrict me  = & ns_shifrp -> filebufto  ;
+  if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
+    streambuf_buf ( me  ) or_eq ( encrypteddata << streambuf_bufbitsize  ( me  ) ) ;
+    streambuf_bufbitsize  ( me  ) +=  3 ; }
+  else  {
+    uint8_t const to_write  = ( encrypteddata   << streambuf_bufbitsize  ( me  ) )
+      bitor streambuf_buf ( me  ) ;
+    ( * * output_bufferp ) = to_write  ;
+    ++  ( * output_bufferp  ) ;
+    ++  ( * writesp ) ;
+    // + 3 - 8
+    streambuf_bufbitsize  ( me  ) -= 5 ;
+    streambuf_buf ( me  ) =  encrypteddata   >>
+      ( 3 - streambuf_bufbitsize  ( me  ) ) ; } }
 
 # undef streambuf_file
 # undef streambuf_buf
@@ -681,6 +736,24 @@ void shifr_decrypt3 ( t_ns_shifr * const ns_shifrp ) {
       1 , & old_last_sole , & old_last_data ) ;
     streambuf_write3bits (
       ns_shifrp , & ns_shifrp -> filebufto , decrypteddata [ 0 ] ) ; } }
+
+size_io shifr_decrypt3_ ( t_ns_shifr * const ns_shifrp , arrcps const input ,
+  arrps const output ) {
+  uint8_t const * restrict  input_buffer = &  ( ( * input . cp  ) [ 0 ] ) ;
+  uint8_t * restrict  output_buffer = & ( ( * output  . p ) [ 0 ] ) ;
+  size_t  reads = 0 ;
+  size_t  writes  = 0 ;
+  uint8_t secretdata [ 1 ] ;
+  while ( reads < input . s and writes  < output  . s ) {
+    if ( isEOBstreambuf_read6bits ( ns_shifrp ,
+      & ( secretdata [ 0 ] ) , & reads , & input_buffer , input . s ) )
+      break ;
+    uint8_t decrypteddata [ 1 ] ;
+    decrypt_sole3 ( & secretdata , ( arrcp ) & ns_shifrp  -> deshi3 , & decrypteddata ,
+      1 , & ns_shifrp  -> old_last_sole , & ns_shifrp  -> old_last_data ) ;
+    streambuf_write3bits_ ( ns_shifrp , decrypteddata [ 0 ] , & output_buffer ,
+      & writes ) ; } // while
+  return  ( size_io ) { . i  = reads , .  o  = writes  } ; }
 
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
 void  shifr_generate_pass2 ( t_ns_shifr * const ns_shifrp ) {
