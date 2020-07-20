@@ -542,13 +542,14 @@ int main  ( int argc , char * argv [ ] )  {
     } while ( true ) ;      
       { uint8_t bytes = streambuf_writeflushzero3 ( & main_shifr ,
           ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
-        writecount = fwrite ( & ( outputbuffer [ 0 ] ) , bytes , 1 ,
-          main_shifr . fileto ) ; } // bytes
-      if ( writecount == 0 ) {
-        main_shifr . string_exception  = ( main_shifr . localerus ?
-          ( strcp ) & u8"v3:ошибка записи в файл" :
-          ( strcp ) & "v3:error writing to file" ) ;
-        longjmp ( main_shifr . jump  , 1 ) ; } } // use_version == 3
+        if ( bytes ) {
+          writecount = fwrite ( & ( outputbuffer [ 0 ] ) , bytes , 1 ,
+            main_shifr . fileto ) ;
+          if ( writecount == 0 ) {
+            main_shifr . string_exception  = ( main_shifr . localerus ?
+              ( strcp ) & u8"v3:ошибка записи в файл" :
+              ( strcp ) & "v3:error writing to file" ) ;
+            longjmp ( main_shifr . jump  , 1 ) ; } } } } // use_version == 3
     else
     if ( main_shifr . use_version == 2 )  {
     uint8_t inputbuffer [ 0x1000  ] ;
