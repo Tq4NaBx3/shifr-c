@@ -376,6 +376,17 @@ static  inline  void  streambuf_init  ( t_streambuf * const restrict me  ,
   streambuf_bufbitsize  ( me  ) = 0 ;
   streambuf_bytecount ( me  ) = 0 ; }
   
+static  inline  int streambuf_ByteCount  ( t_streambuf const * const restrict me ) {
+  return  streambuf_bytecount ( me  ) ; }
+
+static  inline  uint8_t streambuf_BufBitSize  (
+  t_streambuf const * const restrict me ) {
+  return  streambuf_bufbitsize ( me  ) ; }
+
+static  inline  uint8_t streambuf_Buf (
+  t_streambuf const * const restrict me ) {
+  return  streambuf_buf ( me  ) ; }
+  
 # undef streambuf_file
 # undef streambuf_buf
 # undef streambuf_bufbitsize
@@ -470,3 +481,91 @@ static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
         ( strcp ) & u8"generate_password:неопознанная версия" :
         ( strcp ) & "generate_password:unrecognized version" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+
+# define  crypt_decrypt shifr_crypt_decrypt
+static inline void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
+  arrp const encrp , size_t const data_size ) {
+  uint8_t const * id = & ( ( * datap ) [ data_size ] ) ;
+  uint8_t * ied = & ( ( * encrp ) [ data_size ] ) ;
+  do {
+    -- id ;
+    --  ied ;
+    ( * ied ) = ( * tablep ) [ * id ] ;
+  } while ( id not_eq & ( ( * datap ) [ 0 ] ) ) ; }
+  
+# define  decrypt_sole2  shifr_decrypt_sole2
+static inline void  decrypt_sole2 ( arrp const datap , arrcp const tablep ,
+  arrp const decrp , size_t const data_size ,
+  uint8_t * const restrict old_last_sole ,
+  uint8_t * const restrict old_last_data ) {
+  uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
+  uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
+  do {
+    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
+      ( * ide ) = ( data_sole >>  2 ) xor ( * old_last_sole ) ;
+      ( * old_last_sole ) = (  data_sole bitand  0x3 ) xor ( * old_last_data ) ; }
+    ( * old_last_data ) = ( * ide ) ;
+    ++  id  ;
+    ++  ide ;
+  } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
+
+# define  decrypt_sole3  shifr_decrypt_sole3
+static inline void  decrypt_sole3 ( arrp const datap , arrcp const tablep ,
+  arrp const decrp , size_t const data_size ,
+  uint8_t * const restrict old_last_sole ,
+  uint8_t * const restrict old_last_data ) {
+  uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
+  uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
+  do {
+    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
+      ( * ide ) = ( data_sole >>  3 ) xor ( * old_last_sole ) ;
+      ( * old_last_sole ) = (  data_sole bitand  0x7 ) xor ( * old_last_data ) ;
+      ( * old_last_data ) = ( * ide ) ; }
+    ++  id  ;
+    ++  ide ;
+  } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
+
+static inline void  data_xor2  ( uint8_t * const restrict  old_last_data ,
+  uint8_t * const restrict  old_last_sole ,
+  arrp  const secretdatasole  , size_t  const data_size ) {
+  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
+  do {
+    uint8_t const cur_data = ( * ids ) >> 2 ;
+    uint8_t const cur_sole = ( * ids ) bitand 0x3 ;
+    // главное данные , хвост - соль : 01 =>
+    //   01_00 или 01_01 или 01_10 или 01_11
+    // в таблице всё рядом, 4 варианта равномерно распределены
+    // данные сыпью предыдущей солью
+    ( * ids ) xor_eq  ( ( * old_last_sole ) << 2  ) ;
+    ( * ids ) xor_eq  ( * old_last_data ) ;
+    // берю свежую соль
+    ( * old_last_sole ) = cur_sole ;
+    ( * old_last_data ) = cur_data ;
+    ++  ids ;
+  } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
+
+static inline void  data_xor3  ( uint8_t * const restrict  old_last_data ,
+  uint8_t * const restrict  old_last_sole ,
+  arrp  const secretdatasole  , size_t  const data_size ) {
+  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
+  do {
+    uint8_t const cur_data = ( * ids ) >> 3 ;
+    uint8_t const cur_sole = ( * ids ) bitand 0x7 ;
+    // главное данные , хвост - соль : 101 =>
+    //   101_000 или 101_001 или ... или 101_111
+    // в таблице всё рядом, 8 вариантов равномерно распределены
+    // данные сыпью предыдущей солью
+    ( * ids ) xor_eq  ( ( * old_last_sole ) << 3  ) ;
+    ( * ids ) xor_eq  ( * old_last_data ) ;
+    // берю свежую соль
+    ( * old_last_sole ) = cur_sole ;
+    ( * old_last_data ) = cur_data ;
+    ++  ids ;
+  } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
+
+// ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
+static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
+  return  ';'  + bits6  ; }
+
+static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
+  return  letter  - ';' ; }

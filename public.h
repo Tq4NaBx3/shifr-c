@@ -141,13 +141,9 @@ size_io  shifr_decrypt2 ( t_ns_shifr * , arrcps input , arrps output ) ;
   
 /*
 Decryption
-Reads data from '->filefrom', writes to '->fileto'
 Расшифровка
-Читает данные из '->filefrom' , записывает в '->fileto'
 */
-void  shifr_decrypt3 ( t_ns_shifr * ) ;
-
-size_io  shifr_decrypt3_ ( t_ns_shifr * , arrcps input , arrps output ) ;
+size_io  shifr_decrypt3 ( t_ns_shifr * , arrcps input , arrps output ) ;
 
 uint8_t  streambuf_writeflushzero3 ( t_ns_shifr * , arrps ) ;
 

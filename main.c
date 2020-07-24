@@ -542,7 +542,6 @@ int main  ( int argc , char * argv [ ] )  {
     } while ( true ) ;      
       { uint8_t bytes = streambuf_writeflushzero3 ( & main_shifr ,
           ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
-//fprintf(stderr,"bytes = %u\n",(unsigned int)bytes);
         if ( bytes ) {
           writecount = fwrite ( & ( outputbuffer [ 0 ] ) , bytes , 1 ,
             main_shifr . fileto ) ;
@@ -646,7 +645,6 @@ Exc :
           break ; }
       } while ( true ) ; } // ver 2
     else {
-      //shifr_decrypt3 ( & main_shifr ) ;
       uint8_t inputbuffer [ 0x1000  ] ;
       size_t  outputbuffersize ;
       if ( main_shifr . flagtext )
@@ -660,7 +658,7 @@ Exc :
         size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , 0x1000 ,
           main_shifr . filefrom ) ;
         if ( readcount  ) {
-          sizeio  = shifr_decrypt3_  ( & main_shifr ,
+          sizeio  = shifr_decrypt3  ( & main_shifr ,
             ( arrcps  ) { . cp  = ( arrcp ) & inputbuffer , . s = readcount } ,
             ( arrps ) { . p = ( arrp  ) & outputbuffer , . s = outputbuffersize } ) ;
 # ifdef SHIFR_DEBUG
