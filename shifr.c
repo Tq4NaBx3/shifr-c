@@ -1,11 +1,124 @@
 // Шифр ©2020 Глебов А.Н.
 // Shifr ©2020 Glebe A.N.
 
+// Version 2
+
+// RUS
+// 2 бита соль
+// 2 бита инфа
+// итого 4 бита
+// таблица шифра: личные 2 бита + соль 2 бита => 4 бита шифрованные
+// личные данные b00 => могут быть зашифрованы упорядоченным набором 2^2 = 4шт из 
+// b0000 ... b1111 2^4 = 4*4 = 16 штук
+// разные расклады шифрования для данных
+// b00 = 16*15*14*13 = 43680
+// b01 = 12*11*10*9 = 11880
+// b10 = 8*7*6*5 = 1680
+// b11 = 4*3*2*1 = 24
+// в общем = b00 * b01 * b10 * b11 =
+//   = 16! = 20922789888000
+// минимум можно записать пароль с помощью
+// log(2,20922789888000) ≈ 44.25 бит <= 6 байт
+// пароль будет 45 бит
+// ascii буквы 126-32+1 = 95 шт
+// длина буквенного пароля : log ( 95 , 20922789888000 ) ≈ 6.735 букв <= 7 букв
+//  log ( 62 , 20922789888000 ) ≈ 7.432 буквы <= 8 букв
+
+/*
+OrigData   : 01 11 11
+RandomSalt : 10 11 10
+
+Data 01---\/---10⊻11=01---\/---11⊻11=00
+Salt 10___/\___01⊻11=10___/\___11⊻10=01  
+Pair 0110      0110            0001
+Secr xxxx      xxxx            yyyy
+
+Соль одного элемента будет ксорить следующий элемент для исчезания повторов.
+Данные первого элемента будут ксорить соль второго элемента.
+Если все элементы будут одного значения, тогда все
+ шифрованные значения будут иметь свойство псевдо-случайности.
+И данные и соль имеют секретность кроме первой нулевой соли.
+Функция Шифр(пары: данные+соль) должна быть случайной неупорядоченной.
+
+*/
+
+// ENG
+// 2 bits salt
+// 2 bits information
+// total 4 bits
+// encryption table: personal 2 bits + salt 2 bits => 4 bits encrypted
+// personal data b00 => can be encrypted in an ordered set 2^2 = 4pcs from
+// b0000 ... b1111 2^4 = 4*4 = 16 pieces
+// different encryption layouts for data
+// b00 = 16*15*14*13 = 43680
+// b01 = 12*11*10*9 = 11880
+// b10 = 8*7*6*5 = 1680
+// b11 = 4*3*2*1 = 24
+// generally = b00 * b01 * b10 * b11 =
+//   = 16! = 20922789888000
+// minimum you can write a password using
+// log(2,20922789888000) ≈ 44.25 bits <= 6 bytes
+// the password will have 45 bits size
+// ascii letters 126-32+1 = 95 pcs
+// letter password length : log ( 95 , 20922789888000 ) ≈ 6.735 letters <= 7 letters
+//  log ( 62 , 20922789888000 ) ≈ 7.432 letters <= 8 letters
+
+/*
+OrigData   : 01 11 11
+RandomSalt : 10 11 10
+
+Data 01---\/---10⊻11=01---\/---11⊻11=00
+Salt 10___/\___01⊻11=10___/\___11⊻10=01  
+Pair 0110      0110            0001
+Secr xxxx      xxxx            yyyy
+
+The salt of one element will modify (xor) the next element to remove repeats.
+The data of the first element will modify (xor) the second element salt.
+If all elements are of the same value, then all encrypted 
+ values will have the property of pseudo-randomness.
+Both data and salt have secrecy apart from the first zero salt.
+Function Shifr(of pair: data+salt)should be randomly disordered.
+
+*/
+
+// Version 3
+
+// RUS
+// 3 бита соль
+// 3 бита инфа
+// итого 6 бит
+// таблица шифра: личные 3 бита + соль 3 бита => 6 бита шифрованные
+// личные данные b000 => могут быть зашифрованы упорядоченным набором 2^3 = 8шт из 
+// b000000 ... b111111 2^6 = 8*8 = 64 штук
+// разные расклады шифрования для данных
+// b000 = 64*63*62*61*60*59*58*57 = 178462987637760
+// b001 = 56*55*54*53*52*51*50*49 = 57274321104000
+// b010 = 48*47*46*45*44*43*42*41 = 15214711438080
+// b011 = 40*39*38*37*36*35*34*33 = 3100796899200
+// b100 = 32*31*30*29*28*27*26*25 = 424097856000
+// b101 = 24*23*22*21*20*19*18*17 = 29654190720
+// b110 = 16*15*14*13*12*11*10*9  = 518918400
+// b111 = 8*7*6*5*4*3*2*1         = 40320
+// в общем = b000 * b001 * b010 * b011 * b100 * b101 * b110 * b111 = 64! =
+// 1268869321858841641034333893351614808028655161745451921988018943752147042304e14
+// ≈ 1.26886932186e89
+// минимум можно записать пароль с помощью
+// log(2,1.26886932186e89) ≈ 296 бит <= 37 байт
+// пароль будет 296 бит
+// ascii буквы 126-32+1 = 95 шт
+// длина буквенного пароля : log ( 95 , 1.26886932186e89 ) ≈ 45.05 букв <= 46 букв
+//  log ( 62 , 1.26886932186e89 ) ≈ 49.71 буквы <= 50 букв
+
 # include <stdio.h>
 # include <stdlib.h>
 # include <errno.h>
+# include <string.h> // memset
+# include <iso646.h> // bitand
 
-# include "inline.h"
+# include "define.h"
+# include "public.h"
+# include "struct.h"
+# include "access.h"
 
 # define  number_array  shifr_number_array_pub
 
@@ -13,6 +126,18 @@
   void shifr_number ## N ## _set0  ( number_type  ( N ) * const restrict np ) { \
     memset  ( & ( ( number_array  ( np  ) ) [ 0 ] ) , 0 , N ) ; }
 # define  number_def_set0 shifr_number_def_set0
+
+# define  shifr_number_def_elt_copy( N ) \
+uint8_t shifr_number ## N ## _elt_copy  ( \
+  number_type ( N ) const * const restrict  np  , uint8_t const i ) { \
+  return  number_array  ( np  ) [ i ] ; }
+# define  number_def_elt_copy shifr_number_def_elt_copy
+
+# define  shifr_number_elt_copy( N ) shifr_number ## N ## _elt_copy
+# define  number_elt_copy shifr_number_elt_copy
+
+static  inline  number_def_elt_copy ( number_size2 )
+static  inline  number_def_elt_copy ( number_size3 )
 
 # define  shifr_number_def_mul_byte(  N ) \
 void  shifr_number ## N ## _mul_byte ( number_type ( N ) * const restrict  np  , \
@@ -37,6 +162,103 @@ number_def_set0 ( number_size2 )
 number_def_mul_byte ( number_size2 )
 number_def_set0 ( number_size3 )
 number_def_mul_byte ( number_size3 )
+
+# define  shifr_number_def_add(  N ) \
+void  shifr_number ## N ## _add  ( number_type ( N ) * const restrict  np  ,  \
+  number_type ( N ) const * const restrict  xp ) {  \
+  uint8_t per = 0 ; \
+  uint8_t i = 0 ; \
+  do  { \
+    uint16_t  s = ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) + \
+      ( ( uint16_t  ) number_elt_copy ( N ) ( xp  , i ) ) + \
+      ( ( uint16_t  ) per ) ; \
+    if ( s >= 0x100  ) {  \
+      number_array  ( np  ) [ i ] = s - 0x100 ; \
+      per = 1 ; } \
+    else  { \
+      number_array  ( np  ) [ i ] = s  ;  \
+      per = 0 ;  }  \
+    ++ i  ; \
+  } while ( i < N ) ; }
+# define  number_def_add shifr_number_def_add
+
+# define  shifr_number_add( N ) shifr_number ## N ## _add
+# define  number_add shifr_number_add
+
+static  inline  number_def_add  ( number_size2 )
+static  inline  number_def_add  ( number_size3 )
+
+# define  shifr_number_def_not_zero(  N ) \
+bool  shifr_number ## N ## _not_zero  ( \
+  number_type ( N ) const * const restrict  np  ) { \
+  uint8_t const * i = & ( number_array  ( np  ) [ N ] ) ; \
+  do {  \
+    --  i ; \
+    if ( * i )  \
+      return  true  ; \
+  } while ( i not_eq & ( number_array  ( np  ) [ 0 ] ) ) ;  \
+  return  false ; }
+# define  number_def_not_zero shifr_number_def_not_zero
+
+# define  shifr_number_not_zero( N ) shifr_number ## N ## _not_zero
+# define  number_not_zero shifr_number_not_zero
+
+static  inline  number_def_not_zero ( number_size2 )
+static  inline  number_def_not_zero ( number_size3 )
+
+# define  shifr_number_def_dec(  N ) \
+void  shifr_number ## N ## _dec ( \
+  number_type ( N ) * const restrict  np  ) { \
+  uint8_t  * restrict i = & ( number_array  ( np  ) [ 0 ] ) ; \
+  do {  \
+    if ( ( * i ) == 0 ) \
+      -- ( * i ) ;  \
+    else  { \
+      -- ( * i ) ;  \
+      break ; } \
+    ++  i ; \
+  } while ( i not_eq & ( number_array  ( np  ) [ N ] ) ) ; }
+# define  number_def_dec shifr_number_def_dec
+
+# define  shifr_number_dec( N ) shifr_number ## N ## _dec
+# define  number_dec shifr_number_dec
+
+static  inline  number_def_dec  ( number_size2 )
+static  inline  number_def_dec  ( number_size3 )
+
+# define  shifr_number_def_div_mod(  N ) \
+uint8_t shifr_number ## N ## _div_mod ( \
+  number_type ( N ) * const restrict  np , uint8_t const div ) { \
+  uint8_t modi  = 0 ; \
+  uint8_t i = N ; \
+  do {  \
+    -- i ;  \
+    uint16_t  x = ( ( ( uint16_t  ) modi  ) <<  8 ) bitor  \
+      ( ( uint16_t  ) ( number_array  ( np  ) [ i ] ) ) ; \
+    modi  = x % div ; \
+    number_array  ( np  ) [ i ] = x / div ; \
+  } while ( i > 0 ) ; \
+  return  modi ; }
+# define  number_def_div_mod shifr_number_def_div_mod
+# define  shifr_number_div_mod( N ) shifr_number ## N ## _div_mod
+# define  number_div_mod shifr_number_div_mod
+
+static  inline  number_def_div_mod  ( number_size2 )
+static  inline  number_def_div_mod  ( number_size3 )
+
+# define  shifr_number_def_set_byte(  N ) \
+void  shifr_number ## N ## _set_byte  ( number_type ( N ) * const restrict np , \
+  uint8_t const x ) { \
+  memset  ( & ( ( number_array ( np ) ) [ 1 ] ) , 0 , N - 1 ) ; \
+  ( number_array ( np ) ) [ 0 ] = x ; }
+# define  number_def_set_byte shifr_number_def_set_byte
+
+# define  shifr_number_set_byte( N ) shifr_number ## N ## _set_byte
+# define  number_set_byte shifr_number_set_byte
+
+static  inline  number_def_set_byte ( number_size2 )
+static  inline  number_def_set_byte ( number_size3 )
+
 # undef number_array
   
 # ifdef SHIFR_DEBUG
@@ -50,52 +272,9 @@ void  printarr  ( strcp const  name , arrcp const p ,
   } while ( i not_eq  & ( ( * p ) [ arrsize ] ) ) ;
   fputs ( u8"]\n" , f ) ; }
 # endif
-
-# define  crypt_decrypt shifr_crypt_decrypt
-static inline void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
-  arrp const encrp , size_t const data_size ) {
-  uint8_t const * id = & ( ( * datap ) [ data_size ] ) ;
-  uint8_t * ied = & ( ( * encrp ) [ data_size ] ) ;
-  do {
-    -- id ;
-    --  ied ;
-    ( * ied ) = ( * tablep ) [ * id ] ;
-  } while ( id not_eq & ( ( * datap ) [ 0 ] ) ) ; }
-  
-# define  decrypt_sole2  shifr_decrypt_sole2
-static inline void  decrypt_sole2 ( arrp const datap , arrcp const tablep ,
-  arrp const decrp , size_t const data_size ,
-  uint8_t * const restrict old_last_sole ,
-  uint8_t * const restrict old_last_data ) {
-  uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
-  uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
-  do {
-    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
-      ( * ide ) = ( data_sole >>  2 ) xor ( * old_last_sole ) ;
-      ( * old_last_sole ) = (  data_sole bitand  0x3 ) xor ( * old_last_data ) ; }
-    ( * old_last_data ) = ( * ide ) ;
-    ++  id  ;
-    ++  ide ;
-  } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
-
-# define  decrypt_sole3  shifr_decrypt_sole3
-static inline void  decrypt_sole3 ( arrp const datap , arrcp const tablep ,
-  arrp const decrp , size_t const data_size ,
-  uint8_t * const restrict old_last_sole ,
-  uint8_t * const restrict old_last_data ) {
-  uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
-  uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
-  do {
-    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
-      ( * ide ) = ( data_sole >>  3 ) xor ( * old_last_sole ) ;
-      ( * old_last_sole ) = (  data_sole bitand  0x7 ) xor ( * old_last_data ) ;
-      ( * old_last_data ) = ( * ide ) ; }
-    ++  id  ;
-    ++  ide ;
-  } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
     
 # define  shifr_password_to_string_templ_def( N ) \
-void  shifr_password##N##_to_string_templ ( \
+void  shifr_password  ##  N ##  _to_string_templ ( \
   number_type ( N ) const * const restrict password0 , strp const string ,  \
   strp letters , uint8_t const letterscount  ) {  \
   char * stringi = & ( ( * string )  [ 0 ] ) ;  \
@@ -182,51 +361,6 @@ static void datasole3 ( arrcp const secretdata , arrp const secretdatasole ,
     ran >>= 3 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
-static inline void  data_xor2  ( uint8_t * const restrict  old_last_data ,
-  uint8_t * const restrict  old_last_sole ,
-  arrp  const secretdatasole  , size_t  const data_size ) {
-  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
-  do {
-    uint8_t const cur_data = ( * ids ) >> 2 ;
-    uint8_t const cur_sole = ( * ids ) bitand 0x3 ;
-    // главное данные , хвост - соль : 01 =>
-    //   01_00 или 01_01 или 01_10 или 01_11
-    // в таблице всё рядом, 4 варианта равномерно распределены
-    // данные сыпью предыдущей солью
-    ( * ids ) xor_eq  ( ( * old_last_sole ) << 2  ) ;
-    ( * ids ) xor_eq  ( * old_last_data ) ;
-    // берю свежую соль
-    ( * old_last_sole ) = cur_sole ;
-    ( * old_last_data ) = cur_data ;
-    ++  ids ;
-  } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
-
-void  data_xor3  ( uint8_t * const restrict  old_last_data ,
-  uint8_t * const restrict  old_last_sole ,
-  arrp  const secretdatasole  , size_t  const data_size ) {
-  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
-  do {
-    uint8_t const cur_data = ( * ids ) >> 3 ;
-    uint8_t const cur_sole = ( * ids ) bitand 0x7 ;
-    // главное данные , хвост - соль : 101 =>
-    //   101_000 или 101_001 или ... или 101_111
-    // в таблице всё рядом, 8 вариантов равномерно распределены
-    // данные сыпью предыдущей солью
-    ( * ids ) xor_eq  ( ( * old_last_sole ) << 3  ) ;
-    ( * ids ) xor_eq  ( * old_last_data ) ;
-    // берю свежую соль
-    ( * old_last_sole ) = cur_sole ;
-    ( * old_last_data ) = cur_data ;
-    ++  ids ;
-  } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
-
-// ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
-static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
-  return  ';'  + bits6  ; }
-
-static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
-  return  letter  - ';' ; }
-    
 // Отключить эхо-вывод и буферизацию ввода
 void set_keypress ( t_ns_shifr * const ns_shifrp ) {
   if  ( tcgetattr ( 0 , & ns_shifrp  -> stored_termios  ) ) {
@@ -258,72 +392,51 @@ void reset_keypress ( t_ns_shifr * const ns_shifrp ) {
     ns_shifrp  -> string_exception  = ( strcp ) se ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
+static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
+  return  letter  - ';' ; }
+
 # define  streambuf_file  shifr_streambuf_file_pub
 # define  streambuf_buf  shifr_streambuf_buf_pub
 # define  streambuf_bufbitsize  shifr_streambuf_bufbitsize_pub
 # define  streambuf_bytecount  shifr_streambuf_bytecount_pub
 
-static  inline  int streambuf_ByteCount  ( t_streambuf const * const restrict me ) {
-  return  streambuf_bytecount ( me  ) ; }
-
-static  inline  uint8_t streambuf_BufBitSize  (
-  t_streambuf const * const restrict me ) {
-  return  streambuf_bufbitsize ( me  ) ; }
-
-static  inline  uint8_t streambuf_Buf (
-  t_streambuf const * const restrict me ) {
-  return  streambuf_buf ( me  ) ; }
-  
 // читаю 6 бит
 // 6 bits reads
-static inline bool  isEOFstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
-  t_streambuf * const restrict me  , uint8_t * const encrypteddata ) {
-  if  ( ( not ( ns_shifrp  -> flagtext ) ) and
-    streambuf_bufbitsize  ( me  ) >= 6 ) {
+bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
+  uint8_t * const encrypteddata , size_t * const  readsp ,
+  uint8_t const * restrict * const input_bufferp , size_t const inputs ) {
+  t_streambuf * const restrict me = & ns_shifrp -> filebuffrom ;
+  if  ( ns_shifrp  -> flagtext  ) {
+    uint8_t buf ;
+    do  {
+      if ( ( * readsp ) >= inputs )
+        return  true  ;
+      buf = * * input_bufferp  ;
+      ++  ( * input_bufferp  ) ;
+      ++  ( * readsp ) ;
+      // читаем одну букву ';'-'z' -> декодируем в шесть бит
+      // reads one letter ';'-'z' -> decode to six bits
+    } while ( ( buf < ( ( uint8_t ) ';' ) ) or
+      ( buf > ( ( uint8_t ) 'z' ) ) ) ;
+    ( * encrypteddata ) = letter_to_bits6 ( buf ) ;
+    return  false ; }
+  if  ( streambuf_bufbitsize  ( me  ) >= 6 ) {
     streambuf_bufbitsize  ( me  ) -=  6 ;
-    ( * encrypteddata ) = streambuf_buf ( me  ) bitand
-      ( 0x40 - 1 ) ;
+    ( * encrypteddata ) = streambuf_buf ( me  ) bitand ( 0x40 - 1 ) ;
     streambuf_buf ( me  ) >>= 6 ;
     return  false ; }
-  uint8_t buf ;
-  { size_t  const nreads  = fread ( & buf , 1 , 1 , streambuf_file  ( me  ) ) ;
-    if ( nreads ==  0 ) {
-      if  ( feof  ( streambuf_file  ( me  ) ) )
-        return  true  ;
-      if  ( ferror  ( streambuf_file  ( me  ) ) ) {
-        clearerr ( streambuf_file  ( me  ) ) ;
-        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-          ( strcp ) &
-          u8"isEOFstreambuf_read6bits: ошибка чтения шести бит" :
-          ( strcp ) & "isEOFstreambuf_read6bits: six bits read error" ) ;
-        longjmp ( ns_shifrp  -> jump  , 1 ) ; } } } // nreads
-  if  ( ns_shifrp  -> flagtext  ) {
-    // читаем одну букву ';'-'z' -> декодируем в шесть бит
-    // reads one letter ';'-'z' -> decode to six bits
-    while ( ( buf < ( ( uint8_t ) ';' ) ) or
-      ( buf > ( ( uint8_t ) 'z' ) ) ) {
-      { size_t  const nreads  = fread ( & buf , 1 , 1 , streambuf_file  ( me  ) ) ;
-        if ( nreads ==  0 ) {
-          if  ( feof  ( streambuf_file  ( me  ) ) )
-            return  true  ;
-          if  ( ferror  ( streambuf_file  ( me  ) ) ) {
-            clearerr ( streambuf_file  ( me  ) ) ;
-            ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-              ( strcp ) &
-              u8"isEOFstreambuf_read6bits: ошибка чтения шести бит из текста" :
-              ( strcp ) &
-              "isEOFstreambuf_read6bits: six bits read error from text" ) ;
-            longjmp ( ns_shifrp  -> jump  , 1 ) ; } } } // nreads
-          }
-    ( * encrypteddata ) = letter_to_bits6 ( buf ) ; }
-  else  {
-    ( * encrypteddata ) = ( streambuf_buf ( me  ) bitor 
-        ( buf <<  streambuf_bufbitsize  ( me  ) ) ) bitand
-      ( 0x40 - 1 )  ;
-    streambuf_buf ( me  ) = buf >>
-      ( 6 - streambuf_bufbitsize  ( me  ) ) ;
-    streambuf_bufbitsize  ( me  ) +=  2 ; } // + 8 - 6
+  uint8_t buf = * * input_bufferp  ;
+  ++  ( * readsp ) ;
+  ++  ( * input_bufferp  ) ;
+  ( * encrypteddata ) = ( streambuf_buf ( me  ) bitor 
+    ( buf <<  streambuf_bufbitsize  ( me  ) ) ) bitand ( 0x40 - 1 )  ;
+  streambuf_buf ( me  ) = buf >> ( 6 - streambuf_bufbitsize  ( me  ) ) ;
+  streambuf_bufbitsize  ( me  ) +=  2 ; // + 8 - 6
   return  false ; }
+
+// ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
+static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
+  return  ';'  + bits6  ; }
 
 // пишу по шесть бит
 // secretdatasolesize - количество шести-битных отделов (2 или 3)
@@ -386,6 +499,36 @@ static void  streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
         ++  i ;
       } while ( i < secretdatasolesize ) ; } }
   
+static inline void  data_xor3  ( uint8_t * const restrict  old_last_data ,
+  uint8_t * const restrict  old_last_sole ,
+  arrp  const secretdatasole  , size_t  const data_size ) {
+  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
+  do {
+    uint8_t const cur_data = ( * ids ) >> 3 ;
+    uint8_t const cur_sole = ( * ids ) bitand 0x7 ;
+    // главное данные , хвост - соль : 101 =>
+    //   101_000 или 101_001 или ... или 101_111
+    // в таблице всё рядом, 8 вариантов равномерно распределены
+    // данные сыпью предыдущей солью
+    ( * ids ) xor_eq  ( ( * old_last_sole ) << 3  ) ;
+    ( * ids ) xor_eq  ( * old_last_data ) ;
+    // берю свежую соль
+    ( * old_last_sole ) = cur_sole ;
+    ( * old_last_data ) = cur_data ;
+    ++  ids ;
+  } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
+
+# define  crypt_decrypt shifr_crypt_decrypt
+static inline void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
+  arrp const encrp , size_t const data_size ) {
+  uint8_t const * id = & ( ( * datap ) [ data_size ] ) ;
+  uint8_t * ied = & ( ( * encrp ) [ data_size ] ) ;
+  do {
+    -- id ;
+    --  ied ;
+    ( * ied ) = ( * tablep ) [ * id ] ;
+  } while ( id not_eq & ( ( * datap ) [ 0 ] ) ) ; }
+
 uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
   arrps arrpsp ) {
   uint8_t result  = 0 ;
@@ -431,36 +574,48 @@ lbreak  : ;
     ++  result  ; }
   return  result  ; }
 
-// версия 6 пишу три бита для расшифровки
-// version 6 write three bits to decode
-static inline void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
-  t_streambuf * const restrict me  , uint8_t const encrypteddata ) {
-    if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
-      streambuf_buf ( me  ) or_eq
-        ( encrypteddata << streambuf_bufbitsize  ( me  )  ) ;
-      streambuf_bufbitsize  ( me  ) +=  3 ; }
-    else  {
-      uint8_t const to_write  = ( encrypteddata   <<
-        streambuf_bufbitsize  ( me  ) ) bitor
-        streambuf_buf ( me  ) ;
-      size_t  writen_count  ;
-      writen_count = fwrite ( & to_write , 1 , 1 ,
-        streambuf_file  ( me  ) ) ;
-      if ( writen_count < 1 ) {
-        clearerr ( streambuf_file  ( me  ) ) ; 
-        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-          ( strcp ) & u8"streambuf_write3bits: ошибка записи байта" :
-          ( strcp ) & "streambuf_write3bits: byte write error" ) ;
-        longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-      // + 3 - 8
-      streambuf_bufbitsize  ( me  ) -= 5 ;
-      streambuf_buf ( me  ) =  encrypteddata   >>
-        ( 3 - streambuf_bufbitsize  ( me  ) ) ; } }
+// версия 3 пишу три бита для расшифровки
+// version 3 write three bits to decode
+void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
+  uint8_t const encrypteddata , uint8_t * restrict * const output_bufferp ,
+  size_t * const writesp ) {
+  t_streambuf * const restrict me  = & ns_shifrp -> filebufto  ;
+  if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
+    streambuf_buf ( me  ) or_eq ( encrypteddata << streambuf_bufbitsize  ( me  ) ) ;
+    streambuf_bufbitsize  ( me  ) +=  3 ; }
+  else  {
+    uint8_t const to_write  = ( encrypteddata   << streambuf_bufbitsize  ( me  ) )
+      bitor streambuf_buf ( me  ) ;
+    ( * * output_bufferp ) = to_write  ;
+    ++  ( * output_bufferp  ) ;
+    ++  ( * writesp ) ;
+    // + 3 - 8
+    streambuf_bufbitsize  ( me  ) -= 5 ;
+    streambuf_buf ( me  ) =  encrypteddata   >>
+      ( 3 - streambuf_bufbitsize  ( me  ) ) ; } }
 
 # undef streambuf_file
 # undef streambuf_buf
-# undef streambuf_bufbitsize
 # undef streambuf_bytecount
+
+static inline void  data_xor2  ( uint8_t * const restrict  old_last_data ,
+  uint8_t * const restrict  old_last_sole ,
+  arrp  const secretdatasole  , size_t  const data_size ) {
+  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
+  do {
+    uint8_t const cur_data = ( * ids ) >> 2 ;
+    uint8_t const cur_sole = ( * ids ) bitand 0x3 ;
+    // главное данные , хвост - соль : 01 =>
+    //   01_00 или 01_01 или 01_10 или 01_11
+    // в таблице всё рядом, 4 варианта равномерно распределены
+    // данные сыпью предыдущей солью
+    ( * ids ) xor_eq  ( ( * old_last_sole ) << 2  ) ;
+    ( * ids ) xor_eq  ( * old_last_data ) ;
+    // берю свежую соль
+    ( * old_last_sole ) = cur_sole ;
+    ( * old_last_data ) = cur_data ;
+    ++  ids ;
+  } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
 // returns size loads & writes
 size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
@@ -605,6 +760,22 @@ size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
       output . s ) ; } // while
   return ( size_io ) { .i  = reads , .o  = writes  }  ; }
 
+# define  decrypt_sole2  shifr_decrypt_sole2
+static inline void  decrypt_sole2 ( arrp const datap , arrcp const tablep ,
+  arrp const decrp , size_t const data_size ,
+  uint8_t * const restrict old_last_sole ,
+  uint8_t * const restrict old_last_data ) {
+  uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
+  uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
+  do {
+    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
+      ( * ide ) = ( data_sole >>  2 ) xor ( * old_last_sole ) ;
+      ( * old_last_sole ) = (  data_sole bitand  0x3 ) xor ( * old_last_data ) ; }
+    ( * old_last_data ) = ( * ide ) ;
+    ++  id  ;
+    ++  ide ;
+  } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
+
 // returns size loads & writes
 size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
   arrps const output  ) {
@@ -670,17 +841,43 @@ size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
 Exit :
   return  ( size_io ) { .i  = reads , .o  = writes  } ; }
 
-void shifr_decrypt3 ( t_ns_shifr * const ns_shifrp ) {
+# define  decrypt_sole3  shifr_decrypt_sole3
+static inline void  decrypt_sole3 ( arrp const datap , arrcp const tablep ,
+  arrp const decrp , size_t const data_size ,
+  uint8_t * const restrict old_last_sole ,
+  uint8_t * const restrict old_last_data ) {
+  uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
+  uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
+  do {
+    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
+      ( * ide ) = ( data_sole >>  3 ) xor ( * old_last_sole ) ;
+      ( * old_last_sole ) = (  data_sole bitand  0x7 ) xor ( * old_last_data ) ;
+      ( * old_last_data ) = ( * ide ) ; }
+    ++  id  ;
+    ++  ide ;
+  } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
+
+size_io shifr_decrypt3 ( t_ns_shifr * const ns_shifrp , arrcps const input ,
+  arrps const output ) {
+  uint8_t const * restrict  input_buffer = &  ( ( * input . cp  ) [ 0 ] ) ;
+  uint8_t * restrict  output_buffer = & ( ( * output  . p ) [ 0 ] ) ;
+  size_t  reads = 0 ;
+  size_t  writes  = 0 ;
   uint8_t secretdata [ 1 ] ;
-  uint8_t old_last_data = 0 ;
-  uint8_t old_last_sole = 0 ;
-  while ( not isEOFstreambuf_read6bits ( ns_shifrp , & ns_shifrp -> filebuffrom ,
-    & ( secretdata [ 0 ] ) ) ) {
+  while ( ( reads < input . s or
+      streambuf_bufbitsize ( & ns_shifrp -> filebuffrom  ) ==  6 ) and
+    writes  < output  . s ) {
+    if ( isEOBstreambuf_read6bits ( ns_shifrp ,
+      & ( secretdata [ 0 ] ) , & reads , & input_buffer , input . s ) )
+      break ;
     uint8_t decrypteddata [ 1 ] ;
     decrypt_sole3 ( & secretdata , ( arrcp ) & ns_shifrp  -> deshi3 , & decrypteddata ,
-      1 , & old_last_sole , & old_last_data ) ;
-    streambuf_write3bits (
-      ns_shifrp , & ns_shifrp -> filebufto , decrypteddata [ 0 ] ) ; } }
+      1 , & ns_shifrp  -> old_last_sole , & ns_shifrp  -> old_last_data ) ;
+    streambuf_write3bits ( ns_shifrp , decrypteddata [ 0 ] , & output_buffer ,
+      & writes ) ; } // while
+  return  ( size_io ) { . i  = reads , .  o  = writes  } ; }
+
+# undef streambuf_bufbitsize
 
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
 void  shifr_generate_pass2 ( t_ns_shifr * const ns_shifrp ) {
@@ -792,6 +989,59 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
           ( strcp ) & u8"string_to_password : версия не поддерживается" :
           ( strcp ) & "string_to_password : version is not supported" ) ;
         longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+
+# define  initarr shifr_initarr
+static inline  void  initarr ( arrp  const p , uint8_t const codefree ,
+  size_t const loc_shifr_deshi_size ) {
+  uint8_t * i = & ( ( * p ) [ loc_shifr_deshi_size  ] ) ;
+  do {
+    --  i ;
+    ( * i ) = codefree ;
+  } while ( i not_eq  & ( ( * p ) [ 0 ] ) ) ; }
+
+// пароль раскладываем в таблицу шифровки , дешифровки
+  // пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
+  // пароль делим на 16, остаются 15! вариантов пароля
+// пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
+//  секретных кодов для соли+данных 0x1  
+// в deshi нужна соль
+
+// we lay out the password in the table of encryption, decryption
+// password % 0x10 = 0xa means that 0xa is the encrypted code for salt + data 0x0
+// divide the password by 16, 15! remain password options
+// password % 0xf = 0xa is the sequence number for the remaining NOT occupied from
+//  0xff secret codes for salt + data 0x1
+// deshi needs salt
+
+# define  shifr_password_load( N ) shifr_password_  ##  N ##  _load
+# define  password_load shifr_password_load
+
+# define  shifr_password_load_def(  N , SDS ) \
+void  password_load ( N ) ( number_type ( N ) const * const password0 , \
+  arrp const shifrp , arrp const deship ) { \
+  initarr ( shifrp , 0xff , SDS )  ;  \
+  initarr ( deship , 0xff , SDS )  ;  \
+  uint8_t arrind  [ SDS  ] ;  \
+  { uint8_t * arrj  = & ( arrind  [ SDS  ] ) ;  \
+    uint8_t j = SDS  ;  \
+    do  { \
+      --  arrj  ; \
+      --  j ; \
+      ( * arrj )  = j ; \
+    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ;  } \
+  uint8_t inde  = 0 ; \
+  number_type ( N ) password = * password0 ; \
+  do {  \
+    { uint8_t cindex = number_div_mod ( N ) ( & password , SDS - inde ) ;  \
+      uint8_t * arrind_cindexp = & (  arrind [ cindex ] ) ; \
+      ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
+      ( * deship ) [ * arrind_cindexp ] = inde ;  \
+      memmove ( arrind_cindexp , arrind_cindexp + 1 , \
+        SDS  - inde  - cindex - 1 ) ; } \
+    ++ inde  ;  \
+  } while ( inde < SDS ) ; }
+static  inline  shifr_password_load_def (  number_size2 , deshi_size2 )
+static  inline  shifr_password_load_def (  number_size3 , deshi_size3 )
 
 void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {
