@@ -6,8 +6,200 @@
 # include <stdlib.h>
 # include <time.h>
 # include <errno.h>
+# include <string.h> // strcmp
+# include <iso646.h> // not_eq
+
 # include "define.h"
-# include "inline.h"
+# include "public.h"
+# include "struct.h"
+# include "access.h"
+
+# define  generate_password shifr_generate_password
+static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
+  switch  ( ns_shifrp -> use_version  ) {
+    case  2 : 
+      shifr_generate_pass2  ( ns_shifrp ) ;
+      shifr_pass_to_array2  ( ns_shifrp ) ;
+# ifdef SHIFR_DEBUG
+      fputs ( ( ns_shifrp -> localerus ?
+        u8"generate_password:внутренний пароль = " :
+        "generate_password:internal password = " ) , stderr ) ;
+      number_princ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass , stderr  ) ;
+      fputs ( "\n" , stderr ) ;
+# endif
+      break ;
+    case 3 :
+      shifr_generate_pass3  ( ns_shifrp ) ;
+      shifr_pass_to_array3  ( ns_shifrp ) ;
+# ifdef SHIFR_DEBUG
+      fputs ( ( ns_shifrp -> localerus ?
+        u8"generate_password:внутренний пароль = " :
+        "generate_password:internal password = " ) , stderr ) ;
+      number_princ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass , stderr  ) ;
+      fputs ( "\n" , stderr ) ;
+# endif
+      break ;
+    default :
+      fprintf ( stderr , ( ns_shifrp -> localerus ?
+        u8"generate_password:неопознанная версия : \'%d\'\n" :
+        "generate_password:unrecognized version : \'%d\'\n" ) ,
+        ns_shifrp -> use_version ) ;
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+        ( strcp ) & u8"generate_password:неопознанная версия" :
+        ( strcp ) & "generate_password:unrecognized version" ) ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+
+# define  streambuf_file  shifr_streambuf_file_pub
+# define  streambuf_buf  shifr_streambuf_buf_pub
+# define  streambuf_bufbitsize  shifr_streambuf_bufbitsize_pub
+# define  streambuf_bytecount  shifr_streambuf_bytecount_pub
+
+static  inline  void  streambuf_init  ( t_streambuf * const restrict me  ,
+  FILE  * const f ) {
+  streambuf_file  ( me  ) = f ;
+  streambuf_buf ( me  ) = 0 ;
+  streambuf_bufbitsize  ( me  ) = 0 ;
+  streambuf_bytecount ( me  ) = 0 ; }
+  
+# undef streambuf_file
+# undef streambuf_buf
+# undef streambuf_bufbitsize
+# undef streambuf_bytecount
+
+static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
+  char p40 [ 20 ] ;
+  set_keypress  ( ns_shifrp ) ;
+  char ( * const p4 ) [ 20 ] = (  char  ( * const ) [ 20  ] )
+    fgets ( & ( p40 [ 0 ] ) , 20 , stdin ) ;
+  reset_keypress ( ns_shifrp ) ;
+  char * j = & ( ( * p4 ) [ 0 ]  ) ;
+  while ( ( ( * j ) not_eq '\n' ) and
+    ( ( * j ) not_eq '\00' ) and
+    ( j < ( & ( * p4 ) [ 20 ] ) ) )
+    ++ j ;  
+  if ( j < ( & ( ( * p4 ) [ 20 ] ) ) )
+    ( * j ) = '\00' ;
+  else  {
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+      ( strcp ) & u8"в пароле нет конца строки" :
+      ( strcp ) & "there is no end of line in the password" ) ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+  if ( ns_shifrp -> password_alphabet == 95 )
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
+      & ns_shifrp -> raspr2  . pass , ( strcp ) & ns_shifrp -> letters ,
+      letters_count ) ;
+  else
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
+      & ns_shifrp -> raspr2  . pass , ( strcp ) & ns_shifrp -> letters2 ,
+      letters_count2 ) ;
+  char  password_letters [ 20 ] ;
+  if ( ns_shifrp -> password_alphabet == 95 )
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+      & password_letters , & ns_shifrp -> letters , letters_count ) ;
+  else
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+      & password_letters , & ns_shifrp -> letters2 , letters_count2 ) ;
+  if  ( strcmp ( &  ( password_letters  [ 0 ] ) , & ( ( * p4  ) [ 0 ] ) ) )
+    fprintf  ( stderr , ( ns_shifrp -> localerus ?
+      u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
+      "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
+      , & ( ( * p4  ) [ 0 ] ) , & ( password_letters [ 0 ] ) ) ; }
+
+static  inline  void  enter_password3 ( t_ns_shifr * const ns_shifrp ) {
+  char p60 [ 100 ] ;
+  set_keypress  ( ns_shifrp ) ;
+  char ( * const p6 ) [ 100 ] = (char(*const)[100])
+    fgets ( & ( p60 [ 0 ] ) , 100 , stdin ) ;
+  reset_keypress ( ns_shifrp ) ;
+  char * j = & ( ( * p6 ) [ 0 ]  ) ;
+  while ( ( ( * j ) not_eq '\n' ) and
+    ( ( * j ) not_eq '\00' ) and
+    ( j < ( & ( * p6 ) [ 100 ] ) ) )
+    ++ j ;  
+  if ( j < ( & ( ( * p6 ) [ 100 ] ) ) )
+    ( * j ) = '\00' ;
+  else  {
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+      ( strcp ) & u8"в пароле нет конца строки" :
+      ( strcp ) & "there is no end of line in the password" ) ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+  char  password_letters6 [ 100 ] ;
+  if ( ns_shifrp -> password_alphabet == 95 ) {
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
+      & ns_shifrp -> raspr3  . pass ,
+      ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+      & password_letters6 , & ns_shifrp -> letters , letters_count ) ; }
+  else {
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
+      & ns_shifrp -> raspr3  . pass ,
+      ( strcp ) & ns_shifrp -> letters2 ,  letters_count2 ) ;
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+      & password_letters6 , & ns_shifrp -> letters2 , letters_count2 ) ; }
+  if  ( strcmp ( &  ( password_letters6 [ 0 ] ) , & ( ( * p6  ) [ 0 ] ) ) )
+    fprintf  ( stderr , ( ns_shifrp -> localerus ?
+      u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'.\n" :
+      "Warning! Password \'%s\' is very large. Same as \'%s\'.\n" )
+      , & ( ( * p6  ) [ 0 ] ) , & ( password_letters6  [ 0 ] ) ) ; }
+
+# define  enter_password  shifr_enter_password
+static  inline  void  enter_password ( t_ns_shifr * const ns_shifrp ) {
+  switch ( ns_shifrp -> use_version ) {
+    case  3 :
+      enter_password3  ( ns_shifrp ) ;
+      break ;
+    case 2 :
+      enter_password2  ( ns_shifrp ) ;
+      break ;
+    default :
+      fprintf ( stderr  , ( ns_shifrp -> localerus ?
+        u8"enter_password:Неизвестная версия %d\n" :
+        "enter_password:Unknown version %d\n" ) , ns_shifrp -> use_version  ) ;
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+        ( strcp ) & u8"enter_password:Неизвестная версия" :
+        ( strcp ) & "enter_password:Unknown version" ) ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+
+static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
+  ( * ns_shifrp ) = ( t_ns_shifr ) {
+    . use_version  = 3 ,
+    . flagtext = false ,
+    . password_alphabet = 62 ,
+    . old_last_data = 0 ,
+    . old_last_sole = 0 ,
+    . charcount = 0 ,
+    . buf2index = 0 ,
+    . bitscount = 0 ,
+    } ;
+  { char * j = & ( ns_shifrp -> letters [ 0 ] ) ;
+    uint8_t i = ' ' ;
+    do {
+      ( * j ) = i ;
+      ++ i  ;
+      ++ j  ;
+    } while ( i <= '~' ) ; }
+  // 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'  
+  { char * j = & ( ns_shifrp -> letters2 [ 0 ] ) ;
+    { uint8_t i = '0' ;
+      do {
+        ( * j ) = i ;
+        ++ i  ;
+        ++ j  ;
+      } while ( i <= '9' ) ; }
+    { uint8_t i = 'A' ;
+      do {
+        ( * j ) = i ;
+        ++ i  ;
+        ++ j  ;
+      } while ( i <= 'Z'  ) ; }
+    { uint8_t i = 'a' ;
+      do {
+        ( * j ) = i ;
+        ++ i  ;
+        ++ j  ;
+      } while ( i <= 'z'  ) ; } }
+  ns_shifrp  -> filefrom  = stdin ;
+  ns_shifrp  -> fileto = stdout ; }
 
 int main  ( int argc , char * argv [ ] )  {
   t_ns_shifr  main_shifr  ;
