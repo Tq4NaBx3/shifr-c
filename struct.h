@@ -32,6 +32,13 @@ struct  s_raspr3 {
 # define letters_count2 (UINT8_C( \
   ('9' - '0') + 1 + ('Z' - 'A') + 1 + ('z' - 'a') + 1 ))
 
+// 0x30 '0' - 0x39 '9'
+// 10 шт pcs
+# define letters_count3 (UINT8_C( ('9' - '0') + 1))
+
+# define  password_letters2size 30
+# define  password_letters3size 180
+
 struct  s_streambuf  {
   // file
   FILE  * oRmq  ;
@@ -57,7 +64,9 @@ struct  s_ns_shifr  {
   // ascii  
   char  letters [ letters_count ] ;  
   // a..zA..Z0..9
-  char  letters2 [ letters_count2 ] ;    
+  char  letters2  [ letters_count2  ] ;
+  // 0..9
+  char  letters3  [ letters_count3  ] ;
   bool  localerus ; 
 
   // default state repository
@@ -102,13 +111,13 @@ struct  s_ns_shifr  {
   // 30 .. 37 -  6
   // 38 .. 3f -  7
   uint8_t deshi3 [ deshi_size3 ] ;
-  // 62 or 95 
-  // алфавит пароля 62 или 95
+  // 62 or 95 or 10
+  // алфавит пароля 62 или 95 или 10
   int password_alphabet ; 
   // ver2
-  char  password_letters2 [ 20  ] ;
+  char  password_letters2 [ password_letters2size  ] ;
   // ver3
-  char  password_letters3 [ 100 ] ;
+  char  password_letters3 [ password_letters3size ] ;
 // private :
   t_streambuf filebuffrom ;
   t_streambuf filebufto ;

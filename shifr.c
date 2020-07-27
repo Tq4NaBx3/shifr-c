@@ -23,6 +23,7 @@
 // ascii буквы 126-32+1 = 95 шт
 // длина буквенного пароля : log ( 95 , 20922789888000 ) ≈ 6.735 букв <= 7 букв
 //  log ( 62 , 20922789888000 ) ≈ 7.432 буквы <= 8 букв
+//  log ( 10 , 20922789888000 ) ≈ 13.32 цифр <= 14 цифр
 
 /*
 OrigData   : 01 11 11
@@ -62,6 +63,7 @@ Secr xxxx      xxxx            yyyy
 // ascii letters 126-32+1 = 95 pcs
 // letter password length : log ( 95 , 20922789888000 ) ≈ 6.735 letters <= 7 letters
 //  log ( 62 , 20922789888000 ) ≈ 7.432 letters <= 8 letters
+//  log ( 10 , 20922789888000 ) ≈ 13.32 digits <= 14 digits
 
 /*
 OrigData   : 01 11 11
@@ -108,6 +110,7 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 // ascii буквы 126-32+1 = 95 шт
 // длина буквенного пароля : log ( 95 , 1.26886932186e89 ) ≈ 45.05 букв <= 46 букв
 //  log ( 62 , 1.26886932186e89 ) ≈ 49.71 буквы <= 50 букв
+//  log ( 10 , 1.26886932186e89 ) ≈ 89.1 цифр <= 90 цифр
 
 # include <stdio.h>
 # include <stdlib.h>
@@ -938,7 +941,7 @@ void  shifr_pass_to_array3 ( t_ns_shifr * const ns_shifrp ) {
 # ifdef SHIFR_DEBUG
 
 # define  shifr_number_def_princ( N ) \
-void  shifr_number##N##_princ ( number_type ( N ) const * const restrict  np ,  \
+void  shifr_number  ##  N ##  _princ ( number_type ( N ) const * const restrict  np ,  \
   FILE * const fs ) { \
   fputs ( "[ " , fs ) ; \
   int8_t i = N ;  \
@@ -955,40 +958,68 @@ number_def_princ  ( number_size3 )
 # endif // SHIFR_DEBUG
 
 void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
-      switch ( ns_shifrp -> use_version ) {
-      case 2 :
-        if ( ns_shifrp -> password_alphabet == 95 )
-          string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
-            ( strcp ) & ns_shifrp  -> password_letters2 ,
-            & ns_shifrp -> raspr2  . pass ,
-            ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
-        else
-          string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
-            ( strcp ) & ns_shifrp  -> password_letters2 ,
-            & ns_shifrp -> raspr2  . pass ,
-            ( strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
+  switch ( ns_shifrp -> use_version ) {
+  case 2 :
+    switch  ( ns_shifrp -> password_alphabet  ) {
+    case  letters_count :
+      string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
+        ( strcp ) & ns_shifrp  -> password_letters2 ,
+        & ns_shifrp -> raspr2  . pass ,
+        ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
       break ;
-      case 3 :
-        if ( ns_shifrp -> password_alphabet == 95 )
-          string_to_password_templ  ( number_size3 ) ( ns_shifrp ,
-            ( strcp ) & ns_shifrp  -> password_letters3 ,
-            & ns_shifrp -> raspr3  . pass ,
-            ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
-        else
-          string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
-            ( strcp ) & ns_shifrp  -> password_letters3 ,
-            & ns_shifrp -> raspr3  . pass ,
-            ( strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
+    case  letters_count2  :
+      string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
+        ( strcp ) & ns_shifrp  -> password_letters2 ,
+        & ns_shifrp -> raspr2  . pass ,
+        ( strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
       break ;
-      default :
-        fprintf ( stderr  , ( ns_shifrp -> localerus ?
-          u8"string_to_password : версия %d не поддерживается\n" :
-          "string_to_password : version %d is not supported" ) ,
-          ns_shifrp -> use_version )  ;
-        ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-          ( strcp ) & u8"string_to_password : версия не поддерживается" :
-          ( strcp ) & "string_to_password : version is not supported" ) ;
-        longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+    case  letters_count3  :
+      string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
+        ( strcp ) & ns_shifrp  -> password_letters2 ,
+        & ns_shifrp -> raspr2  . pass ,
+        ( strcp ) & ns_shifrp -> letters3 , letters_count3 ) ;
+      break ;
+    default :
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+        ( strcp ) & u8"string_to_password : версия алфавита не известна" :
+        ( strcp ) & "string_to_password : alphabet version is not known" ) ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    break ;
+  case 3 :
+    switch  ( ns_shifrp -> password_alphabet  ) {
+    case  letters_count :
+      string_to_password_templ  ( number_size3 ) ( ns_shifrp ,
+        ( strcp ) & ns_shifrp  -> password_letters3 ,
+        & ns_shifrp -> raspr3  . pass ,
+        ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
+      break ;
+    case  letters_count2  :
+      string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
+        ( strcp ) & ns_shifrp  -> password_letters3 ,
+        & ns_shifrp -> raspr3  . pass ,
+        ( strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
+      break ;
+    case  letters_count3  :
+      string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
+        ( strcp ) & ns_shifrp  -> password_letters3 ,
+        & ns_shifrp -> raspr3  . pass ,
+        ( strcp ) & ns_shifrp -> letters3 , letters_count3 ) ;
+      break ;
+    default :
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+        ( strcp ) & u8"string_to_password : версия алфавита не известна" :
+        ( strcp ) & "string_to_password : alphabet version is not known" ) ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    break ;
+  default :
+    fprintf ( stderr  , ( ns_shifrp -> localerus ?
+      u8"string_to_password : версия %d не поддерживается\n" :
+      "string_to_password : version %d is not supported" ) ,
+      ns_shifrp -> use_version )  ;
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+      ( strcp ) & u8"string_to_password : версия не поддерживается" :
+      ( strcp ) & "string_to_password : version is not supported" ) ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
 # define  initarr shifr_initarr
 static inline  void  initarr ( arrp  const p , uint8_t const codefree ,
@@ -1064,32 +1095,58 @@ void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
 
 void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version ) {
-  case  2 : {
-        if ( ns_shifrp -> password_alphabet == 95 )
-          password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
-            & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters ,
-            letters_count ) ;
-        else
-          password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
-            & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters2 ,
-            letters_count2 ) ; 
-        break ; }
-   case 3 : {
-        if ( ns_shifrp -> password_alphabet == 95 )
-          password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
-            & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters ,
-            letters_count ) ;
-        else
-          password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
-            & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters2 ,
-            letters_count2 ) ;
-        break ; }
+  case  2 :
+    switch  ( ns_shifrp -> password_alphabet  ) {
+    case  letters_count :
+      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+        & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters ,
+        letters_count ) ;
+      break ;
+    case  letters_count2  :
+      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+        & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters2 ,
+        letters_count2 ) ;
+      break ;
+    case  letters_count3  :
+      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+        & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters3 ,
+        letters_count3 ) ;
+      break ;
     default :
-      fprintf ( stderr  , ( ns_shifrp -> localerus ?
-        u8"password_to_string:версия %d не поддерживается\n" :
-        "password_to_string:version %d is not supported" ) ,
-        ns_shifrp -> use_version )  ;
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-        ( strcp ) & u8"password_to_string:версия не поддерживается" :
-        ( strcp ) & "password_to_string:version is not supported" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+        ( strcp ) & u8"password_to_string:версия алфавита не известна" :
+        ( strcp ) & "password_to_string:alphabet version is not known" ) ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    break ;
+  case 3 :
+    switch  ( ns_shifrp -> password_alphabet  ) {
+    case  letters_count :
+      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+        & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters ,
+        letters_count ) ;
+      break ;
+    case  letters_count2  :
+      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+        & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters2 ,
+        letters_count2 ) ;
+      break ;
+    case  letters_count3  :
+      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+        & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters3 ,
+        letters_count3 ) ;
+      break ;
+    default :
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+        ( strcp ) & u8"password_to_string:версия алфавита не известна" :
+        ( strcp ) & "password_to_string:alphabet version is not known" ) ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    break ;
+  default :
+    fprintf ( stderr  , ( ns_shifrp -> localerus ?
+      u8"password_to_string:версия %d не поддерживается\n" :
+      "password_to_string:version %d is not supported" ) ,
+      ns_shifrp -> use_version )  ;
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+      ( strcp ) & u8"password_to_string:версия не поддерживается" :
+      ( strcp ) & "password_to_string:version is not supported" ) ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; } }

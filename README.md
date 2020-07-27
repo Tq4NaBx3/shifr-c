@@ -4,8 +4,8 @@ Symmetric stream encryption with 'salt'.<br>
 Data size doubles in binary mode.<br>
 Tripled in text mode.<br>
 There is no diagnosis of the wrong password.<br>
-The encryption key size is 296 bits ( 45 - 50 letters ) .<br>
-Or light key with 45 bits ( 6 - 8 lettters ) .<br>
+The encryption key size is 296 bits ( 45 - 90 letters ) .<br>
+Or light key with 45 bits ( 6 - 14 lettters ) .<br>
 The fast version on the command line written in C.<br>
 <p>
 ENG<br>
