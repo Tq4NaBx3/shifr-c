@@ -315,11 +315,11 @@ int main  ( int argc , char * argv [ ] )  {
       u8"  --текст или\n  --text\tшифрованный файл записан текстом ascii" :
       "  --text\tencrypted file written in ascii text"    );
     puts  ( main_shifr . localerus ? 
-      u8"  --2\tиспользовать двух битное шифрование, ключ = 45 бит ( шесть-восемь букв )." :
-      "  --2\tusing two bit encryption, key = 45 bits ( six-eight letters )." ) ;
+      u8"  --2\tиспользовать двух битное шифрование, ключ = 45 бит ( 6 - 14 букв )." :
+      "  --2\tusing two bit encryption, key = 45 bits ( 6 - 14 letters )." ) ;
     puts  ( main_shifr . localerus ?
-      u8"  --3\tиспользовать трёх битное шифрование, ключ = 296 бит ( 45 - 50 букв ). ( по-умолчанию )" :
-      "  --3\tusing three bit encryption, key = 296 bits ( 45 - 50 letters ). ( by default )") ;
+      u8"  --3\tиспользовать трёх битное шифрование, ключ = 296 бит ( 45 - 90 букв ). ( по-умолчанию )" :
+      "  --3\tusing three bit encryption, key = 296 bits ( 45 - 90 letters ). ( by default )") ;
     fputs  ( main_shifr . localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
