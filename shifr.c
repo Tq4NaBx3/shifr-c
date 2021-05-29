@@ -1,5 +1,5 @@
-// Шифр ©2020 Глебов А.Н.
-// Shifr ©2020 Glebe A.N.
+// Шифр ©2020-1 Глебов А.Н.
+// Shifr ©2020-1 Glebe A.N.
 
 // Version 2
 
@@ -117,6 +117,7 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 # include <errno.h>
 # include <string.h> // memset
 # include <iso646.h> // bitand
+# include <time.h> // random time sole
 
 # include "define.h"
 # include "public.h"
@@ -330,11 +331,16 @@ found : ; \
 string_to_password_templ_def  ( number_size2 )
 string_to_password_templ_def  ( number_size3 )
 
+static  unsigned  int uirand  ( void  ) {
+  return  ( ( ( unsigned int ) rand ( ) ) xor
+    ( ( unsigned  int ) ( time  ( NULL  ) ) ) ) % RAND_MAX  ;
+  }
+
 static  void datasole2 ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
-  int ran = rand ( )  ;
+  unsigned  int ran  = uirand ( ) ;
   do {
     -- id ;
     --  ids ;
@@ -351,7 +357,7 @@ static void datasole3 ( arrcp const secretdata , arrp const secretdatasole ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
-  int ran = rand ( )  ;
+  unsigned  int ran  = uirand ( ) ;
   do {
     -- id ;
     --  ids ;
@@ -887,7 +893,7 @@ void  shifr_generate_pass2 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t * j = & ( ns_shifrp -> raspr2  . dice [ 0 ] ) ;
   uint8_t i  = 16 ;
   do {
-    ( * j ) = rand  ( ) % i ;
+    ( * j ) = uirand ( ) % i ;
     -- i  ;
     ++ j  ;
   } while ( i >= 2 ) ; }
@@ -897,7 +903,7 @@ void  shifr_generate_pass3 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t * j = & ( ns_shifrp -> raspr3  . dice [ 0 ] ) ;
   uint8_t i  = 64 ;
   do {
-    ( * j ) = rand  ( ) % i ;
+    ( * j ) = uirand ( ) % i ;
     -- i  ;
     ++ j  ;
   } while ( i >= 2 ) ; }
