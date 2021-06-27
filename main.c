@@ -3,8 +3,6 @@
 
 # include <locale.h>
 # include <stdio.h>
-# include <stdlib.h>
-# include <time.h>
 # include <errno.h>
 # include <string.h> // strcmp
 # include <iso646.h> // not_eq
@@ -248,8 +246,9 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
     } while ( i <= '9' ) ; }
   ns_shifrp  -> filefrom  = stdin ;
   ns_shifrp  -> fileto = stdout ; }
-
+  
 int main  ( int argc , char * argv [ ] )  {
+    
   t_ns_shifr  main_shifr  ;
   shifr_init  ( & main_shifr ) ;
   char const * const locale = setlocale ( LC_ALL  , ""  ) ;
@@ -259,6 +258,7 @@ int main  ( int argc , char * argv [ ] )  {
     fprintf ( stderr  , ( main_shifr . localerus ? u8"Исключение : %s\n" :
       "Exception : %s\n" ) , & ( ( *  main_shifr  . string_exception ) [ 0 ] ) ) ;
     return  1 ; }
+    
   bool  flagenc = false ;
   bool  flagdec = false ;
   bool  flagpasswd  = false ;
@@ -375,7 +375,6 @@ int main  ( int argc , char * argv [ ] )  {
       "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;
     puts  ( "  2+2" ) ;
     return 0 ; }
-  srand ( time  ( 0 ) ) ;
   { int argj = 1 ;
   for ( ; argv [ argj ] ; ++ argj ) {
     if ( flagreadpasswdfromfile ) {

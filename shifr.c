@@ -113,11 +113,10 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 //  log ( 10 , 1.26886932186e89 ) ≈ 89.1 цифр <= 90 цифр
 
 # include <stdio.h>
-# include <stdlib.h>
 # include <errno.h>
 # include <string.h> // memset
 # include <iso646.h> // bitand
-# include <time.h> // random time sole
+# include <sys/random.h>
 
 # include "define.h"
 # include "public.h"
@@ -330,17 +329,55 @@ found : ; \
 # define  string_to_password_templ_def  shifr_string_to_password_templ_def
 string_to_password_templ_def  ( number_size2 )
 string_to_password_templ_def  ( number_size3 )
+  
+// generate random number [ fr .. to ]
+static  unsigned  int uirandfrto  ( t_ns_shifr * const ns_shifrp ,
+  unsigned  int const fr , unsigned  int const to ) {
+# ifdef SHIFR_DEBUG
+  if ( fr >= to ) {
+    fprintf ( stderr  , "uirandfrto : fr >= to , fr = %u , to = %u\n"  ,
+      fr , to ) ;
+    ns_shifrp  -> string_exception  = ( strcp ) "uirandfrto : fr >= to" ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+  if ( fr + 0x100 <= to ) {
+    fprintf ( stderr  , "uirandfrto : fr + 0x100 <= to , fr = %u , to = %u\n"  ,
+      fr , to ) ;
+    ns_shifrp  -> string_exception  = ( strcp ) "uirandfrto : fr + 0x100 <= to" ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+# endif
+  uint8_t buf ;
+  do {
+    ssize_t const r = getrandom ( & buf , 1 , 0 ) ;
+# ifdef SHIFR_DEBUG    
+    if ( r == -1 ) {
+      perror  ( "uirandfrto : getrandom" ) ;
+      ns_shifrp  -> string_exception  = ( strcp ) "uirandfrto : getrandom" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    if ( r not_eq 1 ) {
+      fprintf ( stderr  , "uirandfrto : r = %ld not_eq 1\n"  , r ) ;
+      ns_shifrp  -> string_exception  = ( strcp ) "uirandfrto : r not_eq 1" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+# endif
+  } while ( buf + 0x100 % ( to - fr + 1 ) >= 0x100 ) ;
+  return  fr + buf % ( to - fr + 1 ) ; }
 
-static  unsigned  int uirand  ( void  ) {
-  return  ( ( ( unsigned int ) rand ( ) ) xor
-    ( ( unsigned  int ) ( time  ( NULL  ) ) ) ) % RAND_MAX  ;
-  }
-
-static  void datasole2 ( arrcp const secretdata , arrp const secretdatasole ,
-  size_t const data_size ) {
+// data_size = 4
+static  void datasole2 ( t_ns_shifr * const ns_shifrp , arrcp const secretdata ,
+  arrp const secretdatasole , size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
-  unsigned  int ran  = uirand ( ) ;
+  uint8_t ran ;
+  ssize_t const r = getrandom ( & ran , 1 , 0 ) ;
+# ifdef SHIFR_DEBUG    
+    if ( r == -1 ) {
+      perror  ( "datasole2 : getrandom" ) ;
+      ns_shifrp  -> string_exception  = ( strcp ) "datasole2 : getrandom" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    if ( r not_eq 1 ) {
+      fprintf ( stderr  , "datasole2 : r = %ld not_eq 1\n"  , r ) ;
+      ns_shifrp  -> string_exception  = ( strcp ) "datasole2 : r not_eq 1" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+# endif
   do {
     -- id ;
     --  ids ;
@@ -353,11 +390,27 @@ static  void datasole2 ( arrcp const secretdata , arrp const secretdatasole ,
     ran >>= 2 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
-static void datasole3 ( arrcp const secretdata , arrp const secretdatasole ,
-  size_t const data_size ) {
+// data_size = 1 .. 3
+static void datasole3 ( t_ns_shifr * const ns_shifrp , arrcp const secretdata ,
+  arrp const secretdatasole , size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
-  unsigned  int ran  = uirand ( ) ;
+  int const arans = ( ( data_size == 3 ) ? 2 : 1 ) ;
+  uint8_t aran [ arans ] ;
+  ssize_t const r = getrandom ( & ( aran [ 0 ] ) , arans , 0 ) ;
+# ifdef SHIFR_DEBUG    
+    if ( r == -1 ) {
+      perror  ( "datasole3 : getrandom" ) ;
+      ns_shifrp  -> string_exception  = ( strcp ) "datasole3 : getrandom" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    if ( r not_eq arans ) {
+      fprintf ( stderr  , "datasole3 : r = %ld not_eq %d\n"  , r , arans ) ;
+      ns_shifrp  -> string_exception  = ( strcp ) "datasole3 : r not_eq arans" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+# endif
+  unsigned  int ran = ( ( unsigned  int ) ( aran [ 0 ] ) ) ;
+  if ( arans == 2 )
+    ran |=  ( ( ( unsigned  int ) ( aran [ 1 ] ) ) << 8 ) ;
   do {
     -- id ;
     --  ids ;
@@ -544,14 +597,13 @@ uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
   uint8_t * restrict  output_buffer = &((*  arrpsp  . p)[0]) ;
   if  ( ns_shifrp -> bitscount ==  0 )
     goto  lbreak ;
-  uint8_t secretdatasolesize  = 1 ;
   if  ( ns_shifrp -> bitscount ==  1 )
     ns_shifrp -> secretdata [ 0 ] = ns_shifrp -> secretdata [ 3 ] ;
   else
     ns_shifrp -> secretdata [ 0 ] = ns_shifrp -> secretdata [ 2 ] ;
-
-  datasole3 ( ( arrcp ) & ns_shifrp -> secretdata , & ns_shifrp -> secretdatasole ,
-    secretdatasolesize )  ;
+  datasole3 ( ns_shifrp , ( arrcp ) & ns_shifrp -> secretdata ,
+    & ns_shifrp -> secretdatasole , 1 )  ;
+  uint8_t secretdatasolesize  = 1 ;  
   // после подсоления, данные переворачиваем предыдущим ксором
   data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
     & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
@@ -607,8 +659,7 @@ void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
 # undef streambuf_buf
 # undef streambuf_bytecount
 
-static inline void  data_xor2  ( uint8_t * const restrict  old_last_data ,
-  uint8_t * const restrict  old_last_sole ,
+static inline void  data_xor2  ( t_ns_shifr * const ns_shifrp ,
   arrp  const secretdatasole  , size_t  const data_size ) {
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
   do {
@@ -618,11 +669,11 @@ static inline void  data_xor2  ( uint8_t * const restrict  old_last_data ,
     //   01_00 или 01_01 или 01_10 или 01_11
     // в таблице всё рядом, 4 варианта равномерно распределены
     // данные сыпью предыдущей солью
-    ( * ids ) xor_eq  ( ( * old_last_sole ) << 2  ) ;
-    ( * ids ) xor_eq  ( * old_last_data ) ;
-    // берю свежую соль
-    ( * old_last_sole ) = cur_sole ;
-    ( * old_last_data ) = cur_data ;
+    ( * ids ) xor_eq  ( ( ns_shifrp -> old_last_sole ) << 2  ) ;
+    ( * ids ) xor_eq  ( ns_shifrp -> old_last_data ) ;
+    // беру свежую соль
+    ns_shifrp -> old_last_sole = cur_sole ;
+    ns_shifrp -> old_last_data = cur_data ;
     ++  ids ;
   } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
@@ -641,10 +692,9 @@ size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
       [ 1 ] = ( buf >>  2 ) bitand 0x3 , [ 2 ] = ( buf >>  4 ) bitand 0x3 ,
       [ 3 ] = ( buf >>  6 ) bitand 0x3 } ;
     uint8_t secretdatasole  [ 4 ] ;
-    datasole2 ( & secretdata , & secretdatasole , 4 )  ;
+    datasole2 ( ns_shifrp , & secretdata , & secretdatasole , 4 )  ;
     // после подсоления, данные переворачиваем предыдущим ксором
-    data_xor2 ( & ns_shifrp  -> old_last_data , & ns_shifrp  -> old_last_sole ,
-      & secretdatasole , 4 )  ;
+    data_xor2 ( ns_shifrp , & secretdatasole , 4 )  ;
     uint8_t encrypteddata [ 4 ] ;
     crypt_decrypt ( & secretdatasole , ( arrcp ) & ns_shifrp  -> shifr2 ,
       & encrypteddata , 4 ) ;
@@ -756,7 +806,7 @@ size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , arrcps const input ,
         ( strcp ) & u8"неожиданное значение bitscount" :
         ( strcp ) & "unexpected value bitscount" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } // switch  ( ns_shifrp -> bitscount  )
-    datasole3 ( ( arrcp ) & ( ns_shifrp -> secretdata ) ,
+    datasole3 ( ns_shifrp , ( arrcp ) & ( ns_shifrp -> secretdata ) ,
       & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
     // после подсоления, данные переворачиваем предыдущим ксором
     data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
@@ -891,22 +941,22 @@ size_io shifr_decrypt3 ( t_ns_shifr * const ns_shifrp , arrcps const input ,
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
 void  shifr_generate_pass2 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t * j = & ( ns_shifrp -> raspr2  . dice [ 0 ] ) ;
-  uint8_t i  = 16 ;
+  uint8_t i  = 0x0f ; // 15
   do {
-    ( * j ) = uirand ( ) % i ;
+    ( * j ) = uirandfrto  ( ns_shifrp , 0 , i ) ;
     -- i  ;
     ++ j  ;
-  } while ( i >= 2 ) ; }
+  } while ( i >= 1 ) ; }
 
 // inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
 void  shifr_generate_pass3 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t * j = & ( ns_shifrp -> raspr3  . dice [ 0 ] ) ;
-  uint8_t i  = 64 ;
+  uint8_t i  = 0x3f ; // 63
   do {
-    ( * j ) = uirand ( ) % i ;
+    ( * j ) = uirandfrto  ( ns_shifrp , 0 , i ) ;
     -- i  ;
     ++ j  ;
-  } while ( i >= 2 ) ; }
+  } while ( i >= 1 ) ; }
 
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
