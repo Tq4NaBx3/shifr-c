@@ -17,7 +17,7 @@ shifr: $(SHIFR_OBJECTS)
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) -o shifr
 	@chmod 0555 shifr
 shifr.o: $(DEPENDshifrc)
-	@$(SHIFR_COMPILE) shifr.c
+	@$(SHIFR_COMPILE) -D_GNU_SOURCE shifr.c
 main.o: $(DEPENDmainc)
 	@$(SHIFR_COMPILE) main.c
 clean:
@@ -27,7 +27,7 @@ clean:
 	@rm -f libshifr.so
 asm: $(SHIFR_ASM)
 shifr.s: $(DEPENDshifrc)
-	@$(SHIFR_GCCRUN) shifr.c $(SHIFR_ASM_OPTIONS)
+	@$(SHIFR_GCCRUN) -D_GNU_SOURCE shifr.c $(SHIFR_ASM_OPTIONS)
 main.s: $(DEPENDmainc)
 	@$(SHIFR_GCCRUN) main.c $(SHIFR_ASM_OPTIONS)
 lib: SHIFR_COMPILE += -mtune=native -fPIC

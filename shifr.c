@@ -116,9 +116,14 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 # include <errno.h>
 # include <string.h> // memset
 # include <iso646.h> // bitand
-# include <sys/random.h>
-
 # include "define.h"
+
+# ifdef SHIFR_SYSCALL_RANDOM
+# include <sys/syscall.h>
+# else
+# include <sys/random.h>
+# endif
+
 # include "public.h"
 # include "struct.h"
 # include "access.h"
@@ -330,6 +335,8 @@ found : ; \
 string_to_password_templ_def  ( number_size2 )
 string_to_password_templ_def  ( number_size3 )
   
+# include <unistd.h> // ssize_t
+
 // generate random number [ fr .. to ]
 static  unsigned  int uirandfrto  ( t_ns_shifr * const ns_shifrp ,
   unsigned  int const fr , unsigned  int const to ) {
@@ -347,7 +354,12 @@ static  unsigned  int uirandfrto  ( t_ns_shifr * const ns_shifrp ,
 # endif
   uint8_t buf ;
   do {
-    ssize_t const r = getrandom ( & buf , 1 , 0 ) ;
+    ssize_t const r = 
+# ifdef SHIFR_SYSCALL_RANDOM
+      syscall ( SYS_getrandom , & buf , 1 , 0 ) ;
+# else
+      getrandom ( & buf , 1 , 0 ) ;
+# endif
 # ifdef SHIFR_DEBUG    
     if ( r == -1 ) {
       perror  ( "uirandfrto : getrandom" ) ;
@@ -367,7 +379,12 @@ static  void datasole2 ( t_ns_shifr * const ns_shifrp , arrcp const secretdata ,
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
   uint8_t ran ;
-  ssize_t const r = getrandom ( & ran , 1 , 0 ) ;
+  ssize_t const r = 
+# ifdef SHIFR_SYSCALL_RANDOM
+    syscall ( SYS_getrandom , & ran , 1 , 0 ) ;
+# else
+    getrandom ( & ran , 1 , 0 ) ;
+# endif
 # ifdef SHIFR_DEBUG    
     if ( r == -1 ) {
       perror  ( "datasole2 : getrandom" ) ;
@@ -397,7 +414,12 @@ static void datasole3 ( t_ns_shifr * const ns_shifrp , arrcp const secretdata ,
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
   int const arans = ( ( data_size == 3 ) ? 2 : 1 ) ;
   uint8_t aran [ arans ] ;
-  ssize_t const r = getrandom ( & ( aran [ 0 ] ) , arans , 0 ) ;
+  ssize_t const r = 
+# ifdef SHIFR_SYSCALL_RANDOM
+    syscall ( SYS_getrandom , & ( aran [ 0 ] ) , arans , 0 ) ;
+# else
+    getrandom ( & ( aran [ 0 ] ) , arans , 0 ) ;
+# endif
 # ifdef SHIFR_DEBUG    
     if ( r == -1 ) {
       perror  ( "datasole3 : getrandom" ) ;
