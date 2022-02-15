@@ -1,5 +1,5 @@
-// Шифр ©2020-1 Глебов А.Н.
-// Shifr ©2020-1 Glebe A.N.
+// Шифр ©2020-2 Глебов А.Н.
+// Shifr ©2020-2 Glebe A.N.
 
 // Version 2
 
@@ -158,10 +158,10 @@ void  shifr_number ## N ## _mul_byte ( number_type ( N ) * const restrict  np  ,
   uint8_t per = 0 ; \
   { uint8_t i = 0 ; \
     do { \
-      uint16_t  x = ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) * \
-        ( ( uint16_t  ) byte  ) + ( ( uint16_t  ) per ) ; \
-      number_array  ( np  ) [ i ] = x bitand 0xff ; \
-      per = x >>  8 ; \
+      uint16_t const x = ( uint16_t ) ( ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) * \
+        ( ( uint16_t  ) byte  ) + ( ( uint16_t  ) per ) ) ; \
+      number_array  ( np  ) [ i ] = ( uint8_t ) ( x bitand 0xff ) ; \
+      per = ( uint8_t ) ( x >>  8 ) ; \
       ++  i ; \
     } while ( i < N ) ; } }
 # define  number_def_mul_byte shifr_number_def_mul_byte
@@ -177,14 +177,14 @@ void  shifr_number ## N ## _add  ( number_type ( N ) * const restrict  np  ,  \
   uint8_t per = 0 ; \
   uint8_t i = 0 ; \
   do  { \
-    uint16_t  s = ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) + \
+    uint16_t const s = ( uint16_t  ) ( ( ( uint16_t  ) ( number_elt_copy ( N ) ( np  , i ) ) ) + \
       ( ( uint16_t  ) number_elt_copy ( N ) ( xp  , i ) ) + \
-      ( ( uint16_t  ) per ) ; \
+      ( ( uint16_t  ) per ) ) ; \
     if ( s >= 0x100  ) {  \
-      number_array  ( np  ) [ i ] = s - 0x100 ; \
+      number_array  ( np  ) [ i ] = ( uint8_t ) ( s - 0x100 ) ; \
       per = 1 ; } \
     else  { \
-      number_array  ( np  ) [ i ] = s  ;  \
+      number_array  ( np  ) [ i ] = ( uint8_t ) s  ;  \
       per = 0 ;  }  \
     ++ i  ; \
   } while ( i < N ) ; }
@@ -241,10 +241,10 @@ uint8_t shifr_number ## N ## _div_mod ( \
   uint8_t i = N ; \
   do {  \
     -- i ;  \
-    uint16_t  x = ( ( ( uint16_t  ) modi  ) <<  8 ) bitor  \
-      ( ( uint16_t  ) ( number_array  ( np  ) [ i ] ) ) ; \
-    modi  = x % div ; \
-    number_array  ( np  ) [ i ] = x / div ; \
+    uint16_t const x = ( uint16_t  ) ( ( ( ( uint16_t  ) modi  ) <<  8 ) bitor  \
+      ( ( uint16_t  ) ( number_array  ( np  ) [ i ] ) ) ) ; \
+    modi  = ( uint8_t ) ( x % div ) ; \
+    number_array  ( np  ) [ i ] = ( uint8_t ) ( x / div ) ; \
   } while ( i > 0 ) ; \
   return  modi ; }
 # define  number_def_div_mod shifr_number_def_div_mod
@@ -325,7 +325,7 @@ void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp 
     longjmp ( ns_shifrp  -> jump  , 1 ) ; \
 found : ; \
     { number_type ( N ) tmp = mult ;  \
-      number_mul_byte ( N ) ( & tmp , i + 1 ) ; \
+      number_mul_byte ( N ) ( & tmp , ( uint8_t ) ( i + 1 ) ) ; \
       number_add ( N ) ( &  pass  , & tmp )  ; }  \
     number_mul_byte ( N ) ( & mult , letterscount ) ; \
     ++  stringi ; \
@@ -354,13 +354,13 @@ static  unsigned  int uirandfrto  ( t_ns_shifr * const ns_shifrp ,
 # endif
   uint8_t buf ;
   do {
+# ifdef SHIFR_DEBUG
     ssize_t const r = 
 # ifdef SHIFR_SYSCALL_RANDOM
       syscall ( SYS_getrandom , & buf , 1 , 0 ) ;
 # else
       getrandom ( & buf , 1 , 0 ) ;
 # endif
-# ifdef SHIFR_DEBUG    
     if ( r == -1 ) {
       perror  ( "uirandfrto : getrandom" ) ;
       ns_shifrp  -> string_exception  = ( strcp ) "uirandfrto : getrandom" ;
@@ -369,7 +369,7 @@ static  unsigned  int uirandfrto  ( t_ns_shifr * const ns_shifrp ,
       fprintf ( stderr  , "uirandfrto : r = %ld not_eq 1\n"  , r ) ;
       ns_shifrp  -> string_exception  = ( strcp ) "uirandfrto : r not_eq 1" ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-# endif
+# endif // SHIFR_DEBUG
   } while ( buf + 0x100 % ( to - fr + 1 ) >= 0x100 ) ;
   return  fr + buf % ( to - fr + 1 ) ; }
 
@@ -379,13 +379,13 @@ static  void datasole2 ( t_ns_shifr * const ns_shifrp , arrcp const secretdata ,
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
   uint8_t ran ;
+# ifdef SHIFR_DEBUG
   ssize_t const r = 
 # ifdef SHIFR_SYSCALL_RANDOM
     syscall ( SYS_getrandom , & ran , 1 , 0 ) ;
 # else
     getrandom ( & ran , 1 , 0 ) ;
 # endif
-# ifdef SHIFR_DEBUG    
     if ( r == -1 ) {
       perror  ( "datasole2 : getrandom" ) ;
       ns_shifrp  -> string_exception  = ( strcp ) "datasole2 : getrandom" ;
@@ -394,16 +394,16 @@ static  void datasole2 ( t_ns_shifr * const ns_shifrp , arrcp const secretdata ,
       fprintf ( stderr  , "datasole2 : r = %ld not_eq 1\n"  , r ) ;
       ns_shifrp  -> string_exception  = ( strcp ) "datasole2 : r not_eq 1" ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-# endif
+# endif // SHIFR_DEBUG
   do {
     -- id ;
     --  ids ;
     // главное данные , хвост - соль : 10 =>
     //   10_00 или 10_01 или 10_10 или 10_11
     // в таблице всё рядом, 4 варианта равномерно распределены
-    ( * ids ) =
+    ( * ids ) = ( uint8_t ) (
       ( ( * id  ) <<  2 ) bitor
-      ( ran bitand  0x3 ) ;
+      ( ran bitand  0x3 ) ) ;
     ran >>= 2 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
@@ -414,13 +414,13 @@ static void datasole3 ( t_ns_shifr * const ns_shifrp , arrcp const secretdata ,
   uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
   int const arans = ( ( data_size == 3 ) ? 2 : 1 ) ;
   uint8_t aran [ arans ] ;
+# ifdef SHIFR_DEBUG
   ssize_t const r = 
 # ifdef SHIFR_SYSCALL_RANDOM
     syscall ( SYS_getrandom , & ( aran [ 0 ] ) , arans , 0 ) ;
 # else
-    getrandom ( & ( aran [ 0 ] ) , arans , 0 ) ;
+    getrandom ( & ( aran [ 0 ] ) , ( size_t ) arans , 0 ) ;
 # endif
-# ifdef SHIFR_DEBUG    
     if ( r == -1 ) {
       perror  ( "datasole3 : getrandom" ) ;
       ns_shifrp  -> string_exception  = ( strcp ) "datasole3 : getrandom" ;
@@ -429,7 +429,7 @@ static void datasole3 ( t_ns_shifr * const ns_shifrp , arrcp const secretdata ,
       fprintf ( stderr  , "datasole3 : r = %ld not_eq %d\n"  , r , arans ) ;
       ns_shifrp  -> string_exception  = ( strcp ) "datasole3 : r not_eq arans" ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-# endif
+# endif // SHIFR_DEBUG
   unsigned  int ran = ( ( unsigned  int ) ( aran [ 0 ] ) ) ;
   if ( arans == 2 )
     ran |=  ( ( ( unsigned  int ) ( aran [ 1 ] ) ) << 8 ) ;
@@ -439,9 +439,9 @@ static void datasole3 ( t_ns_shifr * const ns_shifrp , arrcp const secretdata ,
     // главное данные , хвост - соль : 101 =>
     //   101_000 или 101_001 или ... или 101_111
     // в таблице всё рядом, 8 вариантов равномерно распределены
-    ( * ids ) =
-      ( ( * id  ) <<  3 ) bitor
-      ( ran bitand  0x7 ) ;
+    ( * ids ) = ( uint8_t )
+      ( ( ( unsigned int ) ( ( * id  ) <<  3 ) ) bitor
+      ( ran bitand  0x7 ) ) ;
     ran >>= 3 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 

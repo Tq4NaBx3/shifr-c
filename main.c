@@ -1,5 +1,5 @@
-// Шифр ©2020 Глебов А.Н.
-// Shifr ©2020 Glebe A.N.
+// Шифр ©2020-2 Глебов А.Н.
+// Shifr ©2020-2 Glebe A.N.
 
 # include <locale.h>
 # include <stdio.h>
@@ -246,6 +246,15 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
     } while ( i <= '9' ) ; }
   ns_shifrp  -> filefrom  = stdin ;
   ns_shifrp  -> fileto = stdout ; }
+  
+#include <sys/time.h>
+    typedef unsigned long long timestamp_t;
+
+    static timestamp_t    get_timestamp ()    {
+      struct timeval now;
+      gettimeofday (&now, NULL);
+      return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;    }
+  
   
 int main  ( int argc , char * argv [ ] )  {
     
@@ -770,6 +779,9 @@ int main  ( int argc , char * argv [ ] )  {
       ( strcp ) & "so encrypt or decrypt ?" ) ;
     longjmp(main_shifr  . jump,1); }
 # endif
+
+timestamp_t t0 = get_timestamp();
+
   // по-умолчанию шифруем
   // encrypted by default
   if ( not flagdec  )
@@ -1032,4 +1044,9 @@ Exc :
         "Error closing file of reading \"%s\" : %s\n" ) ,
         & ( ( * inputfilename ) [ 0 ] ) , strerror  ( e ) ) ;
       resulterror = 2 ; } }
+      
+    timestamp_t t1 = get_timestamp();
+    long  double secs = (t1 - t0) / 1000000.0L;      
+  fprintf(stderr,u8"время = %Lf сек\n",secs);
+      
   return  resulterror ; }
