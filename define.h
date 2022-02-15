@@ -1,7 +1,7 @@
-# ifndef  shifrdefineh
-# define  shifrdefineh
+# ifndef  shifr_define_h
+# define  shifr_define_h
 
-//# define  SHIFR_DEBUG
-//# define  SHIFR_SYSCALL_RANDOM
+// # define  SHIFR_DEBUG
+// # define  SHIFR_SYSCALL_RANDOM
 
-# endif // shifrdefineh
+# endif // shifr_define_h

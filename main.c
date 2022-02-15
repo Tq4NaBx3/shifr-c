@@ -213,7 +213,7 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
   { char * j = & ( ns_shifrp -> letters [ 0 ] ) ;
     uint8_t i = ' ' ;
     do {
-      ( * j ) = i ;
+      ( * j ) = ( char  ) i ;
       ++ i  ;
       ++ j  ;
     } while ( i <= '~' ) ; }
@@ -221,40 +221,43 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
   { char * j = & ( ns_shifrp -> letters2 [ 0 ] ) ;
     { uint8_t i = '0' ;
       do {
-        ( * j ) = i ;
+        ( * j ) = ( char  ) i ;
         ++ i  ;
         ++ j  ;
       } while ( i <= '9' ) ; }
     { uint8_t i = 'A' ;
       do {
-        ( * j ) = i ;
+        ( * j ) = ( char  ) i ;
         ++ i  ;
         ++ j  ;
       } while ( i <= 'Z'  ) ; }
     { uint8_t i = 'a' ;
       do {
-        ( * j ) = i ;
+        ( * j ) = ( char  ) i ;
         ++ i  ;
         ++ j  ;
       } while ( i <= 'z'  ) ; } }
   { char * j = & ( ns_shifrp -> letters3  [ 0 ] ) ;
     uint8_t i = '0' ;
     do {
-      ( * j ) = i ;
+      ( * j ) = ( char  ) i ;
       ++ i  ;
       ++ j  ;
     } while ( i <= '9' ) ; }
   ns_shifrp  -> filefrom  = stdin ;
   ns_shifrp  -> fileto = stdout ; }
   
-#include <sys/time.h>
-    typedef unsigned long long timestamp_t;
+# ifdef SHIFR_DEBUG
 
-    static timestamp_t    get_timestamp ()    {
-      struct timeval now;
-      gettimeofday (&now, NULL);
-      return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;    }
-  
+# include <sys/time.h>
+typedef long long timestamp_t;
+
+static timestamp_t    get_timestamp ()    {
+  struct timeval now;
+  gettimeofday (&now, NULL);
+  return  now.tv_usec + (timestamp_t)now.tv_sec * 1000000;    }
+      
+# endif // SHIFR_DEBUG
   
 int main  ( int argc , char * argv [ ] )  {
     
@@ -284,13 +287,13 @@ int main  ( int argc , char * argv [ ] )  {
   bool  flagclosefileto = false ;
   if  ( argc  <=  1  ) {
     puts ( main_shifr . localerus ?
-      u8"Шифр ©2020 Глебов А.Н.\n"
+      u8"Шифр ©2020-2 Глебов А.Н.\n"
       u8"Симметричное поточное шифрование с 'солью'.\n"
       u8"'Соль' генерируется постоянно, что даёт хорошую стойкость.\n"
       u8"Размер данных увеличивается в два раза. В три раза в текстовом режиме.\n"
       u8"Нет диагностики неправильного пароля.\n"
       u8"Синтаксис : shifr [параметры]" :
-      "Shifr ©2020 Glebe A.N.\n"
+      "Shifr ©2020-2 Glebe A.N.\n"
       "Symmetric stream encryption with 'salt'.\n"
       "'Salt' is constantly generated, which gives good durability.\n"
       "Data size doubles. Tripled in text mode.\n"
@@ -312,14 +315,19 @@ int main  ( int argc , char * argv [ ] )  {
       u8"  --пар или\n  --pas 'строка_пароля'\tиспользовать данный пароль" :
       "  --pas 'password_string'\tuse this password" );
     puts  ( main_shifr . localerus ?
-      u8"  --пар-путь или\n  --pas-path 'путь_к_файлу_с_паролем'\tиспользовать пароль в файле" :
+      u8"  --пар-путь или\n  --pas-path 'путь_к_файлу_с_паролем'\t"
+      u8"использовать пароль в файле" :
       "  --pas-path 'path_to_password_file'\tuse password in file" );
     puts  ( main_shifr . localerus ?
-      u8"  --вход или < или \n  --input 'имя_файла'\tчитать из файла (без данной опции читаются данные со стандартного входа)" :
-      "  --input or < 'file_name'\tread from file (without this option data reads from standard input)" ) ;
+      u8"  --вход или < или \n  --input 'имя_файла'\tчитать из файла (без данной опции"
+      u8" читаются данные со стандартного входа)" :
+      "  --input or < 'file_name'\tread from file (without this option data reads from"
+      " standard input)" ) ;
     puts  ( main_shifr . localerus ? 
-      u8"  --выход или > или \n  --output 'имя_файла'\tзаписывать в файл (без данной опции записываются данные в стандартный выход)" :
-      "  --output or > 'file_name'\twrite to file (without this option data writes to standard output)"    );
+      u8"  --выход или > или \n  --output 'имя_файла'\tзаписывать в файл (без данной"
+      u8" опции записываются данные в стандартный выход)" :
+      "  --output or > 'file_name'\twrite to file (without this option data writes to"
+      " standard output)"    );
     puts  ( main_shifr . localerus ? 
       u8"  --текст или\n  --text\tшифрованный файл записан текстом ascii" :
       "  --text\tencrypted file written in ascii text"    );
@@ -327,8 +335,10 @@ int main  ( int argc , char * argv [ ] )  {
       u8"  --2\tиспользовать двух битное шифрование, ключ = 45 бит ( 6 - 14 букв )." :
       "  --2\tusing two bit encryption, key = 45 bits ( 6 - 14 letters )." ) ;
     puts  ( main_shifr . localerus ?
-      u8"  --3\tиспользовать трёх битное шифрование, ключ = 296 бит ( 45 - 90 букв ). ( по-умолчанию )" :
-      "  --3\tusing three bit encryption, key = 296 bits ( 45 - 90 letters ). ( by default )") ;
+      u8"  --3\tиспользовать трёх битное шифрование, ключ = 296 бит ( 45 - 90 букв )."
+      u8" ( по-умолчанию )" :
+      "  --3\tusing three bit encryption, key = 296 bits ( 45 - 90 letters )."
+      " ( by default )") ;
     fputs  ( main_shifr . localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
@@ -772,16 +782,16 @@ int main  ( int argc , char * argv [ ] )  {
 # endif    
     if ( not flagoutputtofile )
       return  0 ;  } // if flaggenpasswd
-# ifdef SHIFR_DEBUG        
+# ifdef SHIFR_DEBUG
   if  ( flagenc and flagdec ) {
     main_shifr  . string_exception  = ( main_shifr . localerus ?
       ( strcp ) & u8"так зашифровывать или расшифровывать ?" :
       ( strcp ) & "so encrypt or decrypt ?" ) ;
     longjmp(main_shifr  . jump,1); }
-# endif
 
-timestamp_t t0 = get_timestamp();
-
+  timestamp_t t0 = get_timestamp();
+  
+# endif // SHIFR_DEBUG
   // по-умолчанию шифруем
   // encrypted by default
   if ( not flagdec  )
@@ -1044,9 +1054,10 @@ Exc :
         "Error closing file of reading \"%s\" : %s\n" ) ,
         & ( ( * inputfilename ) [ 0 ] ) , strerror  ( e ) ) ;
       resulterror = 2 ; } }
-      
+# ifdef SHIFR_DEBUG
     timestamp_t t1 = get_timestamp();
     long  double secs = (t1 - t0) / 1000000.0L;      
-  fprintf(stderr,u8"время = %Lf сек\n",secs);
-      
+  fprintf ( stderr  , ( main_shifr . localerus ?  u8"время = %Lf сек\n" :
+    "time = %Lf sec\n" ) , secs  ) ;
+# endif // SHIFR_DEBUG
   return  resulterror ; }
