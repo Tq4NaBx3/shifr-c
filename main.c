@@ -683,7 +683,7 @@ int main  ( int argc , char * argv [ ] )  {
         password_letters2_10 )  [ 0 ] ) ) ;
     switch  ( main_shifr . use_version ) {
     case  2 :
-      { number_type ( number_size2 ) password2 ;
+      { number_priv_type ( number_size2 ) password2 ;
 
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
           ( strcp ) & main_shifr  . password_letters2 ,
@@ -718,7 +718,7 @@ int main  ( int argc , char * argv [ ] )  {
         }
       break ;
     case  3 :
-      { number_type ( number_size3 ) password2 ;
+      { number_priv_type ( number_size3 ) password2 ;
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
           ( strcp ) & main_shifr  . password_letters3 ,

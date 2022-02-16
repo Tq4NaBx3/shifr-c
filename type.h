@@ -35,12 +35,21 @@ typedef struct  s_size_io size_io ;
 
 # define  shifr_number_structtype( N ) \
   struct  shifr_s_number ## N ;
-
+  
 # define  shifr_number_type( N ) shifr_t_number ## N
 # define  number_type shifr_number_type
 
 # define  shifr_number_typedef( N ) \
-  typedef struct  shifr_s_number ## N number_type ( N ) ;  
+  typedef struct  shifr_s_number ## N number_type ( N ) ;    
+  
+# define  shifr_number_priv_structtype( N ) \
+  struct  shifr_s_number_priv ## N ;
+
+# define  shifr_number_priv_type( N ) shifr_t_number_priv ## N
+# define  number_priv_type shifr_number_priv_type
+
+# define  shifr_number_priv_typedef( N ) \
+  typedef struct  shifr_s_number_priv ## N number_priv_type ( N ) ;  
 
 // log(2,16!) ceil 8 = 6
 // log(2,64!) ceil 8 = 37
@@ -51,6 +60,11 @@ shifr_number_structtype( number_size2 )
 shifr_number_typedef( number_size2 )
 shifr_number_structtype( number_size3 )
 shifr_number_typedef( number_size3 )
+
+shifr_number_priv_structtype( number_size2 )
+shifr_number_priv_typedef( number_size2 )
+shifr_number_priv_structtype( number_size3 )
+shifr_number_priv_typedef( number_size3 )
 
 # define  s_raspr2  shifr_s_raspr2
 struct  s_raspr2  ;

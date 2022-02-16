@@ -2,24 +2,34 @@
 
 # define  shifr_number_def( N ) \
   struct  shifr_s_number ## N { \
-    /* array */ \
-    uint8_t HRDG [ N ] ; \
+    uint8_t _ ; \
   } ;
 
 # define  number_def  shifr_number_def
+  
+number_def  ( number_size2 )  
+number_def  ( number_size3 )
+  
+# define  shifr_number_priv_def( N ) \
+  struct  shifr_s_number_priv ## N { \
+    uint8_t arr [ N ] ; \
+    number_type ( N ) pub ; \
+  } ;
 
-number_def  ( number_size2 )
+# define  number_def_priv  shifr_number_priv_def
+
+number_def_priv  ( number_size2 )
 
 struct  s_raspr2 {
   uint8_t dice  [ deshi_size2 - 1  ] ;
-  number_type ( number_size2 ) pass  ;
+  number_priv_type ( number_size2 ) pass  ;
   } ;
 
-number_def  ( number_size3 )
+number_def_priv  ( number_size3 )
 
 struct  s_raspr3 {
   uint8_t dice  [ deshi_size3 - 1 ] ;
-  number_type ( number_size3 ) pass  ;
+  number_priv_type ( number_size3 ) pass  ;
   } ;
 
 // 0x20 (space) ' '    ---     0x7e (tilde) '~'
