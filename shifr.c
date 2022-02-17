@@ -224,13 +224,13 @@ static  inline  number_def_add  ( number_size3 )
 
 # define  shifr_number_def_not_zero(  N ) \
 bool  shifr_number ## N ## _not_zero  ( \
-  number_priv_type ( N ) const * const np  ) { \
-  uint8_t const * i = & ( np -> arr [ N ] ) ; \
+  number_type ( N ) const * const np  ) { \
+  uint8_t const * i = & ( number_const_pub_to_priv ( N ) ( np ) -> arr [ N ] ) ; \
   do {  \
     --  i ; \
     if ( * i )  \
       return  true  ; \
-  } while ( i not_eq & ( np -> arr [ 0 ] ) ) ;  \
+  } while ( i not_eq & ( number_const_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ) ;  \
   return  false ; }
 # define  number_def_not_zero shifr_number_def_not_zero
 
@@ -310,7 +310,7 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
   number_type ( N ) const * const password0 , strp const string ,  \
   strp letters , uint8_t const letterscount  ) {  \
   char * stringi = & ( ( * string )  [ 0 ] ) ;  \
-  if ( number_not_zero  ( N ) ( number_const_pub_to_priv ( N ) ( password0 ) ) ) { \
+  if ( number_not_zero  ( N ) ( password0 ) ) { \
     number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) ( password0 ) ; \
     do {  \
       /* здесь предыдущие размеры заняли место паролей */ \
@@ -318,7 +318,7 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
       ( * stringi ) = ( * letters ) [ \
         number_div_mod ( N ) ( & password , letterscount ) ] ;  \
       ++  stringi ; \
-    } while ( number_not_zero ( N ) ( & password ) ) ; }  \
+    } while ( number_not_zero ( N ) ( & password . pub ) ) ; }  \
   ( * stringi ) = '\00' ;  }
 # define  password_to_string_templ_def  shifr_password_to_string_templ_def
 password_to_string_templ_def  ( number_size2 )
