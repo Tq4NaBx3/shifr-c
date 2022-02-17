@@ -1,5 +1,5 @@
-# ifndef  SHIFRPUBLICH
-# define  SHIFRPUBLICH
+# ifndef  SHIFR_PUBLIC_H
+# define  SHIFR_PUBLIC_H
 
 # include "type.h"
 # include "define.h"
@@ -53,7 +53,7 @@ string_to_password_templ_dec  ( number_size3 )
 
 # define  shifr_password_to_string_templ_dec( N ) \
 void  shifr_password  ##  N ##  _to_string_templ ( \
-  number_priv_type ( N ) const * password0 , strp string ,  \
+  number_type ( N ) const * password0 , strp string ,  \
   strp letters , uint8_t letterscount  ) ;
 # define  password_to_string_templ_dec  shifr_password_to_string_templ_dec
 password_to_string_templ_dec  ( number_size2 )
@@ -147,4 +147,4 @@ size_io  shifr_decrypt3 ( t_ns_shifr * , arrcps input , arrps output ) ;
 
 uint8_t  streambuf_writeflushzero3 ( t_ns_shifr * , arrps ) ;
 
-# endif // SHIFRPUBLICH
+# endif // SHIFR_PUBLIC_H

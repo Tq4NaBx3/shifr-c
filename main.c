@@ -107,15 +107,15 @@ static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   char  password_letters [ 30 ] ;
   switch  ( ns_shifrp -> password_alphabet  ) {
   case  letters_count :
-    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & password_letters , & ns_shifrp -> letters , letters_count ) ;
     break ;
   case  letters_count2  :
-    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & password_letters , & ns_shifrp -> letters2 , letters_count2 ) ;
     break ;
   case  letters_count3  :
-    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & password_letters , & ns_shifrp -> letters3 , letters_count3 ) ;
     break ;
   default :
@@ -153,21 +153,21 @@ static  inline  void  enter_password3 ( t_ns_shifr * const ns_shifrp ) {
     string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
-    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters , letters_count ) ;
     break ;
   case  letters_count2  :
     string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters2 ,  letters_count2 ) ;
-    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters2 , letters_count2 ) ;
     break ;
   case  letters_count3  :
     string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters3 ,  letters_count3 ) ;
-    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters3 , letters_count3 ) ;
     break ;
   default :
@@ -642,19 +642,19 @@ int main  ( int argc , char * argv [ ] )  {
     char  password_letters3_10 [ password_letters3size ] ;
     switch  ( main_shifr . use_version )  {
     case  2 :
-      password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass ,
+      password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub ,
         & main_shifr  . password_letters2 , & main_shifr . letters , letters_count ) ;
-      password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass ,
+      password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub ,
         & password_letters2 , & main_shifr . letters2 , letters_count2 ) ;
-      password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass ,
+      password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub ,
         & password_letters2_10 , & main_shifr . letters3 , letters_count3 ) ;
       break ;
     case  3 :
-      password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr3  . pass ,
+      password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr3  . pass . pub ,
         & main_shifr  . password_letters3 , & main_shifr . letters , letters_count ) ;
-      password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr3  . pass ,
+      password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr3  . pass . pub ,
         & password_letters62 , & main_shifr . letters2 , letters_count2 ) ;
-      password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr3  . pass ,
+      password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr3  . pass . pub ,
         & password_letters3_10  , & main_shifr . letters3 , letters_count3 ) ;
       break ;
     default :

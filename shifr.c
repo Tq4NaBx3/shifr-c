@@ -307,11 +307,11 @@ void  printarr  ( strcp const  name , arrcp const p ,
     
 # define  shifr_password_to_string_templ_def( N ) \
 void  shifr_password  ##  N ##  _to_string_templ ( \
-  number_priv_type ( N ) const * const password0 , strp const string ,  \
+  number_type ( N ) const * const password0 , strp const string ,  \
   strp letters , uint8_t const letterscount  ) {  \
   char * stringi = & ( ( * string )  [ 0 ] ) ;  \
-  if ( number_not_zero  ( N ) ( password0 ) ) { \
-    number_priv_type ( N ) password = * password0  ; \
+  if ( number_not_zero  ( N ) ( number_const_pub_to_priv ( N ) ( password0 ) ) ) { \
+    number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) ( password0 ) ; \
     do {  \
       /* здесь предыдущие размеры заняли место паролей */ \
       number_dec ( N ) ( & password  ) ;  \
@@ -1216,17 +1216,17 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
   case  2 :
     switch  ( ns_shifrp -> password_alphabet  ) {
     case  letters_count :
-      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
         & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters ,
         letters_count ) ;
       break ;
     case  letters_count2  :
-      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
         & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters2 ,
         letters_count2 ) ;
       break ;
     case  letters_count3  :
-      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
         & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters3 ,
         letters_count3 ) ;
       break ;
@@ -1239,17 +1239,17 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
   case 3 :
     switch  ( ns_shifrp -> password_alphabet  ) {
     case  letters_count :
-      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters ,
         letters_count ) ;
       break ;
     case  letters_count2  :
-      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters2 ,
         letters_count2 ) ;
       break ;
     case  letters_count3  :
-      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
+      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters3 ,
         letters_count3 ) ;
       break ;
