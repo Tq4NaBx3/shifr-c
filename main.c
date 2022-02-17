@@ -86,17 +86,17 @@ static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> password_alphabet ) {
   case  letters_count  :
     string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
-      & ns_shifrp -> raspr2  . pass , ( strcp ) & ns_shifrp -> letters ,
+      & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters ,
       letters_count ) ;
     break ;
   case  letters_count2  :
     string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
-      & ns_shifrp -> raspr2  . pass , ( strcp ) & ns_shifrp -> letters2 ,
+      & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters2 ,
       letters_count2 ) ;
     break ;
   case  letters_count3  :
     string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
-      & ns_shifrp -> raspr2  . pass , ( strcp ) & ns_shifrp -> letters3 ,
+      & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters3 ,
       letters_count3 ) ;
     break ;
   default :
@@ -151,21 +151,21 @@ static  inline  void  enter_password3 ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> password_alphabet  ) {
   case  letters_count :
     string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
-      & ns_shifrp -> raspr3  . pass ,
+      & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
       & password_letters6 , & ns_shifrp -> letters , letters_count ) ;
     break ;
   case  letters_count2  :
     string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
-      & ns_shifrp -> raspr3  . pass ,
+      & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters2 ,  letters_count2 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
       & password_letters6 , & ns_shifrp -> letters2 , letters_count2 ) ;
     break ;
   case  letters_count3  :
     string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
-      & ns_shifrp -> raspr3  . pass ,
+      & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters3 ,  letters_count3 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass ,
       & password_letters6 , & ns_shifrp -> letters3 , letters_count3 ) ;
@@ -687,7 +687,7 @@ int main  ( int argc , char * argv [ ] )  {
 
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
           ( strcp ) & main_shifr  . password_letters2 ,
-          & password2 , ( strcp ) & main_shifr . letters ,
+          & password2 . pub , ( strcp ) & main_shifr . letters ,
           letters_count ) ; 
         fputs ( ( main_shifr . localerus ?
           u8"из строки95 во внутренний пароль = " :
@@ -697,7 +697,7 @@ int main  ( int argc , char * argv [ ] )  {
 
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
           ( strcp ) & password_letters2 ,
-          & password2 , ( strcp ) & main_shifr . letters2 ,
+          & password2 . pub , ( strcp ) & main_shifr . letters2 ,
           letters_count2 ) ;
         fputs ( ( main_shifr . localerus ?
           u8"из строки62 во внутренний пароль = " :
@@ -707,7 +707,7 @@ int main  ( int argc , char * argv [ ] )  {
 
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
           ( strcp ) & password_letters2_10 ,
-          & password2 , ( strcp ) & main_shifr . letters3 ,
+          & password2 . pub , ( strcp ) & main_shifr . letters3 ,
           letters_count3 ) ;
         fputs ( ( main_shifr . localerus ?
           u8"из строки10 во внутренний пароль = " :
@@ -722,7 +722,7 @@ int main  ( int argc , char * argv [ ] )  {
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
           ( strcp ) & main_shifr  . password_letters3 ,
-          & password2 , ( strcp ) & main_shifr . letters ,
+          & password2 . pub , ( strcp ) & main_shifr . letters ,
           letters_count ) ; 
         fputs ( ( main_shifr . localerus ?
           u8"из строки95 во внутренний пароль = " :
@@ -732,7 +732,7 @@ int main  ( int argc , char * argv [ ] )  {
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
           ( strcp ) & password_letters62 ,
-          & password2 , ( strcp ) & main_shifr . letters2 ,
+          & password2 . pub , ( strcp ) & main_shifr . letters2 ,
           letters_count2 ) ;
         fputs ( ( main_shifr . localerus ?
           u8"из строки62 во внутренний пароль = " :
@@ -742,7 +742,7 @@ int main  ( int argc , char * argv [ ] )  {
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
           ( strcp ) & password_letters3_10 ,
-          & password2 , ( strcp ) & main_shifr . letters3 ,
+          & password2 . pub , ( strcp ) & main_shifr . letters3 ,
           letters_count3 ) ;
         fputs ( ( main_shifr . localerus ?
           u8"из строки10 во внутренний пароль = " :
