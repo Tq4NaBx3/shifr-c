@@ -241,17 +241,16 @@ static  inline  number_def_not_zero ( number_size2 )
 static  inline  number_def_not_zero ( number_size3 )
 
 # define  shifr_number_def_dec(  N ) \
-void  shifr_number ## N ## _dec ( \
-  number_priv_type ( N ) * const np  ) { \
-  uint8_t  * restrict i = & ( np -> arr [ 0 ] ) ; \
+void  shifr_number ## N ## _dec ( number_type ( N ) * const np  ) { \
+  uint8_t  * i = & ( number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ; \
   do {  \
     if ( ( * i ) == 0 ) \
-      -- ( * i ) ;  \
+      ( * i ) = 0xffU ; \
     else  { \
       -- ( * i ) ;  \
       break ; } \
     ++  i ; \
-  } while ( i not_eq & ( np -> arr [ N ] ) ) ; }
+  } while ( i not_eq & ( number_pub_to_priv ( N ) ( np ) -> arr [ N ] ) ) ; }
 # define  number_def_dec shifr_number_def_dec
 
 # define  shifr_number_dec( N ) shifr_number ## N ## _dec
@@ -262,7 +261,8 @@ static  inline  number_def_dec  ( number_size3 )
 
 # define  shifr_number_def_div_mod(  N ) \
 uint8_t shifr_number ## N ## _div_mod ( \
-  number_priv_type ( N ) * const np , uint8_t const div ) { \
+  number_type ( N ) * const np0 , uint8_t const div ) { \
+  number_priv_type ( N ) * const np = number_pub_to_priv ( N ) ( np0 ) ; \
   uint8_t modi  = 0 ; \
   uint8_t i = N ; \
   do {  \
@@ -314,9 +314,9 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
     number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) ( password0 ) ; \
     do {  \
       /* здесь предыдущие размеры заняли место паролей */ \
-      number_dec ( N ) ( & password  ) ;  \
+      number_dec ( N ) ( & password . pub ) ;  \
       ( * stringi ) = ( * letters ) [ \
-        number_div_mod ( N ) ( & password , letterscount ) ] ;  \
+        number_div_mod ( N ) ( & password . pub , letterscount ) ] ;  \
       ++  stringi ; \
     } while ( number_not_zero ( N ) ( & password . pub ) ) ; }  \
   ( * stringi ) = '\00' ;  }
@@ -1182,7 +1182,7 @@ void  password_load ( N ) ( number_priv_type ( N ) const * const password0 , \
   uint8_t inde  = 0 ; \
   number_priv_type ( N ) password = * password0 ; \
   do {  \
-    { uint8_t cindex = number_div_mod ( N ) ( & password ,  \
+    { uint8_t cindex = number_div_mod ( N ) ( & password . pub ,  \
         (  uint8_t ) ( SDS - inde  ) ) ;  \
       uint8_t * arrind_cindexp = & (  arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
