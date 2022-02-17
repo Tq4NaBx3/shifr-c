@@ -22,7 +22,7 @@ static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
         "generate_password:internal password = " ) , stderr ) ;
-      number_princ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass , stderr  ) ;
+      number_princ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif
       break ;
@@ -33,7 +33,7 @@ static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
         "generate_password:internal password = " ) , stderr ) ;
-      number_princ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass , stderr  ) ;
+      number_princ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif
       break ;
@@ -505,7 +505,7 @@ int main  ( int argc , char * argv [ ] )  {
       fputs ( ( main_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
-      number_princ  ( number_size2 ) ( & main_shifr . raspr2  . pass , stderr  ) ;
+      number_princ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif      
         }
@@ -517,7 +517,7 @@ int main  ( int argc , char * argv [ ] )  {
       fputs ( ( main_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
-      number_princ  ( number_size3 ) ( & main_shifr . raspr3  . pass , stderr  ) ;
+      number_princ  ( number_size3 ) ( & main_shifr . raspr3  . pass . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif                    
         }
@@ -617,14 +617,14 @@ int main  ( int argc , char * argv [ ] )  {
     fputs ( ( main_shifr . localerus ?
       u8"внутренний пароль = " :
       "internal password = " ) , stderr ) ;
-    number_princ  ( number_size2 ) ( & main_shifr . raspr2  . pass , stderr  ) ;
+    number_princ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub , stderr  ) ;
     fputs ( "\n" , stderr ) ;
     break ;
   case  3 :
     fputs ( ( main_shifr . localerus ?
       u8"внутренний пароль = " :
       "internal password = " ) , stderr ) ;
-    number_princ  ( number_size3 ) ( & main_shifr . raspr3  . pass , stderr  ) ;
+    number_princ  ( number_size3 ) ( & main_shifr . raspr3  . pass . pub , stderr  ) ;
     fputs ( "\n" , stderr ) ;
     break ;
   default :
@@ -692,7 +692,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( ( main_shifr . localerus ?
           u8"из строки95 во внутренний пароль = " :
           "from string95 to internal password = " ) , stderr ) ;
-        number_princ  ( number_size2 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size2 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
@@ -702,7 +702,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( ( main_shifr . localerus ?
           u8"из строки62 во внутренний пароль = " :
           "from string62 to internal password = " ) , stderr ) ;
-        number_princ  ( number_size2 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size2 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
@@ -712,7 +712,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( ( main_shifr . localerus ?
           u8"из строки10 во внутренний пароль = " :
           "from string10 to internal password = " ) , stderr ) ;
-        number_princ  ( number_size2 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size2 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
         }
@@ -727,7 +727,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( ( main_shifr . localerus ?
           u8"из строки95 во внутренний пароль = " :
           "from string95 to internal password = " ) , stderr ) ;
-        number_princ  ( number_size3 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size3 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
@@ -737,7 +737,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( ( main_shifr . localerus ?
           u8"из строки62 во внутренний пароль = " :
           "from string62 to internal password = " ) , stderr ) ;
-        number_princ  ( number_size3 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size3 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
@@ -747,7 +747,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( ( main_shifr . localerus ?
           u8"из строки10 во внутренний пароль = " :
           "from string10 to internal password = " ) , stderr ) ;
-        number_princ  ( number_size3 ) ( & password2 , stderr  ) ;
+        number_princ  ( number_size3 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
         }

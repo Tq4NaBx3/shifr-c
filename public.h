@@ -15,7 +15,7 @@ number_dec_set0 ( number_size2 )
 number_dec_set0 ( number_size3 )
 
 # define  shifr_number_dec_mul_byte(  N ) \
-void  shifr_number ## N ## _mul_byte ( number_priv_type ( N ) * , uint8_t )  ;
+void  shifr_number ## N ## _mul_byte ( number_type ( N ) * , uint8_t )  ;
 # define  number_dec_mul_byte shifr_number_dec_mul_byte
 
 # define  shifr_number_mul_byte( N ) shifr_number ## N ## _mul_byte
@@ -27,7 +27,7 @@ number_dec_mul_byte ( number_size3 )
 # ifdef SHIFR_DEBUG
 
 # define  shifr_number_dec_princ( N ) \
-void  shifr_number ## N ## _princ ( number_priv_type ( N ) const * np ,  \
+void  shifr_number ## N ## _princ ( number_type ( N ) const * np ,  \
   FILE * fs ) ;
 # define  number_dec_princ shifr_number_dec_princ
   
@@ -44,7 +44,7 @@ void  printarr  ( strcp name , arrcp p , size_t arrsize , FILE * f ) ;
 
 # define  shifr_string_to_password_templ_dec( N ) \
 void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * , strcp string , \
-  number_priv_type ( N ) * password , strcp letters , uint8_t letterscount  ) ;
+  number_type ( N ) * password , strcp letters , uint8_t letterscount  ) ;
 # define  string_to_password_templ_dec  shifr_string_to_password_templ_dec
 string_to_password_templ_dec  ( number_size2 )
 string_to_password_templ_dec  ( number_size3 )
