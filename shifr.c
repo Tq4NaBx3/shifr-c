@@ -197,20 +197,20 @@ number_def_set0 ( number_size3 )
 number_def_mul_byte ( number_size3 )
 
 # define  shifr_number_def_add(  N ) \
-void  shifr_number ## N ## _add  ( number_priv_type ( N ) * const restrict  np  ,  \
-  number_priv_type ( N ) const * const restrict  xp ) {  \
+void  shifr_number ## N ## _add  ( number_type ( N ) * const restrict  np  ,  \
+  number_type ( N ) const * const restrict  xp ) {  \
   uint8_t per = 0 ; \
   uint8_t i = 0 ; \
   do  { \
     uint16_t const s = ( uint16_t  ) ( ( ( uint16_t  ) (  \
-      number_elt_copy ( N ) ( & np -> pub , i ) ) ) + \
-      ( ( uint16_t  ) number_elt_copy ( N ) ( & xp -> pub , i ) ) + \
+      number_elt_copy ( N ) ( np , i ) ) ) + \
+      ( ( uint16_t  ) number_elt_copy ( N ) ( xp , i ) ) + \
       ( ( uint16_t  ) per ) ) ; \
     if ( s >= 0x100  ) {  \
-      np -> arr [ i ] = ( uint8_t ) ( s - 0x100 ) ; \
+      number_pub_to_priv ( N ) ( np ) -> arr [ i ] = ( uint8_t ) ( s - 0x100 ) ; \
       per = 1 ; } \
     else  { \
-      np -> arr [ i ] = ( uint8_t ) s  ;  \
+      number_pub_to_priv ( N ) ( np ) -> arr [ i ] = ( uint8_t ) s  ;  \
       per = 0 ;  }  \
     ++ i  ; \
   } while ( i < N ) ; }
@@ -350,7 +350,7 @@ void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp 
 found : ; \
     { number_priv_type ( N ) tmp = mult ;  \
       number_mul_byte ( N ) ( & tmp . pub , ( uint8_t ) ( i + 1 ) ) ; \
-      number_add ( N ) ( &  pass  , & tmp )  ; }  \
+      number_add ( N ) ( &  pass . pub , & tmp . pub )  ; }  \
     number_mul_byte ( N ) ( & mult . pub , letterscount ) ; \
     ++  stringi ; \
   } while ( ( * stringi ) not_eq '\00' ) ;  \
@@ -1031,7 +1031,8 @@ void  shifr_pass_to_array2 ( t_ns_shifr * const ns_shifrp ) {
       // re += dice [ in ] * mu ;
       number_mul_byte ( number_size2 ) ( & mux . pub ,
         ns_shifrp -> raspr2  . dice [ in ] ) ;
-      number_add  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass , & mux ) ; }
+      number_add  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
+        & mux . pub ) ; }
     //$mu *=  16 - $in ;
     number_mul_byte ( number_size2 ) ( & mu . pub , ( uint8_t ) ( 0x10 - in ) ) ;
     ++  in ;
@@ -1049,7 +1050,8 @@ void  shifr_pass_to_array3 ( t_ns_shifr * const ns_shifrp ) {
       // re += dice [ in ] * mu ;
       number_mul_byte ( number_size3 ) (
         & mux . pub ,  ns_shifrp -> raspr3  . dice [ in ] ) ;
-      number_add  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass , & mux ) ; }
+      number_add  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+        & mux . pub ) ; }
     //$mu *=  64 - $in ;
     number_mul_byte ( number_size3 ) ( & mu . pub , ( uint8_t ) ( 0x40 - in ) ) ;
     ++  in ;
