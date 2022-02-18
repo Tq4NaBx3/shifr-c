@@ -11,8 +11,8 @@ SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion -Wno-clobbere
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDstructh = struct.h type.h
 DEPENDpublich = public.h type.h define.h
-DEPENDmainc = main.c define.h $(DEPENDpublich) $(DEPENDstructh) access.h
-DEPENDshifrc = shifr.c $(DEPENDpublich) $(DEPENDstructh) access.h define.h
+DEPENDmainc = main.c define.h $(DEPENDpublich) $(DEPENDstructh)
+DEPENDshifrc = shifr.c $(DEPENDpublich) $(DEPENDstructh) define.h
 shifr: $(SHIFR_OBJECTS)
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) -o shifr
 	@chmod 0555 shifr

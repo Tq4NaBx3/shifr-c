@@ -10,7 +10,6 @@
 # include "define.h"
 # include "public.h"
 # include "struct.h"
-# include "access.h"
 
 # define  generate_password shifr_generate_password
 static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
