@@ -508,11 +508,6 @@ void reset_keypress ( t_ns_shifr * const ns_shifrp ) {
 static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
   return  ( uint8_t ) ( letter  - ';' ) ; }
 
-# define  streambuf_file  shifr_streambuf_file_pub
-# define  streambuf_buf  shifr_streambuf_buf_pub
-# define  streambuf_bufbitsize  shifr_streambuf_bufbitsize_pub
-# define  streambuf_bytecount  shifr_streambuf_bytecount_pub
-
 // читаю 6 бит
 // 6 bits reads
 bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
@@ -533,19 +528,19 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
       ( buf > ( ( uint8_t ) 'z' ) ) ) ;
     ( * encrypteddata ) = letter_to_bits6 ( ( char ) buf ) ;
     return  false ; }
-  if  ( streambuf_bufbitsize  ( me  ) >= 6 ) {
-    streambuf_bufbitsize  ( me  ) = ( uint8_t ) ( streambuf_bufbitsize  ( me  ) - 6U ) ;
-    ( * encrypteddata ) = streambuf_buf ( me  ) bitand ( 0x40 - 1 ) ;
-    streambuf_buf ( me  ) >>= 6 ;
+  if  ( ( me -> bufbitsize ) >= 6 ) {
+    me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) - 6U ) ;
+    ( * encrypteddata ) = ( me -> buf ) bitand ( 0x40 - 1 ) ;
+    ( me -> buf ) >>= 6 ;
     return  false ; }
   uint8_t buf = * * input_bufferp  ;
   ++  ( * readsp ) ;
   ++  ( * input_bufferp  ) ;
-  ( * encrypteddata ) = ( streambuf_buf ( me  ) bitor 
-    ( buf <<  streambuf_bufbitsize  ( me  ) ) ) bitand ( 0x40 - 1 )  ;
-  streambuf_buf ( me  ) = ( uint8_t ) ( buf >> ( 6 - streambuf_bufbitsize  ( me  ) ) ) ;
+  ( * encrypteddata ) = ( ( me -> buf ) bitor 
+    ( buf <<  ( me -> bufbitsize ) ) ) bitand ( 0x40 - 1 )  ;
+  me -> buf = ( uint8_t ) ( buf >> ( 6 - ( me -> bufbitsize ) ) ) ;
   // + 8 - 6
-  streambuf_bufbitsize  ( me  ) = ( uint8_t ) ( streambuf_bufbitsize  ( me  ) + 2 ) ;
+  me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 2 ) ;
   return  false ; }
 
 // ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
@@ -575,8 +570,8 @@ static void  streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
         ( * * output_bufferp ) = ( uint8_t ) buf2 ;
         ++  ( * output_bufferp )  ;
         ++  ( * writesp ) ;
-        ++  streambuf_bytecount ( me  ) ;
-        if  ( streambuf_bytecount ( me  ) >=  60  ) {
+        ++  ( me -> bytecount ) ;
+        if  ( ( me -> bytecount ) >=  60  ) {
           if ( ( * writesp ) >= outputs ) {
             ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
               ( strcp ) & u8"streambuf_write3: переполнение буфера для '\\n'"  :
@@ -585,20 +580,19 @@ static void  streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
           ( * * output_bufferp ) = '\n' ;
           ++  ( * output_bufferp )  ;
           ++  ( * writesp ) ;
-          streambuf_bytecount ( me  ) = 0 ; }
+          me -> bytecount = 0 ; }
       ++  i ;
     } while ( i < secretdatasolesize ) ; }
   else  {
     uint8_t i = 0 ;
     do {
-      if  ( streambuf_bufbitsize  ( me  ) < 2 ) {
-        streambuf_buf ( me  ) = streambuf_buf ( me  ) bitor
-          ( uint8_t ) ( ( ( * encrypteddata ) [ i ] ) << streambuf_bufbitsize  ( me  ) ) ;
-        streambuf_bufbitsize  ( me  ) = ( uint8_t ) (
-          streambuf_bufbitsize  ( me  ) + 6 ) ; }
+      if  ( ( me -> bufbitsize ) < 2 ) {
+        me -> buf = ( me -> buf ) bitor
+          ( uint8_t ) ( ( ( * encrypteddata ) [ i ] ) << ( me -> bufbitsize ) ) ;
+        me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 6 ) ; }
       else  {
         uint8_t const to_write  = ( uint8_t ) ( ( ( ( * encrypteddata ) [ i ] ) <<
-          streambuf_bufbitsize  ( me  ) ) bitor streambuf_buf ( me  ) ) ;
+          ( me -> bufbitsize  ) ) bitor ( me -> buf ) ) ;
         if ( ( * writesp ) >= outputs ) {
           ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
             ( strcp ) & u8"streambuf_write3: переполнение буфера (flagdigit)"  :
@@ -608,10 +602,9 @@ static void  streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
         ++  ( * output_bufferp )  ;
         ++  ( * writesp ) ;
         // + 6 - 8
-        streambuf_bufbitsize  ( me  ) = ( uint8_t ) (
-          streambuf_bufbitsize  ( me  ) - 2U ) ;
-        streambuf_buf ( me  ) = ( uint8_t ) ( ( ( * encrypteddata ) [ i ] ) >>
-          ( 6 - streambuf_bufbitsize  ( me  ) ) ) ;  } 
+        me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) - 2U ) ;
+        me -> buf = ( uint8_t ) ( ( ( * encrypteddata ) [ i ] ) >>
+          ( 6 - ( me -> bufbitsize ) ) ) ;  } 
         ++  i ;
       } while ( i < secretdatasolesize ) ; } }
   
@@ -676,14 +669,14 @@ lbreak  : ;
 
   t_streambuf * const restrict me = & ns_shifrp ->  filebufto ;
 
-  if  ( streambuf_bufbitsize  ( me  ) ) {
-    ( * output_buffer ) = streambuf_buf ( me  ) ;
+  if  ( me -> bufbitsize ) {
+    ( * output_buffer ) = me -> buf ;
     ++  output_buffer ;
     ++  result  ;
-    streambuf_bufbitsize  ( me  ) = 0 ; }
+    me -> bufbitsize = 0 ; }
 
-  if ( ns_shifrp  -> flagtext and streambuf_bytecount ( me  ) )  {
-    streambuf_bytecount ( me  ) = 0 ;
+  if ( ns_shifrp  -> flagtext and ( me -> bytecount ) )  {
+    me -> bytecount = 0 ;
     ( * output_buffer ) = '\n' ;
     ++  output_buffer ;
     ++  result  ; }
@@ -695,24 +688,20 @@ void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
   uint8_t const encrypteddata , uint8_t * restrict * const output_bufferp ,
   size_t * const writesp ) {
   t_streambuf * const restrict me  = & ns_shifrp -> filebufto  ;
-  if  ( streambuf_bufbitsize  ( me  ) < 5 ) {
-    streambuf_buf ( me  ) = ( uint8_t ) ( streambuf_buf ( me  ) bitor
-      ( encrypteddata <<  streambuf_bufbitsize  ( me  ) ) ) ;
-    streambuf_bufbitsize  ( me  ) = ( uint8_t ) ( streambuf_bufbitsize  ( me  ) + 3U ) ; }
+  if  ( ( me -> bufbitsize ) < 5 ) {
+    me -> buf = ( uint8_t ) ( ( me -> buf ) bitor
+      ( encrypteddata <<  ( me -> bufbitsize ) ) ) ;
+    me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 3U ) ; }
   else  {
-    uint8_t const to_write  = ( uint8_t ) ( ( encrypteddata   << streambuf_bufbitsize  (
-      me  ) ) bitor streambuf_buf ( me  ) ) ;
+    uint8_t const to_write  = ( uint8_t ) ( ( encrypteddata   << (
+      me -> bufbitsize ) ) bitor ( me -> buf ) ) ;
     ( * * output_bufferp ) = to_write  ;
     ++  ( * output_bufferp  ) ;
     ++  ( * writesp ) ;
     // + 3 - 8
-    streambuf_bufbitsize  ( me  ) = ( uint8_t ) ( streambuf_bufbitsize  ( me  ) - 5U ) ;
-    streambuf_buf ( me  ) =  ( uint8_t ) ( encrypteddata   >>
-      ( 3 - streambuf_bufbitsize  ( me  ) ) ) ; } }
-
-# undef streambuf_file
-# undef streambuf_buf
-# undef streambuf_bytecount
+    me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) - 5U ) ;
+    me -> buf =  ( uint8_t ) ( encrypteddata   >>
+      ( 3 - ( me -> bufbitsize ) ) ) ; } }
 
 static inline void  data_xor2  ( t_ns_shifr * const ns_shifrp ,
   arrp  const secretdatasole  , size_t  const data_size ) {
@@ -986,7 +975,7 @@ size_io shifr_decrypt3 ( t_ns_shifr * const ns_shifrp , arrcps const input ,
   size_t  writes  = 0 ;
   uint8_t secretdata [ 1 ] ;
   while ( ( reads < input . s or
-      streambuf_bufbitsize ( & ns_shifrp -> filebuffrom  ) ==  6 ) and
+      ( ns_shifrp -> filebuffrom . bufbitsize ) ==  6 ) and
     writes  < output  . s ) {
     if ( isEOBstreambuf_read6bits ( ns_shifrp ,
       & ( secretdata [ 0 ] ) , & reads , & input_buffer , input . s ) )

@@ -47,22 +47,12 @@ static  inline  void  generate_password ( t_ns_shifr * const ns_shifrp ) {
         ( strcp ) & "generate_password:unrecognized version" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-# define  streambuf_file  shifr_streambuf_file_pub
-# define  streambuf_buf  shifr_streambuf_buf_pub
-# define  streambuf_bufbitsize  shifr_streambuf_bufbitsize_pub
-# define  streambuf_bytecount  shifr_streambuf_bytecount_pub
-
-static  inline  void  streambuf_init  ( t_streambuf * const restrict me  ,
+static  inline  void  streambuf_init  ( t_streambuf * const me  ,
   FILE  * const f ) {
-  streambuf_file  ( me  ) = f ;
-  streambuf_buf ( me  ) = 0 ;
-  streambuf_bufbitsize  ( me  ) = 0 ;
-  streambuf_bytecount ( me  ) = 0 ; }
-  
-# undef streambuf_file
-# undef streambuf_buf
-# undef streambuf_bufbitsize
-# undef streambuf_bytecount
+  me -> file  = f ;
+  me -> buf = 0 ;
+  me -> bufbitsize = 0 ;
+  me -> bytecount = 0 ; }
 
 static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   char p40 [ password_letters2size ] ;

@@ -50,16 +50,12 @@ struct  s_raspr3 {
 # define  password_letters3size 180
 
 struct  s_streambuf  {
-  // file
-  FILE  * oRmq  ;
-  // buf
-  uint8_t FmoX ;
-  // bufbitsize
-  uint8_t XUvM  ;
+  FILE  * file  ;
+  uint8_t buf ;
+  uint8_t bufbitsize  ;
   // для : write6 , writeflushzero в текстовом режиме
   // for : write6 , writeflushzero in text mode
-  // bytecount
-  int D6h7 ; 
+  int bytecount ; 
   } ;
 
 # include <setjmp.h>
