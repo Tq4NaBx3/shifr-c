@@ -35,19 +35,23 @@ struct  s_raspr3 {
 // 0x20 (space) ' '    ---     0x7e (tilde) '~'
 // 0x20 (пробел) ' '    ---     0x7e (тильда) '~'
 // 95 шт pcs
-# define letters_count (UINT8_C(('~' - ' ') + 1))
+# define  letters_count shifr_letters_count
+enum  { letters_count = UINT8_C ( ( '~' - ' ' ) + 1 ) } ;
 
 // 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'
 // 62 шт pcs
-# define letters_count2 (UINT8_C( \
-  ('9' - '0') + 1 + ('Z' - 'A') + 1 + ('z' - 'a') + 1 ))
+# define  letters_count2  shifr_letters_count2
+enum  { letters_count2 = UINT8_C (
+  ( '9' - '0' ) + 1 + ( 'Z' - 'A' ) + 1 + ( 'z' - 'a' ) + 1 ) } ;
 
 // 0x30 '0' - 0x39 '9'
 // 10 шт pcs
-# define letters_count3 (UINT8_C( ('9' - '0') + 1))
+# define  letters_count3  shifr_letters_count3
+enum  { letters_count3 = UINT8_C ( ( '9' - '0' ) + 1 ) } ;
 
-# define  password_letters2size 30
-# define  password_letters3size 180
+# define  password_letters2size shifr_password_letters2size
+# define  password_letters3size shifr_password_letters3size
+enum  { password_letters2size = 30 , password_letters3size = 180 } ;
 
 struct  s_streambuf  {
   FILE  * file  ;

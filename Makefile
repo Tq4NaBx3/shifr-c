@@ -6,8 +6,8 @@ CSTANDARD = -std=c11
 SHIFR_OBJECTS = shifr.o main.o
 SHIFR_ASM = shifr.s main.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
-SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion -Wno-clobbered -Wpedantic \
- $(CSTANDARD) -Os
+SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion -Wno-clobbered \
+ -Wpedantic $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDstructh = struct.h type.h
 DEPENDpublich = public.h type.h define.h

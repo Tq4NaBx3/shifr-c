@@ -553,9 +553,9 @@ static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
 // secretdatasolesize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
 static void  streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
-  t_streambuf * const restrict me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
+  t_streambuf * const me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
   uint8_t const secretdatasolesize , bool const  flagtext ,
-  uint8_t * restrict  * const output_bufferp , size_t * const writesp ,
+  uint8_t * restrict * const output_bufferp , size_t * const writesp ,
   size_t  const outputs ) {
   if  ( flagtext  ) {
     uint8_t i = 0 ;
@@ -640,7 +640,7 @@ static inline void  crypt_decrypt ( arrp const datap , arrcp const tablep ,
 uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
   arrps arrpsp ) {
   uint8_t result  = 0 ;
-  uint8_t * restrict  output_buffer = &((*  arrpsp  . p)[0]) ;
+  uint8_t * output_buffer = &((*  arrpsp  . p)[0]) ;
   if  ( ns_shifrp -> bitscount ==  0 )
     goto  lbreak ;
   if  ( ns_shifrp -> bitscount ==  1 )
@@ -666,7 +666,7 @@ uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
 
 lbreak  : ;
 
-  t_streambuf * const restrict me = & ns_shifrp ->  filebufto ;
+  t_streambuf * const me = & ns_shifrp ->  filebufto ;
 
   if  ( me -> bufbitsize ) {
     ( * output_buffer ) = me -> buf ;
