@@ -281,8 +281,9 @@ static  inline  number_def_div_mod  ( number_size2 )
 static  inline  number_def_div_mod  ( number_size3 )
 
 # define  shifr_number_def_set_byte(  N ) \
-void  shifr_number ## N ## _set_byte  ( number_priv_type ( N ) * const np , \
+void  shifr_number ## N ## _set_byte  ( number_type ( N ) * const np0 , \
   uint8_t const x ) { \
+  number_priv_type ( N ) * const np = number_pub_to_priv ( N ) ( np0 ) ; \
   memset  ( & ( np -> arr [ 1 ] ) , 0 , N - 1 ) ; \
   np -> arr [ 0 ] = x ; }
 # define  number_def_set_byte shifr_number_def_set_byte
@@ -335,7 +336,7 @@ void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp 
   number_priv_type ( N ) pass ; \
   number_set0 ( N ) ( & pass . pub ) ; \
   number_priv_type ( N ) mult ;  \
-  number_set_byte ( N ) ( & mult , 1 ) ;  \
+  number_set_byte ( N ) ( & mult . pub , 1 ) ;  \
   do  { \
     uint8_t i = letterscount ;  \
     do {  \
@@ -1024,7 +1025,7 @@ void  shifr_generate_pass3 ( t_ns_shifr * const ns_shifrp ) {
 void  shifr_pass_to_array2 ( t_ns_shifr * const ns_shifrp ) {
   number_set0 ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ) ;
   number_priv_type ( number_size2 ) mu  ;
-  number_set_byte ( number_size2 ) ( & mu , 1 ) ;
+  number_set_byte ( number_size2 ) ( & mu . pub , 1 ) ;
   uint8_t in = 0 ;
   do {
     { number_priv_type ( number_size2 ) mux = mu ;
@@ -1043,7 +1044,7 @@ void  shifr_pass_to_array2 ( t_ns_shifr * const ns_shifrp ) {
 void  shifr_pass_to_array3 ( t_ns_shifr * const ns_shifrp ) {
   number_set0 ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ) ;
   number_priv_type ( number_size3 ) mu  ;
-  number_set_byte ( number_size3 ) ( & mu , 1 ) ;
+  number_set_byte ( number_size3 ) ( & mu . pub , 1 ) ;
   uint8_t in = 0 ;
   do {
     { number_priv_type ( number_size3 ) mux = mu ;
@@ -1167,7 +1168,7 @@ static inline  void  initarr ( arrp  const p , uint8_t const codefree ,
 # define  password_load shifr_password_load
 
 # define  shifr_password_load_def(  N , SDS ) \
-void  password_load ( N ) ( number_priv_type ( N ) const * const password0 , \
+void  password_load ( N ) ( number_type ( N ) const * const password0 , \
   arrp const shifrp , arrp const deship ) { \
   initarr ( shifrp , 0xff , SDS )  ;  \
   initarr ( deship , 0xff , SDS )  ;  \
@@ -1180,7 +1181,7 @@ void  password_load ( N ) ( number_priv_type ( N ) const * const password0 , \
       ( * arrj )  = j ; \
     } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ;  } \
   uint8_t inde  = 0 ; \
-  number_priv_type ( N ) password = * password0 ; \
+  number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) ( password0 ) ; \
   do {  \
     { uint8_t cindex = number_div_mod ( N ) ( & password . pub ,  \
         (  uint8_t ) ( SDS - inde  ) ) ;  \
@@ -1197,11 +1198,11 @@ static  inline  shifr_password_load_def (  number_size3 , deshi_size3 )
 void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {
   case 2 :
-    password_load ( number_size2 ) ( & ns_shifrp -> raspr2  . pass ,
+    password_load ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & ns_shifrp  -> shifr2 , & ns_shifrp  -> deshi2 ) ;
     break ;
   case 3 :
-    password_load ( number_size3 ) ( & ns_shifrp -> raspr3  . pass , 
+    password_load ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub , 
       & ns_shifrp  -> shifr3 , & ns_shifrp  -> deshi3 ) ;
     break ;
   default :
