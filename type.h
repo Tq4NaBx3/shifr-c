@@ -4,7 +4,10 @@
 # include <stdint.h>
 
 # define  strp  shifr_strp
-typedef char ( * strp ) [ ] ;    
+typedef char ( * strp ) [ ] ;
+
+# define  strvp shifr_strvp
+typedef char  volatile  ( * strvp ) [ ] ;
 
 # define  strcp  shifr_strcp
 typedef char const ( * strcp ) [ ] ;

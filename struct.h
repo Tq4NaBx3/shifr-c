@@ -125,9 +125,9 @@ struct  s_ns_shifr  {
   // алфавит пароля 62 или 95 или 10
   int password_alphabet ; 
   // ver2
-  char  password_letters2 [ password_letters2size  ] ;
+  char  volatile  password_letters2 [ password_letters2size ] ;
   // ver3
-  char  password_letters3 [ password_letters3size ] ;
+  char  volatile  password_letters3 [ password_letters3size ] ;
 // private :
   t_streambuf filebuffrom ;
   t_streambuf filebufto ;

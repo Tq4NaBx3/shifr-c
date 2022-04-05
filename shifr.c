@@ -307,9 +307,9 @@ void  printarr  ( strcp const  name , arrcp const p ,
     
 # define  shifr_password_to_string_templ_def( N ) \
 void  shifr_password  ##  N ##  _to_string_templ ( \
-  number_type ( N ) const * const password0 , strp const string ,  \
-  strp letters , uint8_t const letterscount  ) {  \
-  char * stringi = & ( ( * string )  [ 0 ] ) ;  \
+  number_type ( N ) const * const password0 , strvp const string , \
+  strp letters , uint8_t const letterscount  ) { \
+  char  volatile  * stringi = & ( ( * string )  [ 0 ] ) ; \
   if ( number_not_zero  ( N ) ( password0 ) ) { \
     number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) ( password0 ) ; \
     do {  \
@@ -1259,3 +1259,4 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
       ( strcp ) & u8"password_to_string:версия не поддерживается" :
       ( strcp ) & "password_to_string:version is not supported" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+  

@@ -53,7 +53,7 @@ string_to_password_templ_dec  ( number_size3 )
 
 # define  shifr_password_to_string_templ_dec( N ) \
 void  shifr_password  ##  N ##  _to_string_templ ( \
-  number_type ( N ) const * password0 , strp string ,  \
+  number_type ( N ) const * password0 , strvp string ,  \
   strp letters , uint8_t letterscount  ) ;
 # define  password_to_string_templ_dec  shifr_password_to_string_templ_dec
 password_to_string_templ_dec  ( number_size2 )

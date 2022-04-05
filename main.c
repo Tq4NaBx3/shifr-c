@@ -93,7 +93,7 @@ static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
       ( strcp ) & u8"неизвестный алфавит пароля" :
       ( strcp ) & "unknown password alphabet" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-  char  password_letters [ 30 ] ;
+  char  volatile  password_letters [ password_letters2size ] ;
   switch  ( ns_shifrp -> password_alphabet  ) {
   case  letters_count :
     password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
@@ -112,31 +112,31 @@ static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
       ( strcp ) & u8"неизвестный алфавит пароля" :
       ( strcp ) & "unknown password alphabet" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-  if  ( strcmp ( &  ( password_letters  [ 0 ] ) , & ( ( * p4  ) [ 0 ] ) ) )
+  if  ( strcmp ( ( char * ) & ( password_letters  [ 0 ] ) , ( char * ) & ( ( * p4  ) [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifrp -> localerus ?
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
       "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
       , & ( ( * p4  ) [ 0 ] ) , & ( password_letters [ 0 ] ) ) ; }
 
 static  inline  void  enter_password3 ( t_ns_shifr * const ns_shifrp ) {
-  char p60 [ 180 ] ;
+  char p60 [ password_letters3size ] ;
   set_keypress  ( ns_shifrp ) ;
-  char ( * const p6 ) [ 180 ] = (char(*const)[180])
-    fgets ( & ( p60 [ 0 ] ) , 180 , stdin ) ;
+  char ( * const p6 ) [ password_letters3size ] = (char(*const)[password_letters3size])
+    fgets ( & ( p60 [ 0 ] ) , password_letters3size , stdin ) ;
   reset_keypress ( ns_shifrp ) ;
   char * j = & ( ( * p6 ) [ 0 ]  ) ;
   while ( ( ( * j ) not_eq '\n' ) and
     ( ( * j ) not_eq '\00' ) and
-    ( j < ( & ( * p6 ) [ 180 ] ) ) )
+    ( j < ( & ( * p6 ) [ password_letters3size ] ) ) )
     ++ j ;  
-  if ( j < ( & ( ( * p6 ) [ 180 ] ) ) )
+  if ( j < ( & ( ( * p6 ) [ password_letters3size ] ) ) )
     ( * j ) = '\00' ;
   else  {
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( strcp ) & u8"в пароле нет конца строки" :
       ( strcp ) & "there is no end of line in the password" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-  char  password_letters6 [ 180 ] ;
+  char  volatile  password_letters6 [ password_letters3size ] ;
   switch  ( ns_shifrp -> password_alphabet  ) {
   case  letters_count :
     string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
@@ -164,7 +164,7 @@ static  inline  void  enter_password3 ( t_ns_shifr * const ns_shifrp ) {
       ( strcp ) & u8"неизвестный алфавит пароля" :
       ( strcp ) & "unknown password alphabet" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-  if  ( strcmp ( &  ( password_letters6 [ 0 ] ) , & ( ( * p6  ) [ 0 ] ) ) )
+  if  ( strcmp ( ( char * ) & ( password_letters6 [ 0 ] ) , ( char * ) & ( ( * p6  ) [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifrp -> localerus ?
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'.\n" :
       "Warning! Password \'%s\' is very large. Same as \'%s\'.\n" )
@@ -249,7 +249,6 @@ static timestamp_t    get_timestamp ()    {
 # endif // SHIFR_DEBUG
   
 int main  ( int argc , char * argv [ ] )  {
-    
   t_ns_shifr  main_shifr  ;
   shifr_init  ( & main_shifr ) ;
   char const * const locale = setlocale ( LC_ALL  , ""  ) ;
@@ -401,12 +400,12 @@ int main  ( int argc , char * argv [ ] )  {
       size_t nr;
       size_t  ns ;
       if ( main_shifr . use_version == 2 ) {
-        ns  = 30 ;
-        nr = fread  ( & main_shifr  . password_letters2 , 1 , ns , f ) ; }
+        ns  = password_letters2size ;
+        nr = fread  ( ( char * ) & main_shifr  . password_letters2 , 1 , ns , f ) ; }
       else {
-        ns  = 180 ;
-        nr = fread  ( & main_shifr  . password_letters3 , 1 , ns , f ) ; }
-      if ( nr >= ns )  {
+        ns  = password_letters3size ;
+        nr = fread  ( ( char * ) & main_shifr  . password_letters3 , 1 , ns , f ) ; }
+      if ( nr >= ns ) {
         main_shifr  . string_exception  = ( main_shifr . localerus ?
           ( strcp ) & u8"Файл пароля очень большой" :
           ( strcp ) & "Password file is very large" ) ;
@@ -419,7 +418,7 @@ int main  ( int argc , char * argv [ ] )  {
           ( strcp ) & u8"Ошибка чтения файла" :
           ( strcp ) & "Error reading file" ) ;
         longjmp ( main_shifr  . jump  , 1 ) ; }
-      char * psw_uni ;
+      char  volatile  * psw_uni ;
       if ( main_shifr . use_version == 2 )
         psw_uni = main_shifr  . password_letters2 ;
       else 
@@ -487,7 +486,7 @@ int main  ( int argc , char * argv [ ] )  {
         longjmp(main_shifr  . jump,1); }
 
       if ( main_shifr . use_version == 2 ) {
-        strncpy ( main_shifr  . password_letters2 , argv  [ argj  ] ,
+        strncpy ( ( char * ) main_shifr  . password_letters2 , argv  [ argj  ] ,
           password_letters2size  ) ;
         string_to_password  ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG
@@ -499,7 +498,7 @@ int main  ( int argc , char * argv [ ] )  {
 # endif      
         }
       else {
-        strncpy ( main_shifr  . password_letters3 , argv  [ argj  ] ,
+        strncpy ( ( char * ) main_shifr  . password_letters3 , argv  [ argj  ] ,
           password_letters3size ) ; 
         string_to_password  ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG                           
@@ -513,13 +512,13 @@ int main  ( int argc , char * argv [ ] )  {
       password_to_string  ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG
       if ( main_shifr . use_version == 3 ) {
-        if  ( strcmp ( main_shifr  . password_letters3 , argv  [ argj  ] ) )  
+        if  ( strcmp ( ( char * ) main_shifr  . password_letters3 , argv  [ argj  ] ) )  
           fprintf  ( stderr , main_shifr . localerus ?
             u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
             "Warning! Password \'%s\' is very large. Same as \'%s\'\n"
             , argv  [ argj  ] , & ( main_shifr  . password_letters3  [ 0 ] ) ) ; }
       else {
-        if  ( strcmp ( main_shifr  . password_letters2 , argv  [ argj  ] ) )  
+        if  ( strcmp ( ( char * ) main_shifr  . password_letters2 , argv  [ argj  ] ) )  
           fprintf  ( stderr , main_shifr . localerus ?
             u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
             "Warning! Password \'%s\' is very large. Same as \'%s\'\n"
@@ -625,11 +624,11 @@ int main  ( int argc , char * argv [ ] )  {
       ( strcp ) & "flaggenpasswd : unrecognized version" ) ;
     longjmp ( main_shifr  . jump  , 1 ) ; }
 # endif
-    char  password_letters2 [ 20 ] ;
-    char  password_letters62 [ 100 ] ;
-    char  password_letters2_10 [ password_letters2size ] ;
-    char  password_letters3_10 [ password_letters3size ] ;
-    switch  ( main_shifr . use_version )  {
+    char  volatile  password_letters2 [ password_letters2size ] ;
+    char  volatile  password_letters62  [ password_letters3size ] ;
+    char  volatile  password_letters2_10  [ password_letters2size ] ;
+    char  volatile  password_letters3_10  [ password_letters3size ] ;
+    switch  ( main_shifr . use_version ) {
     case  2 :
       password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub ,
         & main_shifr  . password_letters2 , & main_shifr . letters , letters_count ) ;
@@ -768,9 +767,9 @@ int main  ( int argc , char * argv [ ] )  {
       ( strcp ) & u8"неизвестный алфавит пароля" :
       ( strcp ) & "unknown password alphabet" ) ;
     longjmp(main_shifr  . jump,1); }
-# endif    
+# endif
     if ( not flagoutputtofile )
-      return  0 ;  } // if flaggenpasswd
+      return  0 ; } // if flaggenpasswd
 # ifdef SHIFR_DEBUG
   if  ( flagenc and flagdec ) {
     main_shifr  . string_exception  = ( main_shifr . localerus ?
