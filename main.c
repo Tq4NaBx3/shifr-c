@@ -88,6 +88,11 @@ static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
       & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters3 ,
       letters_count3 ) ;
     break ;
+  case  letters_count4  :
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
+      & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters4 ,
+      letters_count4 ) ;
+    break ;
   default :
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( strcp ) & u8"неизвестный алфавит пароля" :
@@ -106,6 +111,10 @@ static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   case  letters_count3  :
     password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & password_letters , & ns_shifrp -> letters3 , letters_count3 ) ;
+    break ;
+  case  letters_count4  :
+    password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
+      & password_letters , & ns_shifrp -> letters4 , letters_count4 ) ;
     break ;
   default :
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
@@ -158,6 +167,13 @@ static  inline  void  enter_password3 ( t_ns_shifr * const ns_shifrp ) {
       ( strcp ) & ns_shifrp -> letters3 ,  letters_count3 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters3 , letters_count3 ) ;
+    break ;
+  case  letters_count4  :
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
+      & ns_shifrp -> raspr3  . pass . pub ,
+      ( strcp ) & ns_shifrp -> letters4 ,  letters_count4 ) ;
+    password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+      & password_letters6 , & ns_shifrp -> letters4 , letters_count4 ) ;
     break ;
   default :
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
@@ -233,6 +249,13 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
       ++ i  ;
       ++ j  ;
     } while ( i <= '9' ) ; }
+  { char * j = & ( ns_shifrp -> letters4  [ 0 ] ) ;
+    uint8_t i = 'a' ;
+    do {
+      ( * j ) = ( char  ) i ;
+      ++ i  ;
+      ++ j  ;
+    } while ( i <= 'z' ) ; }
   ns_shifrp  -> filefrom  = stdin ;
   ns_shifrp  -> fileto = stdout ; }
   
@@ -348,6 +371,18 @@ int main  ( int argc , char * argv [ ] )  {
       "\'\t(by default)\n"  ) , stdout  ) ;
 
     fputs ( ( main_shifr . localerus ?
+      u8"  --а26 или\n  --a26\t\'" :
+      "\'\n  --a26\t\'" ) , stdout  ) ;
+    { char const * cj = & ( main_shifr  . letters4 [ 0 ] ) ;
+      do {
+        fputc ( * cj  , stdout  ) ;
+        ++ cj ;
+      } while ( cj not_eq ( & ( main_shifr  . letters4 [ letters_count4 ] ) ) ) ; }
+    fputs ( ( main_shifr . localerus ?
+      u8"\'\n" :
+      "\'\n"  ) , stdout  ) ;
+      
+    fputs ( ( main_shifr . localerus ?
       u8"  --а10 или\n  --a10\t\'" :
       "\'\n  --a10\t\'" ) , stdout  ) ;
     { char const * cj = & ( main_shifr  . letters3 [ 0 ] ) ;
@@ -454,6 +489,15 @@ int main  ( int argc , char * argv [ ] )  {
           for ( ; i < nr  ; ++  i ) {
             if (  psw_uni [ i ] < '0' or
               psw_uni  [ i ] > '9' ) {
+              psw_uni [ i ] = '\00' ;
+              nr = i ;
+              break ; } } }
+        break ;
+      case  letters_count4  :
+        { size_t i  = 0 ;
+          for ( ; i < nr  ; ++  i ) {
+            if (  psw_uni [ i ] < 'a' or
+              psw_uni  [ i ] > 'z' ) {
               psw_uni [ i ] = '\00' ;
               nr = i ;
               break ; } } }
@@ -585,6 +629,10 @@ int main  ( int argc , char * argv [ ] )  {
           ( strcmp ( argv[argj] , "--a62" ) ==  0 )) { 
           main_shifr . password_alphabet = 62 ; }
         else
+        if (( strcmp ( argv[argj] , u8"--а26" ) ==  0 ) or
+          ( strcmp ( argv[argj] , "--a26" ) ==  0 )) { 
+          main_shifr . password_alphabet = 26 ; }
+        else
         if (( strcmp ( argv[argj] , u8"--а10" ) ==  0 ) or
           ( strcmp ( argv[argj] , "--a10" ) ==  0 )) { 
           main_shifr . password_alphabet = 10 ; }
@@ -628,6 +676,8 @@ int main  ( int argc , char * argv [ ] )  {
     char  volatile  password_letters62  [ password_letters3size ] ;
     char  volatile  password_letters2_10  [ password_letters2size ] ;
     char  volatile  password_letters3_10  [ password_letters3size ] ;
+    char  volatile  password_letters26  [ password_letters2size ] ;
+    char  volatile  password_letters3_26  [ password_letters3size ] ;
     switch  ( main_shifr . use_version ) {
     case  2 :
       password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub ,
@@ -636,6 +686,8 @@ int main  ( int argc , char * argv [ ] )  {
         & password_letters2 , & main_shifr . letters2 , letters_count2 ) ;
       password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub ,
         & password_letters2_10 , & main_shifr . letters3 , letters_count3 ) ;
+      password_to_string_templ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub ,
+        & password_letters26 , & main_shifr . letters4 , letters_count4 ) ;
       break ;
     case  3 :
       password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr3  . pass . pub ,
@@ -644,6 +696,8 @@ int main  ( int argc , char * argv [ ] )  {
         & password_letters62 , & main_shifr . letters2 , letters_count2 ) ;
       password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr3  . pass . pub ,
         & password_letters3_10  , & main_shifr . letters3 , letters_count3 ) ;
+      password_to_string_templ  ( number_size3 ) ( & main_shifr . raspr3  . pass . pub ,
+        & password_letters3_26  , & main_shifr . letters4 , letters_count4 ) ;
       break ;
     default :
       fprintf ( stderr , ( main_shifr . localerus ?
@@ -655,15 +709,20 @@ int main  ( int argc , char * argv [ ] )  {
         ( strcp ) & "show password : unrecognized version" ) ;
       longjmp ( main_shifr  . jump  , 1 ) ; }
 # ifdef SHIFR_DEBUG        
-    printf  ( ( main_shifr . localerus ? u8"--a95\tбуквами между кавычек = \'%s\'\n" : 
-      "--a95\tby letters between quotes = \'%s\'\n"  ) ,
+    printf  ( ( main_shifr . localerus ? u8"--a95\tбуквами, знаками между кавычек = \'%s\'\n" : 
+      "--a95\tby letters, signs between quotes = \'%s\'\n"  ) ,
       & ( ( ( main_shifr . use_version == 3 ) ? main_shifr  . password_letters3 :
         main_shifr  . password_letters2 ) [ 0 ] ) ) ;
     printf  ( ( main_shifr . localerus ?
-      u8"--a62\tбуквами между кавычек = \'%s\' (по-умолчанию)\n" : 
-      "--a62\tby letters between quotes = \'%s\' (by default)\n"  ) ,
+      u8"--a62\tбуквами, цифрами между кавычек = \'%s\' (по-умолчанию)\n" : 
+      "--a62\tby letters, digits between quotes = \'%s\' (by default)\n"  ) ,
       & ( ( ( main_shifr . use_version == 3 ) ? password_letters62 :
         password_letters2 )  [ 0 ] ) ) ;
+    printf  ( ( main_shifr . localerus ?
+      u8"--a26\tмаленькими буквами между кавычек = \'%s\'\n" : 
+      "--a26\tby small letters between quotes = \'%s\'\n"  ) ,
+      & ( ( ( main_shifr . use_version == 3 ) ? password_letters3_26 :
+        password_letters26 )  [ 0 ] ) ) ;
     printf  ( ( main_shifr . localerus ?
       u8"--a10\tцифрами между кавычек = \'%s\'\n" : 
       "--a10\tby digits between quotes = \'%s\'\n"  ) ,
@@ -690,6 +749,16 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( ( main_shifr . localerus ?
           u8"из строки62 во внутренний пароль = " :
           "from string62 to internal password = " ) , stderr ) ;
+        number_princ  ( number_size2 ) ( & password2 . pub , stderr  ) ;
+        fputs ( "\n" , stderr ) ;
+        
+        string_to_password_templ  ( number_size2 ) ( & main_shifr ,
+          ( strcp ) & password_letters26 ,
+          & password2 . pub , ( strcp ) & main_shifr . letters4 ,
+          letters_count4 ) ;
+        fputs ( ( main_shifr . localerus ?
+          u8"из строки26 во внутренний пароль = " :
+          "from string26 to internal password = " ) , stderr ) ;
         number_princ  ( number_size2 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
@@ -727,6 +796,16 @@ int main  ( int argc , char * argv [ ] )  {
           "from string62 to internal password = " ) , stderr ) ;
         number_princ  ( number_size3 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
+        
+        string_to_password_templ  ( number_size3 ) ( & main_shifr ,
+          ( strcp ) & password_letters3_26 ,
+          & password2 . pub , ( strcp ) & main_shifr . letters4 ,
+          letters_count4 ) ;
+        fputs ( ( main_shifr . localerus ?
+          u8"из строки26 во внутренний пароль = " :
+          "from string26 to internal password = " ) , stderr ) ;
+        number_princ  ( number_size3 ) ( & password2 . pub , stderr  ) ;
+        fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
           ( strcp ) & password_letters3_10 ,
@@ -751,16 +830,20 @@ int main  ( int argc , char * argv [ ] )  {
 # else
   switch  ( main_shifr . password_alphabet  ) {
   case  letters_count :
-    puts  ( & ( ( ( main_shifr . use_version == 3 ) ?
+    puts  ( ( char * ) & ( ( ( main_shifr . use_version == 3 ) ?
       main_shifr  . password_letters3 : main_shifr  . password_letters2 ) [ 0 ] ) ) ;
     break ;
   case  letters_count2  :
-    puts  ( & ( ( ( main_shifr . use_version == 3 ) ? password_letters62 :
+    puts  ( ( char * ) & ( ( ( main_shifr . use_version == 3 ) ? password_letters62 :
       password_letters2 ) [ 0 ] ) ) ;
     break ;
   case  letters_count3  :
-    puts  ( & ( ( ( main_shifr . use_version == 3 ) ? password_letters3_10 :
+    puts  ( ( char * ) & ( ( ( main_shifr . use_version == 3 ) ? password_letters3_10 :
       password_letters2_10 ) [ 0 ] ) ) ;
+    break ;
+  case  letters_count4  :
+    puts  ( ( char * ) & ( ( ( main_shifr . use_version == 3 ) ? password_letters3_26 :
+      password_letters26 ) [ 0 ] ) ) ;
     break ;
   default :
     main_shifr  . string_exception  = ( main_shifr . localerus ?

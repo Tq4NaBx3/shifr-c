@@ -23,6 +23,7 @@
 // ascii буквы 126-32+1 = 95 шт
 // длина буквенного пароля : log ( 95 , 20922789888000 ) ≈ 6.735 букв <= 7 букв
 //  log ( 62 , 20922789888000 ) ≈ 7.432 буквы <= 8 букв
+//  log ( 26 , 20922789888000 ) ≈ 9.414 буквы <= 10 букв
 //  log ( 10 , 20922789888000 ) ≈ 13.32 цифр <= 14 цифр
 
 /*
@@ -63,6 +64,7 @@ Secr xxxx      xxxx            yyyy
 // ascii letters 126-32+1 = 95 pcs
 // letter password length : log ( 95 , 20922789888000 ) ≈ 6.735 letters <= 7 letters
 //  log ( 62 , 20922789888000 ) ≈ 7.432 letters <= 8 letters
+//  log ( 26 , 20922789888000 ) ≈ 9.414 letters <= 10 letters
 //  log ( 10 , 20922789888000 ) ≈ 13.32 digits <= 14 digits
 
 /*
@@ -110,6 +112,7 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 // ascii буквы 126-32+1 = 95 шт
 // длина буквенного пароля : log ( 95 , 1.26886932186e89 ) ≈ 45.05 букв <= 46 букв
 //  log ( 62 , 1.26886932186e89 ) ≈ 49.71 буквы <= 50 букв
+//  log ( 26 , 1.26886932186e89 ) ≈ 62.97 буквы <= 63 буквы
 //  log ( 10 , 1.26886932186e89 ) ≈ 89.1 цифр <= 90 цифр
 
 # include <stdio.h>
@@ -1087,6 +1090,12 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
         & ns_shifrp -> raspr2  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters3 , letters_count3 ) ;
       break ;
+    case  letters_count4  :
+      string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
+        ( strcp ) & ns_shifrp  -> password_letters2 ,
+        & ns_shifrp -> raspr2  . pass . pub ,
+        ( strcp ) & ns_shifrp -> letters4 , letters_count4 ) ;
+      break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( strcp ) & u8"string_to_password : версия алфавита не известна" :
@@ -1112,6 +1121,12 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
         ( strcp ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters3 , letters_count3 ) ;
+      break ;
+    case  letters_count4  :
+      string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
+        ( strcp ) & ns_shifrp  -> password_letters3 ,
+        & ns_shifrp -> raspr3  . pass . pub ,
+        ( strcp ) & ns_shifrp -> letters4 , letters_count4 ) ;
       break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
@@ -1221,6 +1236,11 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
         & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters3 ,
         letters_count3 ) ;
       break ;
+    case  letters_count4  :
+      password_to_string_templ  ( number_size2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
+        & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters4 ,
+        letters_count4 ) ;
+      break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( strcp ) & u8"password_to_string:версия алфавита не известна" :
@@ -1243,6 +1263,11 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
       password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters3 ,
         letters_count3 ) ;
+      break ;
+    case  letters_count4  :
+      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+        & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters4 ,
+        letters_count4 ) ;
       break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?

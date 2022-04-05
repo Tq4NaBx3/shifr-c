@@ -44,6 +44,11 @@ enum  { letters_count = UINT8_C ( ( '~' - ' ' ) + 1 ) } ;
 enum  { letters_count2 = UINT8_C (
   ( '9' - '0' ) + 1 + ( 'Z' - 'A' ) + 1 + ( 'z' - 'a' ) + 1 ) } ;
 
+// 0x61 'a' - 0x7a 'z'
+// 26 шт pcs
+# define  letters_count4  shifr_letters_count4
+enum  { letters_count4 = UINT8_C ( ( 'z' - 'a' ) + 1 ) } ;
+
 // 0x30 '0' - 0x39 '9'
 // 10 шт pcs
 # define  letters_count3  shifr_letters_count3
@@ -75,6 +80,8 @@ struct  s_ns_shifr  {
   char  letters [ letters_count ] ;  
   // a..zA..Z0..9
   char  letters2  [ letters_count2  ] ;
+  // a..z
+  char  letters4  [ letters_count4  ] ;
   // 0..9
   char  letters3  [ letters_count3  ] ;
   bool  localerus ; 
@@ -121,8 +128,8 @@ struct  s_ns_shifr  {
   // 30 .. 37 -  6
   // 38 .. 3f -  7
   uint8_t deshi3 [ deshi_size3 ] ;
-  // 62 or 95 or 10
-  // алфавит пароля 62 или 95 или 10
+  // 62 or 95 or 26 or 10
+  // алфавит пароля 62 или 95 или 26 или 10
   int password_alphabet ; 
   // ver2
   char  volatile  password_letters2 [ password_letters2size ] ;
