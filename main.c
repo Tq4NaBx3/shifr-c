@@ -54,46 +54,46 @@ static  inline  void  streambuf_init  ( t_streambuf * const me  ,
   me -> bytecount = 0 ; }
 
 static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
-  char p40 [ password_letters2size ] ;
+  char  volatile  p40 [ password_letters2size ] ;
   set_keypress  ( ns_shifrp ) ;
-  char ( * const p4 ) [ password_letters2size ] =
-    (  char  ( * const ) [ password_letters2size  ] )
-    fgets ( & ( p40 [ 0 ] ) , password_letters2size , stdin ) ;
+  fgets ( ( char  * ) & ( p40 [ 0 ] ) , password_letters2size , stdin ) ;
   reset_keypress ( ns_shifrp ) ;
-  char * j = & ( ( * p4 ) [ 0 ]  ) ;
+  char volatile * j = & ( p40 [ 0 ]  ) ;
   while ( ( ( * j ) not_eq '\n' ) and
     ( ( * j ) not_eq '\00' ) and
-    ( j < ( & ( * p4 ) [ password_letters2size ] ) ) )
+    ( j < ( & ( p40 [ password_letters2size ] ) ) ) )
     ++ j ;  
-  if ( j < ( & ( ( * p4 ) [ password_letters2size ] ) ) )
+  if ( j < ( & ( p40 [ password_letters2size ] ) ) )
     ( * j ) = '\00' ;
   else  {
+    memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( strcp ) & u8"в пароле нет конца строки" :
       ( strcp ) & "there is no end of line in the password" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   switch ( ns_shifrp -> password_alphabet ) {
   case  letters_count  :
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strvcp ) & p40 , 
       & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters ,
       letters_count ) ;
     break ;
   case  letters_count2  :
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strvcp ) & p40 , 
       & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters2 ,
       letters_count2 ) ;
     break ;
   case  letters_count3  :
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strvcp ) & p40 , 
       & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters3 ,
       letters_count3 ) ;
     break ;
   case  letters_count4  :
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strcp ) p4 , 
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strvcp ) & p40 , 
       & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters4 ,
       letters_count4 ) ;
     break ;
   default :
+    memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( strcp ) & u8"неизвестный алфавит пароля" :
       ( strcp ) & "unknown password alphabet" ) ;
@@ -117,30 +117,35 @@ static  inline  void  enter_password2 ( t_ns_shifr * const ns_shifrp ) {
       & password_letters , & ns_shifrp -> letters4 , letters_count4 ) ;
     break ;
   default :
+    memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( strcp ) & u8"неизвестный алфавит пароля" :
       ( strcp ) & "unknown password alphabet" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-  if  ( strcmp ( ( char * ) & ( password_letters  [ 0 ] ) , ( char * ) & ( ( * p4  ) [ 0 ] ) ) )
+  if  ( strcmp ( ( char * ) & ( password_letters  [ 0 ] ) ,
+    ( char * ) & ( p40 [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifrp -> localerus ?
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
       "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
-      , & ( ( * p4  ) [ 0 ] ) , & ( password_letters [ 0 ] ) ) ; }
+      , & ( p40 [ 0 ] ) , & ( password_letters [ 0 ] ) ) ;
+  memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
+  memsetv ( password_letters  , memsetv_default_char  , sizeof  ( password_letters  ) ) ;
+  }
 
 static  inline  void  enter_password3 ( t_ns_shifr * const ns_shifrp ) {
-  char p60 [ password_letters3size ] ;
+  char  volatile  p60 [ password_letters3size ] ;
   set_keypress  ( ns_shifrp ) ;
-  char ( * const p6 ) [ password_letters3size ] = (char(*const)[password_letters3size])
-    fgets ( & ( p60 [ 0 ] ) , password_letters3size , stdin ) ;
+  fgets ( ( char  * ) & ( p60 [ 0 ] ) , password_letters3size , stdin ) ;
   reset_keypress ( ns_shifrp ) ;
-  char * j = & ( ( * p6 ) [ 0 ]  ) ;
+  char  volatile  * j = & ( p60 [ 0 ] ) ;
   while ( ( ( * j ) not_eq '\n' ) and
     ( ( * j ) not_eq '\00' ) and
-    ( j < ( & ( * p6 ) [ password_letters3size ] ) ) )
+    ( j < ( & ( p60 [ password_letters3size ] ) ) ) )
     ++ j ;  
-  if ( j < ( & ( ( * p6 ) [ password_letters3size ] ) ) )
+  if ( j < ( & ( p60 [ password_letters3size ] ) ) )
     ( * j ) = '\00' ;
   else  {
+    memsetv ( p60 , memsetv_default_char  , sizeof  ( p60 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( strcp ) & u8"в пароле нет конца строки" :
       ( strcp ) & "there is no end of line in the password" ) ;
@@ -148,43 +153,47 @@ static  inline  void  enter_password3 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  password_letters6 [ password_letters3size ] ;
   switch  ( ns_shifrp -> password_alphabet  ) {
   case  letters_count :
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters , letters_count ) ;
     break ;
   case  letters_count2  :
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters2 ,  letters_count2 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters2 , letters_count2 ) ;
     break ;
   case  letters_count3  :
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters3 ,  letters_count3 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters3 , letters_count3 ) ;
     break ;
   case  letters_count4  :
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strcp ) p6 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( strcp ) & ns_shifrp -> letters4 ,  letters_count4 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters4 , letters_count4 ) ;
     break ;
   default :
+    memsetv ( p60 , memsetv_default_char  , sizeof  ( p60 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( strcp ) & u8"неизвестный алфавит пароля" :
       ( strcp ) & "unknown password alphabet" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-  if  ( strcmp ( ( char * ) & ( password_letters6 [ 0 ] ) , ( char * ) & ( ( * p6  ) [ 0 ] ) ) )
+  if  ( strcmp ( ( char * ) & ( password_letters6 [ 0 ] ) , ( char * ) & ( p60 [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifrp -> localerus ?
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'.\n" :
       "Warning! Password \'%s\' is very large. Same as \'%s\'.\n" )
-      , & ( ( * p6  ) [ 0 ] ) , & ( password_letters6  [ 0 ] ) ) ; }
+      , & ( p60 [ 0 ] ) , & ( password_letters6  [ 0 ] ) ) ;
+  memsetv ( p60 , memsetv_default_char  , sizeof  ( p60 ) ) ;
+  memsetv ( password_letters6 , memsetv_default_char  , sizeof  ( password_letters6 ) ) ;
+  }
 
 # define  enter_password  shifr_enter_password
 static  inline  void  enter_password ( t_ns_shifr * const ns_shifrp ) {
@@ -733,7 +742,7 @@ int main  ( int argc , char * argv [ ] )  {
       { number_priv_type ( number_size2 ) password2 ;
 
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
-          ( strcp ) & main_shifr  . password_letters2 ,
+          ( strvcp  ) & main_shifr  . password_letters2 ,
           & password2 . pub , ( strcp ) & main_shifr . letters ,
           letters_count ) ; 
         fputs ( ( main_shifr . localerus ?
@@ -743,7 +752,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
-          ( strcp ) & password_letters2 ,
+          ( strvcp  ) & password_letters2 ,
           & password2 . pub , ( strcp ) & main_shifr . letters2 ,
           letters_count2 ) ;
         fputs ( ( main_shifr . localerus ?
@@ -753,7 +762,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( "\n" , stderr ) ;
         
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
-          ( strcp ) & password_letters26 ,
+          ( strvcp  ) & password_letters26 ,
           & password2 . pub , ( strcp ) & main_shifr . letters4 ,
           letters_count4 ) ;
         fputs ( ( main_shifr . localerus ?
@@ -763,7 +772,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size2 ) ( & main_shifr ,
-          ( strcp ) & password_letters2_10 ,
+          ( strvcp  ) & password_letters2_10 ,
           & password2 . pub , ( strcp ) & main_shifr . letters3 ,
           letters_count3 ) ;
         fputs ( ( main_shifr . localerus ?
@@ -778,7 +787,7 @@ int main  ( int argc , char * argv [ ] )  {
       { number_priv_type ( number_size3 ) password2 ;
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
-          ( strcp ) & main_shifr  . password_letters3 ,
+          ( strvcp  ) & main_shifr  . password_letters3 ,
           & password2 . pub , ( strcp ) & main_shifr . letters ,
           letters_count ) ; 
         fputs ( ( main_shifr . localerus ?
@@ -788,7 +797,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
-          ( strcp ) & password_letters62 ,
+          ( strvcp  ) & password_letters62 ,
           & password2 . pub , ( strcp ) & main_shifr . letters2 ,
           letters_count2 ) ;
         fputs ( ( main_shifr . localerus ?
@@ -798,7 +807,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( "\n" , stderr ) ;
         
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
-          ( strcp ) & password_letters3_26 ,
+          ( strvcp  ) & password_letters3_26 ,
           & password2 . pub , ( strcp ) & main_shifr . letters4 ,
           letters_count4 ) ;
         fputs ( ( main_shifr . localerus ?
@@ -808,7 +817,7 @@ int main  ( int argc , char * argv [ ] )  {
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size3 ) ( & main_shifr ,
-          ( strcp ) & password_letters3_10 ,
+          ( strvcp  ) & password_letters3_10 ,
           & password2 . pub , ( strcp ) & main_shifr . letters3 ,
           letters_count3 ) ;
         fputs ( ( main_shifr . localerus ?

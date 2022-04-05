@@ -12,6 +12,9 @@ typedef char  volatile  ( * strvp ) [ ] ;
 # define  strcp  shifr_strcp
 typedef char const ( * strcp ) [ ] ;
 
+# define  strvcp  shifr_strvcp
+typedef char  volatile  const ( * strvcp  ) [ ] ;
+
 # define  arrp  shifr_arrp
 typedef uint8_t ( * arrp ) [ ] ;
 

@@ -43,7 +43,7 @@ void  printarr  ( strcp name , arrcp p , size_t arrsize , FILE * f ) ;
 # endif // SHIFR_DEBUG
 
 # define  shifr_string_to_password_templ_dec( N ) \
-void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * , strcp string , \
+void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * , strvcp  string , \
   number_type ( N ) * password , strcp letters , uint8_t letterscount  ) ;
 # define  string_to_password_templ_dec  shifr_string_to_password_templ_dec
 string_to_password_templ_dec  ( number_size2 )
@@ -146,5 +146,11 @@ Decryption
 size_io  shifr_decrypt3 ( t_ns_shifr * , arrcps input , arrps output ) ;
 
 uint8_t  streambuf_writeflushzero3 ( t_ns_shifr * , arrps ) ;
+
+# define  memsetv_default_char  shifr_memsetv_default_char
+enum  { memsetv_default_char = 0x55  } ;
+
+# define  memsetv shifr_memsetv
+void volatile * memsetv ( void volatile * str , uint8_t ch , size_t n ) ;
 
 # endif // SHIFR_PUBLIC_H

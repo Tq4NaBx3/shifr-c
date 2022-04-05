@@ -357,9 +357,9 @@ password_to_string_templ_def  ( number_size3 )
 
 # define  shifr_string_to_password_templ_def( N ) \
 void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp , \
-  strcp const string , number_type ( N ) * const password ,  \
+  strvcp  const string  , number_type ( N ) * const password ,  \
   strcp const letters , uint8_t const letterscount  ) { \
-  char const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
+  char  volatile  const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
   if  ( ( * stringi ) == '\00' ) { \
     number_set0 ( N ) ( password ) ; \
     return ; } \
@@ -1102,25 +1102,25 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
     switch  ( ns_shifrp -> password_alphabet  ) {
     case  letters_count :
       string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
-        ( strcp ) & ns_shifrp  -> password_letters2 ,
+        ( strvcp  ) & ns_shifrp  -> password_letters2 ,
         & ns_shifrp -> raspr2  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
       break ;
     case  letters_count2  :
       string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
-        ( strcp ) & ns_shifrp  -> password_letters2 ,
+        ( strvcp  ) & ns_shifrp  -> password_letters2 ,
         & ns_shifrp -> raspr2  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
       break ;
     case  letters_count3  :
       string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
-        ( strcp ) & ns_shifrp  -> password_letters2 ,
+        ( strvcp  ) & ns_shifrp  -> password_letters2 ,
         & ns_shifrp -> raspr2  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters3 , letters_count3 ) ;
       break ;
     case  letters_count4  :
       string_to_password_templ  ( number_size2 ) ( ns_shifrp ,
-        ( strcp ) & ns_shifrp  -> password_letters2 ,
+        ( strvcp  ) & ns_shifrp  -> password_letters2 ,
         & ns_shifrp -> raspr2  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters4 , letters_count4 ) ;
       break ;
@@ -1134,25 +1134,25 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
     switch  ( ns_shifrp -> password_alphabet  ) {
     case  letters_count :
       string_to_password_templ  ( number_size3 ) ( ns_shifrp ,
-        ( strcp ) & ns_shifrp  -> password_letters3 ,
+        ( strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
       break ;
     case  letters_count2  :
       string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
-        ( strcp ) & ns_shifrp  -> password_letters3 ,
+        ( strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
       break ;
     case  letters_count3  :
       string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
-        ( strcp ) & ns_shifrp  -> password_letters3 ,
+        ( strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters3 , letters_count3 ) ;
       break ;
     case  letters_count4  :
       string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
-        ( strcp ) & ns_shifrp  -> password_letters3 ,
+        ( strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
         ( strcp ) & ns_shifrp -> letters4 , letters_count4 ) ;
       break ;
@@ -1313,3 +1313,11 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
       ( strcp ) & "password_to_string:version is not supported" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
   
+void  volatile  * memsetv ( void  volatile  * const str , uint8_t const ch  ,
+  size_t  n ) {
+  uint8_t volatile  * p = str ;
+  while ( n ) {
+    * p = ch  ;
+    --  n ;
+    ++  p ; }
+  return  str ; }
