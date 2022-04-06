@@ -20,14 +20,14 @@ number_def  ( number_size3 )
 
 number_def_priv  ( number_size2 )
 
-struct  s_raspr2 {
+struct  shifr_s_raspr2  {
   uint8_t dice  [ deshi_size2 - 1  ] ;
   number_priv_type ( number_size2 ) pass  ;
   } ;
 
 number_def_priv  ( number_size3 )
 
-struct  s_raspr3 {
+struct  shifr_s_raspr3  {
   uint8_t dice  [ deshi_size3 - 1 ] ;
   number_priv_type ( number_size3 ) pass  ;
   } ;
@@ -58,7 +58,7 @@ enum  { letters_count3 = UINT8_C ( ( '9' - '0' ) + 1 ) } ;
 # define  password_letters3size shifr_password_letters3size
 enum  { password_letters2size = 30 , password_letters3size = 180 } ;
 
-struct  s_streambuf  {
+struct  shifr_s_streambuf {
   FILE  * file  ;
   uint8_t buf ;
   uint8_t bufbitsize  ;
@@ -152,17 +152,17 @@ struct  s_ns_shifr  {
   uint8_t secretdatasole  [ 3 ] ;
   } ;
 
-struct  s_arrcps {
+struct  shifr_s_arrcps  {
   arrcp cp  ;
   size_t  s ;
 } ;
 
-struct  s_arrps {
+struct  shifr_s_arrps {
   arrp  p ;
   size_t  s ;
 } ;
 
-struct  s_size_io  {
+struct  shifr_s_size_io {
   size_t  i ;
   size_t  o ;
 } ;

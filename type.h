@@ -1,43 +1,34 @@
-# ifndef  SHIFRTYPEH
-# define  SHIFRTYPEH
+# ifndef  SHIFR_TYPE_H
+# define  SHIFR_TYPE_H
 
 # include <stdint.h>
 
-# define  strp  shifr_strp
-typedef char ( * strp ) [ ] ;
+typedef char ( * shifr_strp ) [ ] ;
+typedef shifr_strp  strp  ;
 
-# define  strvp shifr_strvp
-typedef char  volatile  ( * strvp ) [ ] ;
+typedef char  volatile  ( * shifr_strvp ) [ ] ;
+typedef shifr_strvp strvp ;
 
-# define  strcp  shifr_strcp
-typedef char const ( * strcp ) [ ] ;
+typedef char const ( * shifr_strcp  ) [ ] ;
+typedef shifr_strcp strcp ;
 
-# define  strvcp  shifr_strvcp
-typedef char  volatile  const ( * strvcp  ) [ ] ;
+typedef char  volatile  const ( * shifr_strvcp  ) [ ] ;
+typedef shifr_strvcp  strvcp  ;
 
-# define  arrp  shifr_arrp
-typedef uint8_t ( * arrp ) [ ] ;
+typedef uint8_t ( * shifr_arrp  ) [ ] ;
+typedef shifr_arrp  arrp  ;
 
-# define  arrcp  shifr_arrcp
-typedef uint8_t const ( * arrcp ) [ ] ;
+typedef uint8_t const ( * shifr_arrcp ) [ ] ;
+typedef shifr_arrcp arrcp ;
 
-# define  s_arrcps  shifr_s_arrcps
-struct  s_arrcps  ;
+struct  shifr_s_arrcps  ;
+typedef struct  shifr_s_arrcps  arrcps  ;
 
-# define  arrcps  shifr_arrcps
-typedef struct  s_arrcps  arrcps  ;
+struct  shifr_s_arrps ;
+typedef struct  shifr_s_arrps arrps ;
 
-# define  s_arrps  shifr_s_arrps
-struct  s_arrps  ;
-
-# define  arrps  shifr_arrps
-typedef struct  s_arrps arrps ;
-
-# define  s_size_io shifr_s_size_io
-struct  s_size_io ;
-
-# define  size_io shifr_size_io
-typedef struct  s_size_io size_io ;
+struct  shifr_s_size_io ;
+typedef struct  shifr_s_size_io size_io ;
 
 # define  shifr_number_structtype( N ) \
   struct  shifr_s_number ## N ;
@@ -59,8 +50,8 @@ typedef struct  s_size_io size_io ;
 
 // log(2,16!) ceil 8 = 6
 // log(2,64!) ceil 8 = 37
-# define  e_number_size shifr_e_number_size
-enum  e_number_size  { number_size2 = 6 , number_size3 = 37 }  ;
+enum  shifr_e_number_size { number_size2  = 6 , number_size3  = 37  } ;
+typedef enum  shifr_e_number_size e_number_size ;
 
 shifr_number_structtype( number_size2 )
 shifr_number_typedef( number_size2 )
@@ -72,30 +63,28 @@ shifr_number_priv_typedef( number_size2 )
 shifr_number_priv_structtype( number_size3 )
 shifr_number_priv_typedef( number_size3 )
 
-# define  s_raspr2  shifr_s_raspr2
-struct  s_raspr2  ;
-# define  t_raspr2  shifr_t_raspr2
-typedef struct  s_raspr2  t_raspr2  ;
+struct  shifr_s_raspr2  ;
+typedef struct  shifr_s_raspr2  shifr_t_raspr2  ;
+typedef shifr_t_raspr2  t_raspr2  ;
 
-# define  s_raspr3  shifr_s_raspr3
-struct  s_raspr3  ;
-# define  t_raspr3  shifr_t_raspr3
-typedef struct  s_raspr3  t_raspr3 ;
+struct  shifr_s_raspr3  ;
+typedef struct  shifr_s_raspr3  shifr_t_raspr3  ;
+typedef shifr_t_raspr3  t_raspr3  ;
 
 struct  s_ns_shifr  ;
 typedef struct  s_ns_shifr  t_ns_shifr ;
 
-# define  s_streambuf shifr_s_streambuf
-struct  s_streambuf ;
-# define  t_streambuf shifr_t_streambuf
-typedef struct  s_streambuf t_streambuf ;
+struct  shifr_s_streambuf ;
+typedef struct  shifr_s_streambuf shifr_t_streambuf ;
+typedef shifr_t_streambuf t_streambuf ;
 
-// 4 * 4 = 16
-# define  deshi_size2 shifr_deshi_size2
+// 4 * 4 = 16 = 0x10
 
-// 8 * 8 = 64
-# define  deshi_size3 shifr_deshi_size3
-# define  e_deshi_size  shifr_e_deshi_size
-enum  e_deshi_size  { deshi_size2 = 0x10 , deshi_size3 = 0x40 }  ;
+// 8 * 8 = 64 = 0x40
 
-# endif //  SHIFRTYPEH
+enum  shifr_e_deshi_size  { shifr_deshi_size2 = 0x10  , deshi_size2 = 0x10  ,
+  shifr_deshi_size3 = 0x40  , deshi_size3 = 0x40  } ;
+typedef enum  shifr_e_deshi_size  shifr_t_deshi_size  ;
+typedef shifr_t_deshi_size  t_deshi_size  ;
+
+# endif //  SHIFR_TYPE_H
