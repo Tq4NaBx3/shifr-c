@@ -280,6 +280,131 @@ static timestamp_t    get_timestamp ()    {
       
 # endif // SHIFR_DEBUG
   
+static  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
+  bool  const localerus = main_shifrp -> localerus ;
+  puts ( localerus ?
+      u8"Шифр ©2020-2 Глебов А.Н.\n"
+      u8"Симметричное поточное шифрование с 'солью'.\n"
+      u8"'Соль' генерируется постоянно, что даёт хорошую стойкость.\n"
+      u8"Размер данных увеличивается в два раза. В три раза в текстовом режиме.\n"
+      u8"Нет диагностики неправильного пароля.\n"
+      u8"Синтаксис : shifr [параметры]" :
+      "Shifr ©2020-2 Glebe A.N.\n"
+      "Symmetric stream encryption with 'salt'.\n"
+      "'Salt' is constantly generated, which gives good durability.\n"
+      "Data size doubles. Tripled in text mode.\n"
+      "There is no diagnosis of the wrong password.\n"
+      "Syntax : shifr [options]" ) ;
+    puts  ( localerus ?
+      u8"Параметры :" :
+      "Options :"  ) ;
+    puts  ( localerus ?
+      u8"  --ген-пар или\n  --gen-pas\tгенерировать пароль" :
+      "  --gen-pas\tpassword generate" );
+    puts  ( localerus ?
+      u8"  --зашифр или\n  --encrypt\tзашифровать\t(по-умолчанию)" :
+      "  --encrypt\t(by default)" );
+    puts  ( localerus ?
+      u8"  --расшифр или\n  --decrypt\tрасшифровать" :
+      "  --decrypt" );
+    puts  ( localerus ?
+      u8"  --пар или\n  --pas 'строка_пароля'\tиспользовать данный пароль" :
+      "  --pas 'password_string'\tuse this password" );
+    puts  ( localerus ?
+      u8"  --пар-путь или\n  --pas-path 'путь_к_файлу_с_паролем'\t"
+      u8"использовать пароль в файле" :
+      "  --pas-path 'path_to_password_file'\tuse password in file" );
+    puts  ( localerus ?
+      u8"  --вход или < или \n  --input 'имя_файла'\tчитать из файла (без данной опции"
+      u8" читаются данные со стандартного входа)" :
+      "  --input or < 'file_name'\tread from file (without this option data reads from"
+      " standard input)" ) ;
+    puts  ( localerus ? 
+      u8"  --выход или > или \n  --output 'имя_файла'\tзаписывать в файл (без данной"
+      u8" опции записываются данные в стандартный выход)" :
+      "  --output or > 'file_name'\twrite to file (without this option data writes to"
+      " standard output)"    );
+    puts  ( localerus ? 
+      u8"  --текст или\n  --text\tшифрованный файл записан текстом ascii" :
+      "  --text\tencrypted file written in ascii text"    );
+    puts  ( localerus ? 
+      u8"  --2\tиспользовать двух битное шифрование, ключ = 45 бит ( 6 - 14 букв )." :
+      "  --2\tusing two bit encryption, key = 45 bits ( 6 - 14 letters )." ) ;
+    puts  ( localerus ?
+      u8"  --3\tиспользовать трёх битное шифрование, ключ = 296 бит ( 45 - 90 букв )."
+      u8" ( по-умолчанию )" :
+      "  --3\tusing three bit encryption, key = 296 bits ( 45 - 90 letters )."
+      " ( by default )") ;
+    fputs  ( localerus ?  
+      u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
+      "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
+    { char const * cj = & ( main_shifrp -> letters [ 0 ] ) ;
+      do {
+        fputc ( * cj  , stdout  ) ;
+        ++ cj ;
+      } while ( cj not_eq ( & ( main_shifrp -> letters [ letters_count ] ) ) ) ; }
+    fputs ( ( main_shifrp -> localerus ?
+      u8"\'\n  --а62 или\n  --a62\t\'" :
+      "\'\n  --a62\t\'" ) , stdout  ) ;
+    { char const * cj = & ( main_shifrp -> letters2 [ 0 ] ) ;
+      do {
+        fputc ( * cj  , stdout  ) ;
+        ++ cj ;
+      } while ( cj not_eq ( & ( main_shifrp -> letters2 [ letters_count2 ] ) ) ) ; }
+    fputs ( ( main_shifrp -> localerus ?
+      u8"\'\t(по умолчанию)\n" :
+      "\'\t(by default)\n"  ) , stdout  ) ;
+
+    fputs ( ( main_shifrp -> localerus ?
+      u8"  --а26 или\n  --a26\t\'" :
+      "\'\n  --a26\t\'" ) , stdout  ) ;
+    { char const * cj = & ( main_shifrp -> letters4 [ 0 ] ) ;
+      do {
+        fputc ( * cj  , stdout  ) ;
+        ++ cj ;
+      } while ( cj not_eq ( & ( main_shifrp -> letters4 [ letters_count4 ] ) ) ) ; }
+    fputs ( ( main_shifrp -> localerus ?
+      u8"\'\n" :
+      "\'\n"  ) , stdout  ) ;
+      
+    fputs ( ( localerus ?
+      u8"  --а10 или\n  --a10\t\'" :
+      "\'\n  --a10\t\'" ) , stdout  ) ;
+    { char const * cj = & ( main_shifrp -> letters3 [ 0 ] ) ;
+      do {
+        fputc ( * cj  , stdout  ) ;
+        ++ cj ;
+      } while ( cj not_eq ( & ( main_shifrp -> letters3 [ letters_count3 ] ) ) ) ; }
+    fputs ( ( localerus ?
+      u8"\'\n" :
+      "\'\n"  ) , stdout  ) ;
+
+    puts  ( localerus ?
+      u8"Пример использования :"  :
+      "Usage example"  ) ;
+    puts  ( localerus ?
+      u8"  $ ./shifr --ген-пар > psw"  :
+      "  $ ./shifr --gen-pas > psw"  ) ;
+    puts  ( 
+      "  $ cat psw\n"
+      "  n3LTQH4eIicGDNaF8CDVRGdaCEVXxPPgikJ9lbQKW4zs8StkhD"  ) ;
+    puts  ( localerus ?
+      u8"  $ ./shifr --пар-путь 'psw' > test.shi --текст"  :
+      "  $ ./shifr --pas-path 'psw' > test.shi --text"  ) ;
+    puts( localerus ?
+      u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
+      "  2+2 (Press Enter,Ctrl+D)" ) ;
+    puts  ( 
+      "  $ cat test.shi\n"
+      "  ylQ?ncm;ags" ) ;
+    puts( localerus ?
+      u8"  $ ./shifr --пар-путь 'psw' < test.shi --текст --расшифр" :
+      "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;
+    puts  ( "  2+2" ) ;
+    return 0 ; }
+  
+static  int ( * const show_help ) ( t_ns_shifr  const * ) = & shifr_show_help ;
+  
 int main  ( int argc , char * argv [ ] )  {
   t_ns_shifr  main_shifr  ;
   shifr_init  ( & main_shifr ) ;
@@ -291,6 +416,9 @@ int main  ( int argc , char * argv [ ] )  {
       "Exception : %s\n" ) , & ( ( *  main_shifr  . string_exception ) [ 0 ] ) ) ;
     return  1 ; }
     
+  if  ( argc  <=  1 )
+    return  show_help ( & main_shifr  ) ;
+  
   bool  flagenc = false ;
   bool  flagdec = false ;
   bool  flagpasswd  = false ;
@@ -305,127 +433,7 @@ int main  ( int argc , char * argv [ ] )  {
   bool  flagoutputtofile  = false ;
   bool  flagclosefilefrom = false ;
   bool  flagclosefileto = false ;
-  if  ( argc  <=  1  ) {
-    puts ( main_shifr . localerus ?
-      u8"Шифр ©2020-2 Глебов А.Н.\n"
-      u8"Симметричное поточное шифрование с 'солью'.\n"
-      u8"'Соль' генерируется постоянно, что даёт хорошую стойкость.\n"
-      u8"Размер данных увеличивается в два раза. В три раза в текстовом режиме.\n"
-      u8"Нет диагностики неправильного пароля.\n"
-      u8"Синтаксис : shifr [параметры]" :
-      "Shifr ©2020-2 Glebe A.N.\n"
-      "Symmetric stream encryption with 'salt'.\n"
-      "'Salt' is constantly generated, which gives good durability.\n"
-      "Data size doubles. Tripled in text mode.\n"
-      "There is no diagnosis of the wrong password.\n"
-      "Syntax : shifr [options]" ) ;
-    puts  ( main_shifr . localerus ?
-      u8"Параметры :" :
-      "Options :"  ) ;
-    puts  ( main_shifr . localerus ?
-      u8"  --ген-пар или\n  --gen-pas\tгенерировать пароль" :
-      "  --gen-pas\tpassword generate" );
-    puts  ( main_shifr . localerus ?
-      u8"  --зашифр или\n  --encrypt\tзашифровать\t(по-умолчанию)" :
-      "  --encrypt\t(by default)" );
-    puts  ( main_shifr . localerus ?
-      u8"  --расшифр или\n  --decrypt\tрасшифровать" :
-      "  --decrypt" );
-    puts  ( main_shifr . localerus ?
-      u8"  --пар или\n  --pas 'строка_пароля'\tиспользовать данный пароль" :
-      "  --pas 'password_string'\tuse this password" );
-    puts  ( main_shifr . localerus ?
-      u8"  --пар-путь или\n  --pas-path 'путь_к_файлу_с_паролем'\t"
-      u8"использовать пароль в файле" :
-      "  --pas-path 'path_to_password_file'\tuse password in file" );
-    puts  ( main_shifr . localerus ?
-      u8"  --вход или < или \n  --input 'имя_файла'\tчитать из файла (без данной опции"
-      u8" читаются данные со стандартного входа)" :
-      "  --input or < 'file_name'\tread from file (without this option data reads from"
-      " standard input)" ) ;
-    puts  ( main_shifr . localerus ? 
-      u8"  --выход или > или \n  --output 'имя_файла'\tзаписывать в файл (без данной"
-      u8" опции записываются данные в стандартный выход)" :
-      "  --output or > 'file_name'\twrite to file (without this option data writes to"
-      " standard output)"    );
-    puts  ( main_shifr . localerus ? 
-      u8"  --текст или\n  --text\tшифрованный файл записан текстом ascii" :
-      "  --text\tencrypted file written in ascii text"    );
-    puts  ( main_shifr . localerus ? 
-      u8"  --2\tиспользовать двух битное шифрование, ключ = 45 бит ( 6 - 14 букв )." :
-      "  --2\tusing two bit encryption, key = 45 bits ( 6 - 14 letters )." ) ;
-    puts  ( main_shifr . localerus ?
-      u8"  --3\tиспользовать трёх битное шифрование, ключ = 296 бит ( 45 - 90 букв )."
-      u8" ( по-умолчанию )" :
-      "  --3\tusing three bit encryption, key = 296 bits ( 45 - 90 letters )."
-      " ( by default )") ;
-    fputs  ( main_shifr . localerus ?  
-      u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
-      "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
-    { char const * cj = & ( main_shifr  . letters [ 0 ] ) ;
-      do {
-        fputc ( * cj  , stdout  ) ;
-        ++ cj ;
-      } while ( cj not_eq ( & ( main_shifr  . letters [ letters_count ] ) ) ) ; }
-    fputs ( ( main_shifr . localerus ?
-      u8"\'\n  --а62 или\n  --a62\t\'" :
-      "\'\n  --a62\t\'" ) , stdout  ) ;
-    { char const * cj = & ( main_shifr  . letters2 [ 0 ] ) ;
-      do {
-        fputc ( * cj  , stdout  ) ;
-        ++ cj ;
-      } while ( cj not_eq ( & ( main_shifr  . letters2 [ letters_count2 ] ) ) ) ; }
-    fputs ( ( main_shifr . localerus ?
-      u8"\'\t(по умолчанию)\n" :
-      "\'\t(by default)\n"  ) , stdout  ) ;
-
-    fputs ( ( main_shifr . localerus ?
-      u8"  --а26 или\n  --a26\t\'" :
-      "\'\n  --a26\t\'" ) , stdout  ) ;
-    { char const * cj = & ( main_shifr  . letters4 [ 0 ] ) ;
-      do {
-        fputc ( * cj  , stdout  ) ;
-        ++ cj ;
-      } while ( cj not_eq ( & ( main_shifr  . letters4 [ letters_count4 ] ) ) ) ; }
-    fputs ( ( main_shifr . localerus ?
-      u8"\'\n" :
-      "\'\n"  ) , stdout  ) ;
-      
-    fputs ( ( main_shifr . localerus ?
-      u8"  --а10 или\n  --a10\t\'" :
-      "\'\n  --a10\t\'" ) , stdout  ) ;
-    { char const * cj = & ( main_shifr  . letters3 [ 0 ] ) ;
-      do {
-        fputc ( * cj  , stdout  ) ;
-        ++ cj ;
-      } while ( cj not_eq ( & ( main_shifr  . letters3 [ letters_count3 ] ) ) ) ; }
-    fputs ( ( main_shifr . localerus ?
-      u8"\'\n" :
-      "\'\n"  ) , stdout  ) ;
-
-    puts  ( main_shifr  . localerus ?
-      u8"Пример использования :"  :
-      "Usage example"  ) ;
-    puts  ( main_shifr  . localerus ?
-      u8"  $ ./shifr --ген-пар > psw"  :
-      "  $ ./shifr --gen-pas > psw"  ) ;
-    puts  ( 
-      "  $ cat psw\n"
-      "  n3LTQH4eIicGDNaF8CDVRGdaCEVXxPPgikJ9lbQKW4zs8StkhD"  ) ;
-    puts  ( main_shifr  . localerus ?
-      u8"  $ ./shifr --пар-путь 'psw' > test.shi --текст"  :
-      "  $ ./shifr --pas-path 'psw' > test.shi --text"  ) ;
-    puts( main_shifr  . localerus ?
-      u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
-      "  2+2 (Press Enter,Ctrl+D)" ) ;
-    puts  ( 
-      "  $ cat test.shi\n"
-      "  ylQ?ncm;ags" ) ;
-    puts( main_shifr  . localerus ?
-      u8"  $ ./shifr --пар-путь 'psw' < test.shi --текст --расшифр" :
-      "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;
-    puts  ( "  2+2" ) ;
-    return 0 ; }
+  
   { int argj = 1 ;
   for ( ; argv [ argj ] ; ++ argj ) {
     if ( flagreadpasswdfromfile ) {
@@ -441,8 +449,8 @@ int main  ( int argc , char * argv [ ] )  {
           ( strcp ) & "Error opening file" ) ;
         longjmp ( main_shifr  . jump  , 1 ) ; }
       clearerr  ( f ) ;
-      size_t nr;
-      size_t  ns ;
+      size_t  nr  ;
+      size_t  ns  ;
       if ( main_shifr . use_version == 2 ) {
         ns  = password_letters2size ;
         nr = fread  ( ( char * ) & main_shifr  . password_letters2 , 1 , ns , f ) ; }
