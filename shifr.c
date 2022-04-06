@@ -1201,10 +1201,10 @@ static inline  void  initarr ( arrp  const p , uint8_t const codefree ,
 # define  shifr_password_load_def(  N , SDS ) \
 void  password_load ( N ) ( number_type ( N ) const * const password0 , \
   arrp const shifrp , arrp const deship ) { \
-  initarr ( shifrp , 0xff , SDS )  ;  \
-  initarr ( deship , 0xff , SDS )  ;  \
-  uint8_t arrind  [ SDS  ] ;  \
-  { uint8_t * arrj  = & ( arrind  [ SDS  ] ) ;  \
+  initarr ( shifrp  , 0xff  , SDS ) ; \
+  initarr ( deship  , 0xff  , SDS ) ; \
+  uint8_t volatile  arrind  [ SDS ] ; \
+  { uint8_t volatile  * arrj  = & ( arrind  [ SDS  ] ) ;  \
     uint8_t j = SDS  ;  \
     do  { \
       --  arrj  ; \
@@ -1214,15 +1214,17 @@ void  password_load ( N ) ( number_type ( N ) const * const password0 , \
   uint8_t inde  = 0 ; \
   number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) ( password0 ) ; \
   do {  \
-    { uint8_t cindex = number_div_mod ( N ) ( & password . pub ,  \
+    { uint8_t const cindex = number_div_mod ( N ) ( & password . pub ,  \
         (  uint8_t ) ( SDS - inde  ) ) ;  \
-      uint8_t * arrind_cindexp = & (  arrind [ cindex ] ) ; \
+      uint8_t volatile  * const arrind_cindexp = & (  arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
-      memmove ( arrind_cindexp , arrind_cindexp + 1 , \
+      memmove ( ( uint8_t * ) arrind_cindexp , ( uint8_t * ) arrind_cindexp + 1 , \
         ( size_t  ) ( SDS  - inde  - cindex - 1 ) ) ; } \
     ++ inde  ;  \
-  } while ( inde < SDS ) ; }
+  } while ( inde < SDS ) ; \
+  memsetv ( arrind  , memsetv_default_char  , sizeof  ( arrind  ) ) ; }
+
 static  inline  shifr_password_load_def (  number_size2 , deshi_size2 )
 static  inline  shifr_password_load_def (  number_size3 , deshi_size3 )
 
