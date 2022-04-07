@@ -164,7 +164,7 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 # define  number_pub_to_priv  shifr_number_pub_to_priv
 
 # define  shifr_number_pub_to_priv_def( N ) \
-number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) (  \
+number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
   number_type  ( N ) * const n ) { \
   return  ( number_priv_type  ( N ) * ) ( \
     ( ( uint8_t * ) n ) - offsetof ( number_priv_type ( N ) , pub ) ) ; }

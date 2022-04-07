@@ -58,6 +58,8 @@ enum  { letters_count3 = UINT8_C ( ( '9' - '0' ) + 1 ) } ;
 # define  password_letters3size shifr_password_letters3size
 enum  { password_letters2size = 30 , password_letters3size = 180 } ;
 
+# include <stdio.h> //  FILE
+
 struct  shifr_s_streambuf {
   FILE  * file  ;
   uint8_t buf ;
