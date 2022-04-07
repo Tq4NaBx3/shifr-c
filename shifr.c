@@ -1323,3 +1323,9 @@ void  volatile  * memsetv ( void  volatile  * const str , uint8_t const ch  ,
     --  n ;
     ++  p ; }
   return  str ; }
+
+void  shifr_destr ( t_ns_shifr * const ns_shifrp ) {
+  memsetv ( ns_shifrp ->  password_letters2 , memsetv_default_char  ,
+    sizeof  ( ns_shifrp ->  password_letters2 ) ) ;
+  memsetv ( ns_shifrp ->  password_letters3 , memsetv_default_char  ,
+    sizeof  ( ns_shifrp ->  password_letters3 ) ) ; }

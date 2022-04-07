@@ -3,18 +3,20 @@ GCC = gcc
 #GCC = gcc-9
 CSTANDARD = -std=c11
 #CSTANDARD = -std=c18
-SHIFR_OBJECTS = shifr.o main.o
+SHIFR_OBJECTS = shifr.o
 SHIFR_ASM = shifr.s main.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
 SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion -Wno-clobbered \
  -Wpedantic $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
-DEPENDstructh = struct.h type.h
-DEPENDpublich = public.h type.h define.h
-DEPENDmainc = main.c define.h $(DEPENDpublich) $(DEPENDstructh)
+DEPENDtypeh = type.h define.h
+DEPENDstructh = struct.h $(DEPENDtypeh)
+DEPENDpublich = public.h $(DEPENDtypeh) define.h
+DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh)
+DEPENDmainc = main.c define.h $(DEPENDinlineh)
 DEPENDshifrc = shifr.c $(DEPENDpublich) $(DEPENDstructh) define.h
-shifr: $(SHIFR_OBJECTS)
-	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) -o shifr
+shifr: $(SHIFR_OBJECTS) main.o
+	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) main.o -o shifr
 	@chmod 0555 shifr
 shifr.o: $(DEPENDshifrc)
 	@$(SHIFR_COMPILE) -D_GNU_SOURCE shifr.c
@@ -23,6 +25,7 @@ main.o: $(DEPENDmainc)
 clean:
 	@rm -f shifr
 	@rm -f $(SHIFR_OBJECTS)
+	@rm -f main.o
 	@rm -f $(SHIFR_ASM)
 	@rm -f libshifr.so
 asm: $(SHIFR_ASM)

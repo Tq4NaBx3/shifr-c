@@ -1,3 +1,12 @@
+# ifndef  SHIFR_STRUCT_H
+# define  SHIFR_STRUCT_H
+
+# include <stdio.h> //  FILE
+# include <setjmp.h>
+// убрать эхо в терминале
+// close terminal echo
+# include <termios.h>
+# include <stdbool.h>
 # include "type.h"
 
 # define  shifr_number_def( N ) \
@@ -58,8 +67,6 @@ enum  { letters_count3 = UINT8_C ( ( '9' - '0' ) + 1 ) } ;
 # define  password_letters3size shifr_password_letters3size
 enum  { password_letters2size = 30 , password_letters3size = 180 } ;
 
-# include <stdio.h> //  FILE
-
 struct  shifr_s_streambuf {
   FILE  * file  ;
   uint8_t buf ;
@@ -68,12 +75,6 @@ struct  shifr_s_streambuf {
   // for : write6 , writeflushzero in text mode
   int bytecount ; 
   } ;
-
-# include <setjmp.h>
-// убрать эхо в терминале
-// close terminal echo
-# include <termios.h>
-# include <stdbool.h>
   
 struct  s_ns_shifr  {
   // letters allowed in password :
@@ -168,3 +169,5 @@ struct  shifr_s_size_io {
   size_t  i ;
   size_t  o ;
 } ;
+
+# endif // SHIFR_STRUCT_H

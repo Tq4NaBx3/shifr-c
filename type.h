@@ -2,6 +2,7 @@
 # define  SHIFR_TYPE_H
 
 # include <stdint.h>
+# include "define.h"
 
 typedef char ( * shifr_strp ) [ ] ;
 typedef shifr_strp  strp  ;
@@ -86,5 +87,11 @@ enum  shifr_e_deshi_size  { shifr_deshi_size2 = 0x10  , deshi_size2 = 0x10  ,
   shifr_deshi_size3 = 0x40  , deshi_size3 = 0x40  } ;
 typedef enum  shifr_e_deshi_size  shifr_t_deshi_size  ;
 typedef shifr_t_deshi_size  t_deshi_size  ;
+
+# ifdef SHIFR_DEBUG
+
+typedef long  long  int shifr_timestamp_t ;
+
+# endif // SHIFR_DEBUG
 
 # endif //  SHIFR_TYPE_H

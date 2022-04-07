@@ -153,4 +153,6 @@ enum  { memsetv_default_char = 0x55  } ;
 # define  memsetv shifr_memsetv
 void volatile * memsetv ( void volatile * str , uint8_t ch , size_t n ) ;
 
+void  shifr_destr ( t_ns_shifr * ) ;
+
 # endif // SHIFR_PUBLIC_H
