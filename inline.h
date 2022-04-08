@@ -626,4 +626,104 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       sizeof  ( password_letters3_10  ) ) ;
     return  0 ; }      
       
+static  inline  void  shifr_test_password ( t_ns_shifr  * const main_shifrp ,
+  size_t  const nr  ) {
+  char  volatile  * const psw_uni =
+    ( ( main_shifrp -> use_version == 2 ) ?
+        main_shifrp -> password_letters2 :
+        main_shifrp -> password_letters3 ) ;
+  psw_uni [ nr ] = '\00' ;
+
+      switch  ( main_shifrp -> password_alphabet  ) {
+      case  letters_count :
+        { size_t i  = 0 ;
+          for ( ; i < nr  ; ++  i ) {
+            if ( psw_uni [ i ] < ' ' or psw_uni  [ i ] > '~' ) {
+              psw_uni [ i ] = '\00' ;
+              break ; } } }
+        break ;
+      case  letters_count2  :
+        { size_t i  = 0 ;
+          char  volatile  psw_unii  ;
+          for ( ; i < nr  ; ++  i ) {
+            psw_unii  = psw_uni [ i ] ;
+            if ( ( psw_unii < '0' or  psw_unii > '9' ) and
+              ( psw_unii < 'a' or psw_unii > 'z' ) and
+              ( psw_unii < 'A' or psw_unii > 'Z' ) ) {
+              psw_uni [ i ] = '\00' ;
+              break ; } }
+          psw_unii  = memsetv_default_char  ; }
+        break ;
+      case  letters_count3  :
+        { size_t i  = 0 ;
+          for ( ; i < nr  ; ++  i ) {
+            if (  psw_uni [ i ] < '0' or  psw_uni  [ i ] > '9' ) {
+              psw_uni [ i ] = '\00' ;
+              break ; } } }
+        break ;
+      case  letters_count4  :
+        { size_t i  = 0 ;
+          for ( ; i < nr  ; ++  i ) {
+            if (  psw_uni [ i ] < 'a' or  psw_uni  [ i ] > 'z' ) {
+              psw_uni [ i ] = '\00' ;
+              break ; } } }
+        break ;
+      default :
+        main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+          ( strcp ) & u8"неизвестный алфавит пароля" :
+          ( strcp ) & "unknown password alphabet" ) ;
+        longjmp ( main_shifrp -> jump  , 1 ) ; } }
+
+static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
+  uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
+  uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
+    size_t  writecount  ;
+    size_io sizeio  ;
+    do  {
+      size_t readcount = fread ( & ( (*inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
+        main_shifrp -> filefrom ) ;
+      if ( readcount  ) {
+          sizeio  = shifr_encrypt3  ( main_shifrp ,
+            ( arrcps ) { .cp = ( arrcp ) inputbufferp , .s = readcount } ,
+            ( arrps ) { .p = ( arrp ) outputbufferp , .s = outputbuffersize } ) ;
+# ifdef SHIFR_DEBUG
+        if ( sizeio . i < readcount ) {
+          fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
+            readcount ) ;
+          main_shifrp -> string_exception  = ( strcp ) & "sizeio . i < readcount" ;
+          longjmp ( main_shifrp -> jump  , 1 ) ; }
+        if ( sizeio . o > outputbuffersize ) {
+          fprintf ( stderr  , "sizeio . o = %zu , outputbuffersize = %zu\n"  ,
+            sizeio . o , outputbuffersize ) ;
+          main_shifrp -> string_exception  = ( strcp ) & "sizeio . o > outputbuffersize" ;
+          longjmp ( main_shifrp -> jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
+        writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeio . o , 1 ,
+          main_shifrp -> fileto ) ;
+        if ( writecount == 0 ) {
+          main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+            ( strcp ) & u8"v3:ошибка записи в файл" :
+            ( strcp ) & "v3:error writing to file" ) ;
+          longjmp ( main_shifrp -> jump  , 1 ) ; }
+        if ( feof ( main_shifrp -> filefrom ) ) 
+          break ; }
+      else {
+        if ( ferror ( main_shifrp -> filefrom ) ) {
+          main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+            ( strcp ) & u8"ошибка чтения файла" :
+            ( strcp ) & "error reading the file" ) ;
+          longjmp ( main_shifrp -> jump  , 1 ) ; }
+        break ; }
+    } while ( true ) ;      
+      { uint8_t const bytes = streambuf_writeflushzero3 ( main_shifrp ,
+          ( arrps ) { .p = ( arrp ) outputbufferp , .s = outputbuffersize } ) ;
+        if ( bytes ) {
+          writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , bytes , 1 ,
+            main_shifrp -> fileto ) ;
+          if ( writecount == 0 ) {
+            main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+              ( strcp ) & u8"v3:ошибка записи в файл ( writecount == 0 )" :
+              ( strcp ) & "v3:error writing to file ( writecount == 0 )" ) ;
+            longjmp ( main_shifrp -> jump  , 1 ) ; } } } }
+        
 # endif //  SHIFR_INLINE_H

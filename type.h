@@ -83,8 +83,9 @@ typedef shifr_t_streambuf t_streambuf ;
 
 // 8 * 8 = 64 = 0x40
 
-enum  shifr_e_deshi_size  { shifr_deshi_size2 = 0x10  , deshi_size2 = 0x10  ,
-  shifr_deshi_size3 = 0x40  , deshi_size3 = 0x40  } ;
+enum  shifr_e_deshi_size  {
+  shifr_deshi_size2 = 0x10 ,
+  shifr_deshi_size3 = 0x40 } ;
 typedef enum  shifr_e_deshi_size  shifr_t_deshi_size  ;
 typedef shifr_t_deshi_size  t_deshi_size  ;
 
@@ -93,5 +94,4 @@ typedef shifr_t_deshi_size  t_deshi_size  ;
 typedef long  long  int shifr_timestamp_t ;
 
 # endif // SHIFR_DEBUG
-
 # endif //  SHIFR_TYPE_H

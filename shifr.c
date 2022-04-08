@@ -1225,8 +1225,8 @@ void  password_load ( N ) ( number_type ( N ) const * const password0 , \
   } while ( inde < SDS ) ; \
   memsetv ( arrind  , memsetv_default_char  , sizeof  ( arrind  ) ) ; }
 
-static  inline  shifr_password_load_def (  number_size2 , deshi_size2 )
-static  inline  shifr_password_load_def (  number_size3 , deshi_size3 )
+static  inline  shifr_password_load_def (  number_size2 , shifr_deshi_size2 )
+static  inline  shifr_password_load_def (  number_size3 , shifr_deshi_size3 )
 
 void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {

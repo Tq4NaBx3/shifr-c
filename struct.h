@@ -30,14 +30,14 @@ number_def  ( number_size3 )
 number_def_priv  ( number_size2 )
 
 struct  shifr_s_raspr2  {
-  uint8_t dice  [ deshi_size2 - 1  ] ;
+  uint8_t dice  [ shifr_deshi_size2 - 1  ] ;
   number_priv_type ( number_size2 ) pass  ;
   } ;
 
 number_def_priv  ( number_size3 )
 
 struct  shifr_s_raspr3  {
-  uint8_t dice  [ deshi_size3 - 1 ] ;
+  uint8_t dice  [ shifr_deshi_size3 - 1 ] ;
   number_priv_type ( number_size3 ) pass  ;
   } ;
 
@@ -111,15 +111,15 @@ struct  s_ns_shifr  {
   FILE  * fileto  ;
   bool  flagtext  ;
 
-  uint8_t shifr2 [ deshi_size2 ] ;
-  uint8_t shifr3 [ deshi_size3 ] ;
+  uint8_t shifr2 [ shifr_deshi_size2 ] ;
+  uint8_t shifr3 [ shifr_deshi_size3 ] ;
   // secret code options for letters
   // варианты секретных кодов для буквы
   // 0 .. 3 - 0
   // 4 .. 7 - 1
   // 8 .. b - 2
   // c .. f - 3
-  uint8_t deshi2 [ deshi_size2 ] ;
+  uint8_t deshi2 [ shifr_deshi_size2 ] ;
   // secret code options for letters
   // варианты секретных кодов для буквы
   // 0 .. 7 -  0
@@ -130,7 +130,7 @@ struct  s_ns_shifr  {
   // 28 .. 2f -  5
   // 30 .. 37 -  6
   // 38 .. 3f -  7
-  uint8_t deshi3 [ deshi_size3 ] ;
+  uint8_t deshi3 [ shifr_deshi_size3 ] ;
   // 62 or 95 or 26 or 10
   // алфавит пароля 62 или 95 или 26 или 10
   int password_alphabet ; 
