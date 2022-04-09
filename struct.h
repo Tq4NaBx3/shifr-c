@@ -22,7 +22,7 @@ number_def  ( number_size3 )
 # define  shifr_number_priv_def( N ) \
   struct  shifr_s_number_priv ## N { \
     uint8_t arr [ N ] ; \
-    number_type ( N ) pub ; \
+    shifr_number_type ( N ) pub ; \
   } ;
 
 # define  number_def_priv  shifr_number_priv_def

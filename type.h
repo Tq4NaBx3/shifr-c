@@ -12,21 +12,18 @@ typedef uint8_t ( * shifr_arrp  ) [ ] ;
 typedef uint8_t const ( * shifr_arrcp ) [ ] ;
 struct  shifr_s_arrcps  ;
 typedef struct  shifr_s_arrcps  shifr_arrcps  ;
-
 struct  shifr_s_arrps ;
-typedef struct  shifr_s_arrps arrps ;
-
+typedef struct  shifr_s_arrps shifr_arrps ;
 struct  shifr_s_size_io ;
-typedef struct  shifr_s_size_io size_io ;
+typedef struct  shifr_s_size_io shifr_size_io ;
 
 # define  shifr_number_structtype( N ) \
   struct  shifr_s_number ## N ;
   
 # define  shifr_number_type( N ) shifr_t_number ## N
-# define  number_type shifr_number_type
 
 # define  shifr_number_typedef( N ) \
-  typedef struct  shifr_s_number ## N number_type ( N ) ;    
+  typedef struct  shifr_s_number ## N shifr_number_type ( N ) ;    
   
 # define  shifr_number_priv_structtype( N ) \
   struct  shifr_s_number_priv ## N ;

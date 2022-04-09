@@ -5,7 +5,7 @@
 # include "define.h"
 
 # define  shifr_number_dec_set0( N ) \
-  void shifr_number ## N ## _set0  ( number_type  ( N ) * ) ;
+  void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * ) ;
 # define  number_dec_set0 shifr_number_dec_set0
 
 # define  shifr_number_set0( N ) shifr_number ## N ## _set0
@@ -15,7 +15,7 @@ number_dec_set0 ( number_size2 )
 number_dec_set0 ( number_size3 )
 
 # define  shifr_number_dec_mul_byte(  N ) \
-void  shifr_number ## N ## _mul_byte ( number_type ( N ) * , uint8_t )  ;
+void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * , uint8_t )  ;
 # define  number_dec_mul_byte shifr_number_dec_mul_byte
 
 # define  shifr_number_mul_byte( N ) shifr_number ## N ## _mul_byte
@@ -27,7 +27,7 @@ number_dec_mul_byte ( number_size3 )
 # ifdef SHIFR_DEBUG
 
 # define  shifr_number_dec_princ( N ) \
-void  shifr_number ## N ## _princ ( number_type ( N ) const * np ,  \
+void  shifr_number ## N ## _princ ( shifr_number_type ( N ) const * np ,  \
   FILE * fs ) ;
 # define  number_dec_princ shifr_number_dec_princ
   
@@ -44,7 +44,7 @@ void  printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize , FILE * f )
 
 # define  shifr_string_to_password_templ_dec( N ) \
 void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * , shifr_strvcp  string , \
-  number_type ( N ) * password , shifr_strcp letters , uint8_t letterscount  ) ;
+  shifr_number_type ( N ) * password , shifr_strcp letters , uint8_t letterscount  ) ;
 # define  string_to_password_templ_dec  shifr_string_to_password_templ_dec
 string_to_password_templ_dec  ( number_size2 )
 string_to_password_templ_dec  ( number_size3 )
@@ -53,7 +53,7 @@ string_to_password_templ_dec  ( number_size3 )
 
 # define  shifr_password_to_string_templ_dec( N ) \
 void  shifr_password  ##  N ##  _to_string_templ ( \
-  number_type ( N ) const * password0 , shifr_strvp string ,  \
+  shifr_number_type ( N ) const * password0 , shifr_strvp string ,  \
   shifr_strp letters , uint8_t letterscount  ) ;
 # define  password_to_string_templ_dec  shifr_password_to_string_templ_dec
 password_to_string_templ_dec  ( number_size2 )
@@ -118,14 +118,14 @@ returns the size of read and written data
 записывает в 'output.p' размера 'output.s' байт ,
 возвращает размер считаных и записаных данных
 */
-size_io shifr_encrypt2  ( t_ns_shifr * , shifr_arrcps input , arrps output )  ;
-size_io shifr_encrypt3  ( t_ns_shifr * , shifr_arrcps input , arrps output )  ;
+shifr_size_io shifr_encrypt2  ( t_ns_shifr * , shifr_arrcps input , shifr_arrps output )  ;
+shifr_size_io shifr_encrypt3  ( t_ns_shifr * , shifr_arrcps input , shifr_arrps output )  ;
   
 /*
 Finished buffer encryption, returns output_buffer size written
 Заканчивает шифрование буфера, возвращает размер записаных данных.
 */
-size_t  shifr_encrypt2_flush  ( t_ns_shifr * , arrps output )  ;
+size_t  shifr_encrypt2_flush  ( t_ns_shifr * , shifr_arrps output )  ;
 
 /*
 Decryption
@@ -137,15 +137,15 @@ returns the size of read and written data
 записывает в 'output.p' размера 'output.s' байт ,
 возвращает размер считаных и записаных данных
 */
-size_io  shifr_decrypt2 ( t_ns_shifr * , shifr_arrcps input , arrps output ) ;
+shifr_size_io  shifr_decrypt2 ( t_ns_shifr * , shifr_arrcps input , shifr_arrps output ) ;
   
 /*
 Decryption
 Расшифровка
 */
-size_io  shifr_decrypt3 ( t_ns_shifr * , shifr_arrcps input , arrps output ) ;
+shifr_size_io  shifr_decrypt3 ( t_ns_shifr * , shifr_arrcps input , shifr_arrps output ) ;
 
-uint8_t  streambuf_writeflushzero3 ( t_ns_shifr * , arrps ) ;
+uint8_t  streambuf_writeflushzero3 ( t_ns_shifr * , shifr_arrps ) ;
 
 # define  memsetv_default_char  shifr_memsetv_default_char
 enum  { memsetv_default_char = 0x55  } ;

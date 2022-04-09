@@ -678,14 +678,14 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
   uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
   uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
     size_t  writecount  ;
-    size_io sizeio  ;
+    shifr_size_io sizeio  ;
     do  {
-      size_t readcount = fread ( & ( (*inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
+      size_t const  readcount = fread ( & ( (*inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
         main_shifrp -> filefrom ) ;
       if ( readcount  ) {
           sizeio  = shifr_encrypt3  ( main_shifrp ,
             ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp , .s = readcount } ,
-            ( arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
+            ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
 # ifdef SHIFR_DEBUG
         if ( sizeio . i < readcount ) {
           fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
@@ -695,7 +695,8 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
         if ( sizeio . o > outputbuffersize ) {
           fprintf ( stderr  , "sizeio . o = %zu , outputbuffersize = %zu\n"  ,
             sizeio . o , outputbuffersize ) ;
-          main_shifrp -> string_exception  = ( shifr_strcp ) & "sizeio . o > outputbuffersize" ;
+          main_shifrp -> string_exception  = ( shifr_strcp ) &
+            "sizeio . o > outputbuffersize" ;
           longjmp ( main_shifrp -> jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
         writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeio . o , 1 ,
@@ -716,7 +717,7 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
         break ; }
     } while ( true ) ;      
       { uint8_t const bytes = streambuf_writeflushzero3 ( main_shifrp ,
-          ( arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
+          ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
         if ( bytes ) {
           writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , bytes , 1 ,
             main_shifrp -> fileto ) ;
@@ -730,14 +731,14 @@ static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * const main_shifrp ,
   uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
   uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
     size_t  writecount  ;
-    size_io sizeio  ;
+    shifr_size_io sizeio  ;
     do  {
-      size_t readcount = fread ( & ( (* inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
-        main_shifrp -> filefrom ) ;
+      size_t const  readcount = fread ( & ( (* inputbufferp) [ 0 ] ) , 1 , inputbuffersize
+        , main_shifrp -> filefrom ) ;
       if ( readcount  ) {
           sizeio  = shifr_encrypt2  ( main_shifrp ,
             ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp , .s = readcount } ,
-            ( arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
+            ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
 # ifdef SHIFR_DEBUG
         if ( sizeio . i < readcount ) {
           fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
@@ -760,7 +761,7 @@ static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * const main_shifrp ,
         break ; }
     } while ( true ) ;
     size_t const sizeout = shifr_encrypt2_flush  ( main_shifrp ,
-        ( arrps ) { .p = outputbufferp , .s = outputbuffersize }  ) ;
+      ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize }  ) ;
     if  ( sizeout ) {
       writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeout , 1 ,
         main_shifrp -> fileto ) ;
@@ -775,14 +776,14 @@ static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * const main_shifrp ,
   uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
   uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
       size_t  writecount  ;
-      size_io sizeio  ;
+      shifr_size_io sizeio  ;
       do  {
-        size_t readcount = fread ( & (  (*inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
-          main_shifrp -> filefrom ) ;
+        size_t const  readcount = fread ( & (  (*inputbufferp) [ 0 ] ) , 1 ,
+          inputbuffersize , main_shifrp -> filefrom ) ;
         if ( readcount  ) {
           sizeio  = shifr_decrypt2  ( main_shifrp ,
             ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp , .s = readcount } ,
-            ( arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
+            ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
 # ifdef SHIFR_DEBUG
           if ( sizeio . i < readcount ) {
             fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
@@ -812,14 +813,14 @@ static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * const main_shifrp ,
   uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
   uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
       size_t  writecount  ;
-      size_io sizeio  ;
+      shifr_size_io sizeio  ;
       do  {
-        size_t readcount = fread ( & ( (* inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
-          main_shifrp -> filefrom ) ;
+        size_t const  readcount = fread ( & ( (* inputbufferp) [ 0 ] ) , 1 ,
+          inputbuffersize , main_shifrp -> filefrom ) ;
         if ( readcount  ) {
           sizeio  = shifr_decrypt3  ( main_shifrp ,
             ( shifr_arrcps  ) { . cp  = ( shifr_arrcp ) inputbufferp , . s = readcount } ,
-            ( arrps ) { . p = outputbufferp , . s = outputbuffersize } ) ;
+            ( shifr_arrps ) { . p = outputbufferp , . s = outputbuffersize } ) ;
 # ifdef SHIFR_DEBUG
           if ( sizeio . i < readcount ) {
             fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,

@@ -165,7 +165,7 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 
 # define  shifr_number_pub_to_priv_def( N ) \
 number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
-  number_type  ( N ) * const n ) { \
+  shifr_number_type  ( N ) * const n ) { \
   return  ( number_priv_type  ( N ) * ) ( \
     ( ( uint8_t * ) n ) - offsetof ( number_priv_type ( N ) , pub ) ) ; }
     
@@ -177,7 +177,7 @@ static  inline  shifr_number_pub_to_priv_def  ( number_size3 )
 
 # define  shifr_number_const_pub_to_priv_def( N ) \
 number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) (  \
-  number_type  ( N ) const * const n ) { \
+  shifr_number_type  ( N ) const * const n ) { \
   return  ( number_priv_type  ( N ) const * ) ( \
     ( ( uint8_t * ) n ) - offsetof ( number_priv_type ( N ) , pub ) ) ; }
     
@@ -185,13 +185,13 @@ static  inline  shifr_number_const_pub_to_priv_def  ( number_size2 )
 static  inline  shifr_number_const_pub_to_priv_def  ( number_size3 )
 
 # define  shifr_number_def_set0( N ) \
-  void shifr_number ## N ## _set0  ( number_type  ( N ) * const np ) { \
+  void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * const np ) { \
     memset  ( & ( number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) , 0 , N ) ; }
 # define  number_def_set0 shifr_number_def_set0
 
 # define  shifr_number_def_elt_copy( N ) \
 uint8_t shifr_number ## N ## _elt_copy  ( \
-  number_type ( N ) const * const np  , uint8_t const i ) { \
+  shifr_number_type ( N ) const * const np  , uint8_t const i ) { \
   return  number_const_pub_to_priv ( N ) ( np ) -> arr [ i ] ; }
 # define  number_def_elt_copy shifr_number_def_elt_copy
 
@@ -202,7 +202,7 @@ static  inline  number_def_elt_copy ( number_size2 )
 static  inline  number_def_elt_copy ( number_size3 )
 
 # define  shifr_number_def_mul_byte(  N ) \
-void  shifr_number ## N ## _mul_byte ( number_type ( N ) * const np  , \
+void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
   uint8_t const byte ) {  \
   if ( byte == 0 ) {  \
     number_set0 ( N ) ( np ) ; \
@@ -227,8 +227,8 @@ number_def_set0 ( number_size3 )
 number_def_mul_byte ( number_size3 )
 
 # define  shifr_number_def_add(  N ) \
-void  shifr_number ## N ## _add  ( number_type ( N ) * const restrict  np  ,  \
-  number_type ( N ) const * const restrict  xp ) {  \
+void  shifr_number ## N ## _add  ( shifr_number_type ( N ) * const restrict  np  , \
+  shifr_number_type ( N ) const * const restrict  xp ) {  \
   uint8_t per = 0 ; \
   uint8_t i = 0 ; \
   do  { \
@@ -254,7 +254,7 @@ static  inline  number_def_add  ( number_size3 )
 
 # define  shifr_number_def_not_zero(  N ) \
 bool  shifr_number ## N ## _not_zero  ( \
-  number_type ( N ) const * const np  ) { \
+  shifr_number_type ( N ) const * const np  ) { \
   uint8_t const * i = & ( number_const_pub_to_priv ( N ) ( np ) -> arr [ N ] ) ; \
   do {  \
     --  i ; \
@@ -271,7 +271,7 @@ static  inline  number_def_not_zero ( number_size2 )
 static  inline  number_def_not_zero ( number_size3 )
 
 # define  shifr_number_def_dec(  N ) \
-void  shifr_number ## N ## _dec ( number_type ( N ) * const np  ) { \
+void  shifr_number ## N ## _dec ( shifr_number_type ( N ) * const np  ) { \
   uint8_t  * i = & ( number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ; \
   do {  \
     if ( ( * i ) == 0 ) \
@@ -291,7 +291,7 @@ static  inline  number_def_dec  ( number_size3 )
 
 # define  shifr_number_def_div_mod(  N ) \
 uint8_t shifr_number ## N ## _div_mod ( \
-  number_type ( N ) * const np0 , uint8_t const div ) { \
+  shifr_number_type ( N ) * const np0 , uint8_t const div ) { \
   number_priv_type ( N ) * const np = number_pub_to_priv ( N ) ( np0 ) ; \
   uint8_t modi  = 0 ; \
   uint8_t i = N ; \
@@ -311,7 +311,7 @@ static  inline  number_def_div_mod  ( number_size2 )
 static  inline  number_def_div_mod  ( number_size3 )
 
 # define  shifr_number_def_set_byte(  N ) \
-void  shifr_number ## N ## _set_byte  ( number_type ( N ) * const np0 , \
+void  shifr_number ## N ## _set_byte  ( shifr_number_type ( N ) * const np0 , \
   uint8_t const x ) { \
   number_priv_type ( N ) * const np = number_pub_to_priv ( N ) ( np0 ) ; \
   memset  ( & ( np -> arr [ 1 ] ) , 0 , N - 1 ) ; \
@@ -338,7 +338,7 @@ void  printarr  ( shifr_strcp const  name , shifr_arrcp const p ,
     
 # define  shifr_password_to_string_templ_def( N ) \
 void  shifr_password  ##  N ##  _to_string_templ ( \
-  number_type ( N ) const * const password0 , shifr_strvp const string , \
+  shifr_number_type ( N ) const * const password0 , shifr_strvp const string , \
   shifr_strp letters , uint8_t const letterscount  ) { \
   char  volatile  * stringi = & ( ( * string )  [ 0 ] ) ; \
   if ( number_not_zero  ( N ) ( password0 ) ) { \
@@ -357,7 +357,7 @@ password_to_string_templ_def  ( number_size3 )
 
 # define  shifr_string_to_password_templ_def( N ) \
 void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp , \
-  shifr_strvcp  const string  , number_type ( N ) * const password ,  \
+  shifr_strvcp  const string  , shifr_number_type ( N ) * const password ,  \
   shifr_strcp const letters , uint8_t const letterscount  ) { \
   char  volatile  const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
   if  ( ( * stringi ) == '\00' ) { \
@@ -669,7 +669,7 @@ static inline void  crypt_decrypt ( shifr_arrp const datap , shifr_arrcp const t
   } while ( id not_eq & ( ( * datap ) [ 0 ] ) ) ; }
 
 uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
-  arrps arrpsp ) {
+  shifr_arrps arrpsp ) {
   uint8_t result  = 0 ;
   uint8_t * output_buffer = &((*  arrpsp  . p)[0]) ;
   if  ( ns_shifrp -> bitscount ==  0 )
@@ -752,8 +752,8 @@ static inline void  data_xor2  ( t_ns_shifr * const ns_shifrp ,
   } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }
 
 // returns size loads & writes
-size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
-  arrps const output  ) {
+shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
+  shifr_arrps const output  ) {
   uint8_t const * restrict  input_buffer = &((* input . cp)[0]) ;
   uint8_t * restrict  output_buffer = &((*  output  . p)[0]) ;
   size_t  reads = 0 ;
@@ -812,14 +812,14 @@ size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const inpu
       memcpy  ( output_buffer , & ( buf2 [ 0 ] )  , 2 ) ;
       writes  +=  2 ;
       output_buffer +=  2 ; } }
-  return  ( size_io ) { .i  = reads , .o  = writes  } ; }
+  return  ( shifr_size_io ) { .i  = reads , .o  = writes  } ; }
 
 /*
 Finished buffer encryption, returns output_buffer size written
 Заканчивает шифрование буфера, возвращает размер записаных данных.
 */
 size_t  shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
-  arrps const output ) {
+  shifr_arrps const output ) {
 # ifdef SHIFR_DEBUG
   if ( output . s == 0 ) {
     ns_shifrp ->  string_exception  = ( shifr_strcp ) &
@@ -833,8 +833,8 @@ size_t  shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
   return  0 ; }
 
 // returns size loads & writes
-size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
-  arrps const output  ) {
+shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
+  shifr_arrps const output  ) {
   uint8_t secretdatasolesize  ;
   uint8_t encrypteddata [ 3 ] ;
   size_t  reads = 0 ;
@@ -888,13 +888,13 @@ size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const inpu
     // после подсоления, данные переворачиваем предыдущим ксором
     data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
       & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
-    crypt_decrypt ( & ns_shifrp -> secretdatasole , ( shifr_arrcp ) & ns_shifrp  -> shifr3 ,
-      & encrypteddata , secretdatasolesize ) ;
+    crypt_decrypt ( & ns_shifrp -> secretdatasole ,
+      ( shifr_arrcp ) & ns_shifrp  -> shifr3 , & encrypteddata , secretdatasolesize ) ;
     streambuf_write3 ( ns_shifrp , & ns_shifrp -> filebufto ,
       ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
       secretdatasolesize , ns_shifrp  -> flagtext , & output_buffer , & writes ,
       output . s ) ; } // while
-  return ( size_io ) { .i  = reads , .o  = writes  }  ; }
+  return ( shifr_size_io ) { .i  = reads , .o  = writes  }  ; }
 
 # define  decrypt_sole2  shifr_decrypt_sole2
 static inline void  decrypt_sole2 ( shifr_arrp const datap , shifr_arrcp const tablep ,
@@ -914,8 +914,8 @@ static inline void  decrypt_sole2 ( shifr_arrp const datap , shifr_arrcp const t
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
 
 // returns size loads & writes
-size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
-  arrps const output  ) {
+shifr_size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
+  shifr_arrps const output  ) {
   uint8_t const * restrict  input_buffer = &((* input . cp)[0]) ;
   uint8_t * restrict  output_buffer = &((*  output  . p)[0]) ;
   size_t  reads = 0 ;
@@ -978,7 +978,7 @@ size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const inp
     ++  writes  ;
     ++  output_buffer ; }
 Exit :
-  return  ( size_io ) { .i  = reads , .o  = writes  } ; }
+  return  ( shifr_size_io ) { .i  = reads , .o  = writes  } ; }
 
 # define  decrypt_sole3  shifr_decrypt_sole3
 static inline void  decrypt_sole3 ( shifr_arrp const datap , shifr_arrcp const tablep ,
@@ -997,8 +997,8 @@ static inline void  decrypt_sole3 ( shifr_arrp const datap , shifr_arrcp const t
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }
 
-size_io shifr_decrypt3 ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
-  arrps const output ) {
+shifr_size_io shifr_decrypt3 ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
+  shifr_arrps const output ) {
   uint8_t const * restrict  input_buffer = &  ( ( * input . cp  ) [ 0 ] ) ;
   uint8_t * restrict  output_buffer = & ( ( * output  . p ) [ 0 ] ) ;
   size_t  reads = 0 ;
@@ -1011,11 +1011,12 @@ size_io shifr_decrypt3 ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input
       & ( secretdata [ 0 ] ) , & reads , & input_buffer , input . s ) )
       break ;
     uint8_t decrypteddata [ 1 ] ;
-    decrypt_sole3 ( & secretdata , ( shifr_arrcp ) & ns_shifrp  -> deshi3 , & decrypteddata ,
-      1 , & ns_shifrp  -> old_last_sole , & ns_shifrp  -> old_last_data ) ;
+    decrypt_sole3 ( & secretdata , ( shifr_arrcp ) & ns_shifrp  -> deshi3 , &
+      decrypteddata , 1 , & ns_shifrp  -> old_last_sole , & ns_shifrp  -> old_last_data
+      ) ;
     streambuf_write3bits ( ns_shifrp , decrypteddata [ 0 ] , & output_buffer ,
       & writes ) ; } // while
-  return  ( size_io ) { . i  = reads , .  o  = writes  } ; }
+  return  ( shifr_size_io ) { . i  = reads , .  o  = writes  } ; }
 
 # undef streambuf_bufbitsize
 
@@ -1080,7 +1081,7 @@ void  shifr_pass_to_array3 ( t_ns_shifr * const ns_shifrp ) {
 # ifdef SHIFR_DEBUG
 
 # define  shifr_number_def_princ( N ) \
-void  shifr_number  ##  N ##  _princ ( number_type ( N ) const * const np ,  \
+void  shifr_number  ##  N ##  _princ ( shifr_number_type ( N ) const * const np ,  \
   FILE * const fs ) { \
   fputs ( "[ " , fs ) ; \
   uint8_t i = N ;  \
@@ -1199,7 +1200,7 @@ static inline  void  initarr ( shifr_arrp  const p , uint8_t const codefree ,
 # define  password_load shifr_password_load
 
 # define  shifr_password_load_def(  N , SDS ) \
-void  password_load ( N ) ( number_type ( N ) const * const password0 , \
+void  password_load ( N ) ( shifr_number_type ( N ) const * const password0 , \
   shifr_arrp const shifrp , shifr_arrp const deship ) { \
   initarr ( shifrp  , 0xff  , SDS ) ; \
   initarr ( deship  , 0xff  , SDS ) ; \
