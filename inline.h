@@ -43,8 +43,8 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
         "generate_password:unrecognized version : \'%d\'\n" ) ,
         ns_shifrp -> use_version ) ;
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-        ( strcp ) & u8"generate_password:неопознанная версия" :
-        ( strcp ) & "generate_password:unrecognized version" ) ;
+        ( shifr_strcp ) & u8"generate_password:неопознанная версия" :
+        ( shifr_strcp ) & "generate_password:unrecognized version" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
 static  inline  void  shifr_streambuf_init  ( t_streambuf * const me  ,
@@ -69,35 +69,35 @@ static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   else  {
     memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( strcp ) & u8"в пароле нет конца строки" :
-      ( strcp ) & "there is no end of line in the password" ) ;
+      ( shifr_strcp ) & u8"в пароле нет конца строки" :
+      ( shifr_strcp ) & "there is no end of line in the password" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   switch ( ns_shifrp -> password_alphabet ) {
   case  letters_count  :
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strvcp ) & p40 , 
-      & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters ,
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
+      & ns_shifrp -> raspr2  . pass . pub , ( shifr_strcp ) & ns_shifrp -> letters ,
       letters_count ) ;
     break ;
   case  letters_count2  :
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strvcp ) & p40 , 
-      & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters2 ,
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
+      & ns_shifrp -> raspr2  . pass . pub , ( shifr_strcp ) & ns_shifrp -> letters2 ,
       letters_count2 ) ;
     break ;
   case  letters_count3  :
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strvcp ) & p40 , 
-      & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters3 ,
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
+      & ns_shifrp -> raspr2  . pass . pub , ( shifr_strcp ) & ns_shifrp -> letters3 ,
       letters_count3 ) ;
     break ;
   case  letters_count4  :
-    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( strvcp ) & p40 , 
-      & ns_shifrp -> raspr2  . pass . pub , ( strcp ) & ns_shifrp -> letters4 ,
+    string_to_password_templ  ( number_size2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
+      & ns_shifrp -> raspr2  . pass . pub , ( shifr_strcp ) & ns_shifrp -> letters4 ,
       letters_count4 ) ;
     break ;
   default :
     memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( strcp ) & u8"неизвестный алфавит пароля" :
-      ( strcp ) & "unknown password alphabet" ) ;
+      ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
+      ( shifr_strcp ) & "unknown password alphabet" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   char  volatile  password_letters [ password_letters2size ] ;
   switch  ( ns_shifrp -> password_alphabet  ) {
@@ -120,8 +120,8 @@ static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   default :
     memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( strcp ) & u8"неизвестный алфавит пароля" :
-      ( strcp ) & "unknown password alphabet" ) ;
+      ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
+      ( shifr_strcp ) & "unknown password alphabet" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   if  ( strcmp ( ( char * ) & ( password_letters  [ 0 ] ) ,
     ( char * ) & ( p40 [ 0 ] ) ) )
@@ -148,44 +148,44 @@ static  inline  void  shifr_enter_password3 ( t_ns_shifr * const ns_shifrp ) {
   else  {
     memsetv ( p60 , memsetv_default_char  , sizeof  ( p60 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( strcp ) & u8"в пароле нет конца строки" :
-      ( strcp ) & "there is no end of line in the password" ) ;
+      ( shifr_strcp ) & u8"в пароле нет конца строки" :
+      ( shifr_strcp ) & "there is no end of line in the password" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   char  volatile  password_letters6 [ password_letters3size ] ;
   switch  ( ns_shifrp -> password_alphabet  ) {
   case  letters_count :
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strvcp ) & p60 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
-      ( strcp ) & ns_shifrp -> letters ,  letters_count ) ;
+      ( shifr_strcp ) & ns_shifrp -> letters ,  letters_count ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters , letters_count ) ;
     break ;
   case  letters_count2  :
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strvcp ) & p60 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
-      ( strcp ) & ns_shifrp -> letters2 ,  letters_count2 ) ;
+      ( shifr_strcp ) & ns_shifrp -> letters2 ,  letters_count2 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters2 , letters_count2 ) ;
     break ;
   case  letters_count3  :
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strvcp ) & p60 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
-      ( strcp ) & ns_shifrp -> letters3 ,  letters_count3 ) ;
+      ( shifr_strcp ) & ns_shifrp -> letters3 ,  letters_count3 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters3 , letters_count3 ) ;
     break ;
   case  letters_count4  :
-    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( strvcp ) & p60 ,
+    string_to_password_templ  ( number_size3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
-      ( strcp ) & ns_shifrp -> letters4 ,  letters_count4 ) ;
+      ( shifr_strcp ) & ns_shifrp -> letters4 ,  letters_count4 ) ;
     password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters4 , letters_count4 ) ;
     break ;
   default :
     memsetv ( p60 , memsetv_default_char  , sizeof  ( p60 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( strcp ) & u8"неизвестный алфавит пароля" :
-      ( strcp ) & "unknown password alphabet" ) ;
+      ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
+      ( shifr_strcp ) & "unknown password alphabet" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   if  ( strcmp ( ( char * ) & ( password_letters6 [ 0 ] ) , ( char * ) & ( p60 [ 0 ] ) ) )
     fprintf  ( stderr , ( ns_shifrp -> localerus ?
@@ -209,8 +209,8 @@ static  inline  void  shifr_enter_password ( t_ns_shifr * const ns_shifrp ) {
         u8"enter_password:Неизвестная версия %d\n" :
         "enter_password:Unknown version %d\n" ) , ns_shifrp -> use_version  ) ;
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-        ( strcp ) & u8"enter_password:Неизвестная версия" :
-        ( strcp ) & "enter_password:Unknown version" ) ;
+        ( shifr_strcp ) & u8"enter_password:Неизвестная версия" :
+        ( shifr_strcp ) & "enter_password:Unknown version" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
 static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
@@ -424,8 +424,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       u8"flaggenpasswd : неопознанная версия : \'%d\'\n" :
       "flaggenpasswd : unrecognized version : \'%d\'\n" ) , main_shifrp -> use_version ) ;
     main_shifrp -> string_exception  = ( localerus ?
-      ( strcp ) & u8"flaggenpasswd : неопознанная версия" :
-      ( strcp ) & "flaggenpasswd : unrecognized version" ) ;
+      ( shifr_strcp ) & u8"flaggenpasswd : неопознанная версия" :
+      ( shifr_strcp ) & "flaggenpasswd : unrecognized version" ) ;
     longjmp ( main_shifrp -> jump  , 1 ) ; }
 # endif
     char  volatile  password_letters2_62  [ password_letters2size ] ;
@@ -461,8 +461,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         "show password : unrecognized version : \'%d\'\n" ) ,
         main_shifrp -> use_version ) ;
       main_shifrp -> string_exception  = ( localerus ?
-        ( strcp ) & u8"показать пароль : неопознанная версия" :
-        ( strcp ) & "show password : unrecognized version" ) ;
+        ( shifr_strcp ) & u8"показать пароль : неопознанная версия" :
+        ( shifr_strcp ) & "show password : unrecognized version" ) ;
       longjmp ( main_shifrp -> jump  , 1 ) ; }
 # ifdef SHIFR_DEBUG        
     printf  ( ( localerus ?
@@ -490,8 +490,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       { number_priv_type ( number_size2 ) password2 ;
 
         string_to_password_templ  ( number_size2 ) ( main_shifrp ,
-          ( strvcp  ) & main_shifrp -> password_letters2 ,
-          & password2 . pub , ( strcp ) & main_shifrp -> letters ,
+          ( shifr_strvcp  ) & main_shifrp -> password_letters2 ,
+          & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters ,
           letters_count ) ; 
         fputs ( ( localerus ?
           u8"из строки95 во внутренний пароль = " :
@@ -500,8 +500,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size2 ) ( main_shifrp ,
-          ( strvcp  ) & password_letters2_62  ,
-          & password2 . pub , ( strcp ) & main_shifrp -> letters2 ,
+          ( shifr_strvcp  ) & password_letters2_62  ,
+          & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters2 ,
           letters_count2 ) ;
         fputs ( ( localerus ?
           u8"из строки62 во внутренний пароль = " :
@@ -510,8 +510,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         fputs ( "\n" , stderr ) ;
         
         string_to_password_templ  ( number_size2 ) ( main_shifrp ,
-          ( strvcp  ) & password_letters2_26  ,
-          & password2 . pub , ( strcp ) & main_shifrp -> letters4 ,
+          ( shifr_strvcp  ) & password_letters2_26  ,
+          & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters4 ,
           letters_count4 ) ;
         fputs ( ( localerus ?
           u8"из строки26 во внутренний пароль = " :
@@ -520,8 +520,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size2 ) ( main_shifrp ,
-          ( strvcp  ) & password_letters2_10 ,
-          & password2 . pub , ( strcp ) & main_shifrp -> letters3 ,
+          ( shifr_strvcp  ) & password_letters2_10 ,
+          & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters3 ,
           letters_count3 ) ;
         fputs ( ( localerus ?
           u8"из строки10 во внутренний пароль = " :
@@ -535,8 +535,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       { number_priv_type ( number_size3 ) password2 ;
 
         string_to_password_templ  ( number_size3 ) ( main_shifrp ,
-          ( strvcp  ) & main_shifrp -> password_letters3 ,
-          & password2 . pub , ( strcp ) & main_shifrp -> letters ,
+          ( shifr_strvcp  ) & main_shifrp -> password_letters3 ,
+          & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters ,
           letters_count ) ; 
         fputs ( ( localerus ?
           u8"из строки95 во внутренний пароль = " :
@@ -545,8 +545,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size3 ) ( main_shifrp ,
-          ( strvcp  ) & password_letters3_62  ,
-          & password2 . pub , ( strcp ) & main_shifrp -> letters2 ,
+          ( shifr_strvcp  ) & password_letters3_62  ,
+          & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters2 ,
           letters_count2 ) ;
         fputs ( ( localerus ?
           u8"из строки62 во внутренний пароль = " :
@@ -555,8 +555,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         fputs ( "\n" , stderr ) ;
         
         string_to_password_templ  ( number_size3 ) ( main_shifrp ,
-          ( strvcp  ) & password_letters3_26 ,
-          & password2 . pub , ( strcp ) & main_shifrp -> letters4 ,
+          ( shifr_strvcp  ) & password_letters3_26 ,
+          & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters4 ,
           letters_count4 ) ;
         fputs ( ( localerus ?
           u8"из строки26 во внутренний пароль = " :
@@ -565,8 +565,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         fputs ( "\n" , stderr ) ;
 
         string_to_password_templ  ( number_size3 ) ( main_shifrp ,
-          ( strvcp  ) & password_letters3_10 ,
-          & password2 . pub , ( strcp ) & main_shifrp -> letters3 ,
+          ( shifr_strvcp  ) & password_letters3_10 ,
+          & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters3 ,
           letters_count3 ) ;
         fputs ( ( localerus ?
           u8"из строки10 во внутренний пароль = " :
@@ -581,8 +581,8 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         u8"неизвестная версия %d\n" : "unknown version %d\n"  ,
         main_shifrp -> use_version ) ;
       main_shifrp -> string_exception  = ( localerus ?
-        ( strcp ) & u8"неизвестная версия" :
-        ( strcp ) & "unknown version" ) ;
+        ( shifr_strcp ) & u8"неизвестная версия" :
+        ( shifr_strcp ) & "unknown version" ) ;
       longjmp ( main_shifrp -> jump , 1 ) ; }
 # else
   switch  ( main_shifrp -> password_alphabet  ) {
@@ -670,8 +670,8 @@ static  inline  void  shifr_test_password ( t_ns_shifr  * const main_shifrp ,
         break ;
       default :
         main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
-          ( strcp ) & u8"неизвестный алфавит пароля" :
-          ( strcp ) & "unknown password alphabet" ) ;
+          ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
+          ( shifr_strcp ) & "unknown password alphabet" ) ;
         longjmp ( main_shifrp -> jump  , 1 ) ; } }
 
 static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
@@ -684,46 +684,165 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
         main_shifrp -> filefrom ) ;
       if ( readcount  ) {
           sizeio  = shifr_encrypt3  ( main_shifrp ,
-            ( arrcps ) { .cp = ( arrcp ) inputbufferp , .s = readcount } ,
-            ( arrps ) { .p = ( arrp ) outputbufferp , .s = outputbuffersize } ) ;
+            ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp , .s = readcount } ,
+            ( arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
 # ifdef SHIFR_DEBUG
         if ( sizeio . i < readcount ) {
           fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
             readcount ) ;
-          main_shifrp -> string_exception  = ( strcp ) & "sizeio . i < readcount" ;
+          main_shifrp -> string_exception  = ( shifr_strcp ) & "sizeio . i < readcount" ;
           longjmp ( main_shifrp -> jump  , 1 ) ; }
         if ( sizeio . o > outputbuffersize ) {
           fprintf ( stderr  , "sizeio . o = %zu , outputbuffersize = %zu\n"  ,
             sizeio . o , outputbuffersize ) ;
-          main_shifrp -> string_exception  = ( strcp ) & "sizeio . o > outputbuffersize" ;
+          main_shifrp -> string_exception  = ( shifr_strcp ) & "sizeio . o > outputbuffersize" ;
           longjmp ( main_shifrp -> jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
         writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeio . o , 1 ,
           main_shifrp -> fileto ) ;
         if ( writecount == 0 ) {
           main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
-            ( strcp ) & u8"v3:ошибка записи в файл" :
-            ( strcp ) & "v3:error writing to file" ) ;
+            ( shifr_strcp ) & u8"v3:ошибка записи в файл" :
+            ( shifr_strcp ) & "v3:error writing to file" ) ;
           longjmp ( main_shifrp -> jump  , 1 ) ; }
         if ( feof ( main_shifrp -> filefrom ) ) 
           break ; }
       else {
         if ( ferror ( main_shifrp -> filefrom ) ) {
           main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
-            ( strcp ) & u8"ошибка чтения файла" :
-            ( strcp ) & "error reading the file" ) ;
+            ( shifr_strcp ) & u8"ошибка чтения файла" :
+            ( shifr_strcp ) & "error reading the file" ) ;
           longjmp ( main_shifrp -> jump  , 1 ) ; }
         break ; }
     } while ( true ) ;      
       { uint8_t const bytes = streambuf_writeflushzero3 ( main_shifrp ,
-          ( arrps ) { .p = ( arrp ) outputbufferp , .s = outputbuffersize } ) ;
+          ( arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
         if ( bytes ) {
           writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , bytes , 1 ,
             main_shifrp -> fileto ) ;
           if ( writecount == 0 ) {
             main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
-              ( strcp ) & u8"v3:ошибка записи в файл ( writecount == 0 )" :
-              ( strcp ) & "v3:error writing to file ( writecount == 0 )" ) ;
+              ( shifr_strcp ) & u8"v3:ошибка записи в файл ( writecount == 0 )" :
+              ( shifr_strcp ) & "v3:error writing to file ( writecount == 0 )" ) ;
             longjmp ( main_shifrp -> jump  , 1 ) ; } } } }
-        
+
+static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * const main_shifrp ,
+  uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
+  uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
+    size_t  writecount  ;
+    size_io sizeio  ;
+    do  {
+      size_t readcount = fread ( & ( (* inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
+        main_shifrp -> filefrom ) ;
+      if ( readcount  ) {
+          sizeio  = shifr_encrypt2  ( main_shifrp ,
+            ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp , .s = readcount } ,
+            ( arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
+# ifdef SHIFR_DEBUG
+        if ( sizeio . i < readcount ) {
+          fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
+            readcount ) ;
+          main_shifrp -> string_exception  = ( shifr_strcp ) & "sizeio . i < readcount" ;
+          longjmp ( main_shifrp -> jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
+        writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeio . o , 1 ,
+          main_shifrp -> fileto ) ;
+        if ( writecount == 0 )
+          goto Exc ;
+        if ( feof ( main_shifrp -> filefrom ) )
+          break ; }
+      else {
+        if ( ferror ( main_shifrp -> filefrom ) ) {
+          main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+            ( shifr_strcp ) & u8"ошибка чтения файла" :
+            ( shifr_strcp ) & "error reading the file" ) ;
+          longjmp ( main_shifrp -> jump  , 1 ) ; }
+        break ; }
+    } while ( true ) ;
+    size_t const sizeout = shifr_encrypt2_flush  ( main_shifrp ,
+        ( arrps ) { .p = outputbufferp , .s = outputbuffersize }  ) ;
+    if  ( sizeout ) {
+      writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeout , 1 ,
+        main_shifrp -> fileto ) ;
+      if ( writecount == 0 ) {
+Exc :
+        main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+          ( shifr_strcp ) & u8"ошибка записи в файл" :
+          ( shifr_strcp ) & "error writing to file" ) ;
+        longjmp ( main_shifrp -> jump  , 1 ) ; } } }            
+            
+static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * const main_shifrp ,
+  uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
+  uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
+      size_t  writecount  ;
+      size_io sizeio  ;
+      do  {
+        size_t readcount = fread ( & (  (*inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
+          main_shifrp -> filefrom ) ;
+        if ( readcount  ) {
+          sizeio  = shifr_decrypt2  ( main_shifrp ,
+            ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp , .s = readcount } ,
+            ( arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
+# ifdef SHIFR_DEBUG
+          if ( sizeio . i < readcount ) {
+            fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
+              readcount ) ;
+            main_shifrp -> string_exception  = ( shifr_strcp ) & "sizeio . i < readcount" ;
+            longjmp ( main_shifrp -> jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
+          writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeio . o , 1 ,
+            main_shifrp -> fileto ) ;
+          if ( writecount == 0 ) {
+            main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+              ( shifr_strcp ) & u8"ошибка записи в файл" :
+              ( shifr_strcp ) & "error writing to file" ) ;
+            longjmp ( main_shifrp -> jump  , 1 ) ; }
+          if ( feof ( main_shifrp -> filefrom ) )
+            break ; } // if readcount
+        else {
+          if ( ferror ( main_shifrp -> filefrom ) ) {
+            main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+              ( shifr_strcp ) & u8"ошибка чтения файла" :
+              ( shifr_strcp ) & "error reading the file" ) ;
+            longjmp ( main_shifrp -> jump  , 1 ) ; }
+          break ; }
+      } while ( true ) ; } // ver 2            
+            
+static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * const main_shifrp ,
+  uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
+  uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
+      size_t  writecount  ;
+      size_io sizeio  ;
+      do  {
+        size_t readcount = fread ( & ( (* inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
+          main_shifrp -> filefrom ) ;
+        if ( readcount  ) {
+          sizeio  = shifr_decrypt3  ( main_shifrp ,
+            ( shifr_arrcps  ) { . cp  = ( shifr_arrcp ) inputbufferp , . s = readcount } ,
+            ( arrps ) { . p = outputbufferp , . s = outputbuffersize } ) ;
+# ifdef SHIFR_DEBUG
+          if ( sizeio . i < readcount ) {
+            fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
+              readcount ) ;
+            main_shifrp -> string_exception  = ( shifr_strcp ) & "sizeio . i < readcount" ;
+            longjmp ( main_shifrp -> jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
+          writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeio . o , 1 ,
+            main_shifrp -> fileto ) ;
+          if ( writecount == 0 ) {
+            main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+              ( shifr_strcp ) & u8"ошибка записи в файл" :
+              ( shifr_strcp ) & "error writing to file" ) ;
+            longjmp ( main_shifrp -> jump  , 1 ) ; }
+          if ( feof ( main_shifrp -> filefrom ) )
+            break ; } // if readcount
+        else {
+          if ( ferror ( main_shifrp -> filefrom ) ) {
+            main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
+              ( shifr_strcp ) & u8"ошибка чтения файла" :
+              ( shifr_strcp ) & "error reading the file" ) ;
+            longjmp ( main_shifrp -> jump  , 1 ) ; }
+          break ; }
+      } while ( true ) ; }            
+            
 # endif //  SHIFR_INLINE_H

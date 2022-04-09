@@ -38,13 +38,13 @@ number_dec_princ  ( number_size2 )
 number_dec_princ  ( number_size3 )
 
 # define  printarr  shifr_printarr
-void  printarr  ( strcp name , arrcp p , size_t arrsize , FILE * f ) ;
+void  printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize , FILE * f ) ;
 
 # endif // SHIFR_DEBUG
 
 # define  shifr_string_to_password_templ_dec( N ) \
-void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * , strvcp  string , \
-  number_type ( N ) * password , strcp letters , uint8_t letterscount  ) ;
+void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * , shifr_strvcp  string , \
+  number_type ( N ) * password , shifr_strcp letters , uint8_t letterscount  ) ;
 # define  string_to_password_templ_dec  shifr_string_to_password_templ_dec
 string_to_password_templ_dec  ( number_size2 )
 string_to_password_templ_dec  ( number_size3 )
@@ -53,8 +53,8 @@ string_to_password_templ_dec  ( number_size3 )
 
 # define  shifr_password_to_string_templ_dec( N ) \
 void  shifr_password  ##  N ##  _to_string_templ ( \
-  number_type ( N ) const * password0 , strvp string ,  \
-  strp letters , uint8_t letterscount  ) ;
+  number_type ( N ) const * password0 , shifr_strvp string ,  \
+  shifr_strp letters , uint8_t letterscount  ) ;
 # define  password_to_string_templ_dec  shifr_password_to_string_templ_dec
 password_to_string_templ_dec  ( number_size2 )
 password_to_string_templ_dec  ( number_size3 )  
@@ -118,8 +118,8 @@ returns the size of read and written data
 записывает в 'output.p' размера 'output.s' байт ,
 возвращает размер считаных и записаных данных
 */
-size_io shifr_encrypt2  ( t_ns_shifr * , arrcps input , arrps output )  ;
-size_io shifr_encrypt3  ( t_ns_shifr * , arrcps input , arrps output )  ;
+size_io shifr_encrypt2  ( t_ns_shifr * , shifr_arrcps input , arrps output )  ;
+size_io shifr_encrypt3  ( t_ns_shifr * , shifr_arrcps input , arrps output )  ;
   
 /*
 Finished buffer encryption, returns output_buffer size written
@@ -137,13 +137,13 @@ returns the size of read and written data
 записывает в 'output.p' размера 'output.s' байт ,
 возвращает размер считаных и записаных данных
 */
-size_io  shifr_decrypt2 ( t_ns_shifr * , arrcps input , arrps output ) ;
+size_io  shifr_decrypt2 ( t_ns_shifr * , shifr_arrcps input , arrps output ) ;
   
 /*
 Decryption
 Расшифровка
 */
-size_io  shifr_decrypt3 ( t_ns_shifr * , arrcps input , arrps output ) ;
+size_io  shifr_decrypt3 ( t_ns_shifr * , shifr_arrcps input , arrps output ) ;
 
 uint8_t  streambuf_writeflushzero3 ( t_ns_shifr * , arrps ) ;
 

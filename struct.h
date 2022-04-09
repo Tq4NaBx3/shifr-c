@@ -96,7 +96,7 @@ struct  s_ns_shifr  {
   // exceptions
   // исключения
   jmp_buf jump ;
-  strcp string_exception ;
+  shifr_strcp string_exception ;
 
   // ver2
   t_raspr2 raspr2 ;
@@ -156,12 +156,12 @@ struct  s_ns_shifr  {
   } ;
 
 struct  shifr_s_arrcps  {
-  arrcp cp  ;
+  shifr_arrcp cp  ;
   size_t  s ;
 } ;
 
 struct  shifr_s_arrps {
-  arrp  p ;
+  shifr_arrp  p ;
   size_t  s ;
 } ;
 

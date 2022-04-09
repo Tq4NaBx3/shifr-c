@@ -5,25 +5,13 @@
 # include "define.h"
 
 typedef char ( * shifr_strp ) [ ] ;
-typedef shifr_strp  strp  ;
-
 typedef char  volatile  ( * shifr_strvp ) [ ] ;
-typedef shifr_strvp strvp ;
-
 typedef char const ( * shifr_strcp  ) [ ] ;
-typedef shifr_strcp strcp ;
-
 typedef char  volatile  const ( * shifr_strvcp  ) [ ] ;
-typedef shifr_strvcp  strvcp  ;
-
 typedef uint8_t ( * shifr_arrp  ) [ ] ;
-typedef shifr_arrp  arrp  ;
-
 typedef uint8_t const ( * shifr_arrcp ) [ ] ;
-typedef shifr_arrcp arrcp ;
-
 struct  shifr_s_arrcps  ;
-typedef struct  shifr_s_arrcps  arrcps  ;
+typedef struct  shifr_s_arrcps  shifr_arrcps  ;
 
 struct  shifr_s_arrps ;
 typedef struct  shifr_s_arrps arrps ;

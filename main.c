@@ -6,10 +6,7 @@
 # include "define.h"
 # include "inline.h"
 
-# define  generate_password shifr_generate_password
 # define  streambuf_init  shifr_streambuf_init
-# define  enter_password2 shifr_enter_password2
-# define  enter_password3 shifr_enter_password3
 # define  enter_password  shifr_enter_password
 # ifdef SHIFR_DEBUG
 typedef shifr_timestamp_t timestamp_t ;
@@ -17,6 +14,8 @@ typedef shifr_timestamp_t timestamp_t ;
 # define  show_help shifr_show_help
 # define  main_genpsw shifr_main_genpsw
 # define  test_password shifr_test_password
+typedef shifr_strcp strcp ;
+typedef shifr_arrcp arrcp ;
     
 int main  ( int argc , char * argv [ ] ) {
   t_ns_shifr  main_shifr  ;
@@ -293,122 +292,20 @@ int main  ( int argc , char * argv [ ] ) {
   static  uint8_t inputbuffer [ inputbuffersize ] ;
   static  uint8_t outputbuffer  [ outputbuffersize ] ;
   if ( flagenc ) {
-  if ( main_shifr . use_version == 3 ) 
-    shifr_encode_file_v3  ( & main_shifr  , & inputbuffer , inputbuffersize ,
-      & outputbuffer  , outputbuffersize  ) ;
+    if ( main_shifr . use_version == 3 ) 
+      shifr_encode_file_v3  ( & main_shifr  , & inputbuffer , inputbuffersize ,
+        & outputbuffer  , outputbuffersize  ) ;
     else
-    if ( main_shifr . use_version == 2 ) {
-    size_t  writecount  ;
-    size_io sizeio  ;
-    do  {
-      size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , inputbuffersize ,
-        main_shifr . filefrom ) ;
-      if ( readcount  ) {
-          sizeio  = shifr_encrypt2  ( & main_shifr ,
-            ( arrcps ) { .cp = ( arrcp ) & inputbuffer , .s = readcount } ,
-            ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
-# ifdef SHIFR_DEBUG
-        if ( sizeio . i < readcount ) {
-          fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
-            readcount ) ;
-          main_shifr . string_exception  = ( strcp ) & "sizeio . i < readcount" ;
-          longjmp ( main_shifr . jump  , 1 ) ; }
-# endif // SHIFR_DEBUG
-        writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeio . o , 1 ,
-          main_shifr . fileto ) ;
-        if ( writecount == 0 )
-          goto Exc ;
-        if ( feof ( main_shifr . filefrom ) )
-          break ; }
-      else {
-        if ( ferror ( main_shifr . filefrom ) ) {
-          main_shifr . string_exception  = ( main_shifr . localerus ?
-            ( strcp ) & u8"ошибка чтения файла" :
-            ( strcp ) & "error reading the file" ) ;
-          longjmp ( main_shifr . jump  , 1 ) ; }
-        break ; }
-    } while ( true ) ;
-    size_t const sizeout = shifr_encrypt2_flush  ( & main_shifr ,
-        ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize }  ) ;
-    if  ( sizeout ) {
-      writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeout , 1 ,
-        main_shifr . fileto ) ;
-      if ( writecount == 0 ) {
-Exc :
-        main_shifr . string_exception  = ( main_shifr . localerus ?
-          ( strcp ) & u8"ошибка записи в файл" :
-          ( strcp ) & "error writing to file" ) ;
-        longjmp ( main_shifr . jump  , 1 ) ; } } } // use_version == 2
-    } // if flagenc
+      if ( main_shifr . use_version == 2 ) 
+        shifr_encode_file_v2  ( & main_shifr  , & inputbuffer , inputbuffersize ,
+          & outputbuffer  , outputbuffersize  ) ; } // if flagenc
   else { // flagdec
-    if ( main_shifr . use_version == 2 )  {
-      size_t  writecount  ;
-      size_io sizeio  ;
-      do  {
-        size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , inputbuffersize ,
-          main_shifr . filefrom ) ;
-        if ( readcount  ) {
-          sizeio  = shifr_decrypt2  ( & main_shifr ,
-            ( arrcps ) { .cp = ( arrcp ) & inputbuffer , .s = readcount } ,
-            ( arrps ) { .p = ( arrp ) & outputbuffer , .s = outputbuffersize } ) ;
-# ifdef SHIFR_DEBUG
-          if ( sizeio . i < readcount ) {
-            fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
-              readcount ) ;
-            main_shifr . string_exception  = ( strcp ) & "sizeio . i < readcount" ;
-            longjmp ( main_shifr . jump  , 1 ) ; }
-# endif // SHIFR_DEBUG
-          writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeio . o , 1 ,
-            main_shifr . fileto ) ;
-          if ( writecount == 0 ) {
-            main_shifr . string_exception  = ( main_shifr . localerus ?
-              ( strcp ) & u8"ошибка записи в файл" :
-              ( strcp ) & "error writing to file" ) ;
-            longjmp ( main_shifr . jump  , 1 ) ; }
-          if ( feof ( main_shifr . filefrom ) )
-            break ; } // if readcount
-        else {
-          if ( ferror ( main_shifr . filefrom ) ) {
-            main_shifr . string_exception  = ( main_shifr . localerus ?
-              ( strcp ) & u8"ошибка чтения файла" :
-              ( strcp ) & "error reading the file" ) ;
-            longjmp ( main_shifr . jump  , 1 ) ; }
-          break ; }
-      } while ( true ) ; } // ver 2
-    else {
-      size_t  writecount  ;
-      size_io sizeio  ;
-      do  {
-        size_t readcount = fread ( & (  inputbuffer [ 0 ] ) , 1 , inputbuffersize ,
-          main_shifr . filefrom ) ;
-        if ( readcount  ) {
-          sizeio  = shifr_decrypt3  ( & main_shifr ,
-            ( arrcps  ) { . cp  = ( arrcp ) & inputbuffer , . s = readcount } ,
-            ( arrps ) { . p = ( arrp  ) & outputbuffer , . s = outputbuffersize } ) ;
-# ifdef SHIFR_DEBUG
-          if ( sizeio . i < readcount ) {
-            fprintf ( stderr  , "sizeio . i = %zu , readcount = %zu\n"  , sizeio . i ,
-              readcount ) ;
-            main_shifr . string_exception  = ( strcp ) & "sizeio . i < readcount" ;
-            longjmp ( main_shifr . jump  , 1 ) ; }
-# endif // SHIFR_DEBUG
-          writecount = fwrite ( & ( outputbuffer [ 0 ] ) , sizeio . o , 1 ,
-            main_shifr . fileto ) ;
-          if ( writecount == 0 ) {
-            main_shifr . string_exception  = ( main_shifr . localerus ?
-              ( strcp ) & u8"ошибка записи в файл" :
-              ( strcp ) & "error writing to file" ) ;
-            longjmp ( main_shifr . jump  , 1 ) ; }
-          if ( feof ( main_shifr . filefrom ) )
-            break ; } // if readcount
-        else {
-          if ( ferror ( main_shifr . filefrom ) ) {
-            main_shifr . string_exception  = ( main_shifr . localerus ?
-              ( strcp ) & u8"ошибка чтения файла" :
-              ( strcp ) & "error reading the file" ) ;
-            longjmp ( main_shifr . jump  , 1 ) ; }
-          break ; }
-      } while ( true ) ; } }
+    if ( main_shifr . use_version == 2 )
+      shifr_decode_file_v2  ( & main_shifr  , & inputbuffer , inputbuffersize ,
+        & outputbuffer  , outputbuffersize  ) ;
+    else 
+      shifr_decode_file_v3  ( & main_shifr  , & inputbuffer , inputbuffersize ,
+        & outputbuffer  , outputbuffersize  ) ; }
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
     if  ( fclose  ( main_shifr  . fileto  ) ) {
