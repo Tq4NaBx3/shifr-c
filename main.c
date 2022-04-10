@@ -115,7 +115,7 @@ int main  ( int argc , char * argv [ ] ) {
       fputs ( ( main_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
-      number_princ  ( number_size2 ) ( & main_shifr . raspr2  . pass . pub , stderr  ) ;
+      number_princ  ( v2 ) ( & main_shifr . raspr2  . pass . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif      
         }

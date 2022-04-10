@@ -11,7 +11,7 @@
 # define  shifr_number_set0( N ) shifr_number ## N ## _set0
 # define  number_set0 shifr_number_set0
   
-number_dec_set0 ( number_size2 )
+number_dec_set0 ( v2 )
 number_dec_set0 ( number_size3 )
 
 # define  shifr_number_dec_mul_byte(  N ) \
@@ -21,7 +21,7 @@ void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * , uint8_t )  ;
 # define  shifr_number_mul_byte( N ) shifr_number ## N ## _mul_byte
 # define  number_mul_byte shifr_number_mul_byte
 
-number_dec_mul_byte ( number_size2 )
+number_dec_mul_byte ( v2 )
 number_dec_mul_byte ( number_size3 )
 
 # ifdef SHIFR_DEBUG
@@ -34,7 +34,7 @@ void  shifr_number ## N ## _princ ( shifr_number_type ( N ) const * np ,  \
 # define  shifr_number_princ( N ) shifr_number  ##  N ##  _princ
 # define  number_princ shifr_number_princ
 
-number_dec_princ  ( number_size2 )
+number_dec_princ  ( v2 )
 number_dec_princ  ( number_size3 )
 
 # define  printarr  shifr_printarr
@@ -46,7 +46,7 @@ void  printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize , FILE * f )
 void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * , shifr_strvcp  string , \
   shifr_number_type ( N ) * password , shifr_strcp letters , uint8_t letterscount  ) ;
 # define  string_to_password_templ_dec  shifr_string_to_password_templ_dec
-string_to_password_templ_dec  ( number_size2 )
+string_to_password_templ_dec  ( v2 )
 string_to_password_templ_dec  ( number_size3 )
 # define  shifr_string_to_password_templ( N ) shifr_string_to_password  ##  N ##  _templ
 # define  string_to_password_templ  shifr_string_to_password_templ
@@ -56,7 +56,7 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
   shifr_number_type ( N ) const * password0 , shifr_strvp string ,  \
   shifr_strp letters , uint8_t letterscount  ) ;
 # define  password_to_string_templ_dec  shifr_password_to_string_templ_dec
-password_to_string_templ_dec  ( number_size2 )
+password_to_string_templ_dec  ( v2 )
 password_to_string_templ_dec  ( number_size3 )  
 # define  shifr_password_to_string_templ( N ) shifr_password  ##  N ##  _to_string_templ
 # define  password_to_string_templ  shifr_password_to_string_templ
