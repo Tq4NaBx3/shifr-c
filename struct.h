@@ -13,11 +13,9 @@
   struct  shifr_s_number ## N { \
     uint8_t _ ; \
   } ;
-
-# define  number_def  shifr_number_def
   
-number_def  ( v2 )  
-number_def  ( v3 )
+shifr_number_def  ( v2 )  
+shifr_number_def  ( v3 )
   
 # define  shifr_number_priv_def( N , D ) \
   struct  shifr_s_number_priv ## N { \
@@ -25,47 +23,40 @@ number_def  ( v3 )
     shifr_number_type ( N ) pub ; \
   } ;
 
-# define  number_def_priv  shifr_number_priv_def
-
-number_def_priv  ( v2 , shifr_number_size2 )
+shifr_number_priv_def ( v2 , shifr_number_size2 )
 
 struct  shifr_s_raspr2  {
   uint8_t dice  [ shifr_deshi_size2 - 1  ] ;
-  number_priv_type ( v2 ) pass  ;
+  shifr_number_priv_type ( v2 ) pass  ;
   } ;
 
-number_def_priv  ( v3 , shifr_number_size3 )
+shifr_number_priv_def ( v3 , shifr_number_size3 )
 
 struct  shifr_s_raspr3  {
   uint8_t dice  [ shifr_deshi_size3 - 1 ] ;
-  number_priv_type ( v3 ) pass  ;
+  shifr_number_priv_type ( v3 ) pass  ;
   } ;
 
 // 0x20 (space) ' '    ---     0x7e (tilde) '~'
 // 0x20 (пробел) ' '    ---     0x7e (тильда) '~'
 // 95 шт pcs
-# define  letters_count shifr_letters_count
-enum  { letters_count = UINT8_C ( ( '~' - ' ' ) + 1 ) } ;
+enum  { shifr_letters_count = ( ( UINT8_C ( '~' ) - UINT8_C ( ' ' ) ) + 1U ) } ;
 
 // 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'
 // 62 шт pcs
-# define  letters_count2  shifr_letters_count2
-enum  { letters_count2 = UINT8_C (
-  ( '9' - '0' ) + 1 + ( 'Z' - 'A' ) + 1 + ( 'z' - 'a' ) + 1 ) } ;
+enum  { shifr_letters_count2 = (
+  ( UINT8_C ( '9' ) - UINT8_C ( '0' ) ) + 1U + ( UINT8_C ( 'Z' ) - UINT8_C ( 'A' ) ) + 1U +
+  ( UINT8_C ( 'z' ) - UINT8_C ( 'a' ) ) + 1U ) } ;
 
 // 0x61 'a' - 0x7a 'z'
 // 26 шт pcs
-# define  letters_count4  shifr_letters_count4
-enum  { letters_count4 = UINT8_C ( ( 'z' - 'a' ) + 1 ) } ;
+enum  { shifr_letters_count4 = ( ( UINT8_C ( 'z' ) - UINT8_C ( 'a' ) ) + 1U ) } ;
 
 // 0x30 '0' - 0x39 '9'
 // 10 шт pcs
-# define  letters_count3  shifr_letters_count3
-enum  { letters_count3 = UINT8_C ( ( '9' - '0' ) + 1 ) } ;
+enum  { shifr_letters_count3 = ( ( UINT8_C ( '9' ) - UINT8_C ( '0' ) ) + 1U ) } ;
 
-# define  password_letters2size shifr_password_letters2size
-# define  password_letters3size shifr_password_letters3size
-enum  { password_letters2size = 30 , password_letters3size = 180 } ;
+enum  { shifr_password_letters2size = 30 , shifr_password_letters3size = 180 } ;
 
 struct  shifr_s_streambuf {
   FILE  * file  ;
@@ -80,13 +71,13 @@ struct  s_ns_shifr  {
   // letters allowed in password :
   // буквы разрешённые в пароле :
   // ascii  
-  char  letters [ letters_count ] ;  
+  char  letters [ shifr_letters_count ] ;  
   // a..zA..Z0..9
-  char  letters2  [ letters_count2  ] ;
+  char  letters2  [ shifr_letters_count2  ] ;
   // a..z
-  char  letters4  [ letters_count4  ] ;
+  char  letters4  [ shifr_letters_count4  ] ;
   // 0..9
-  char  letters3  [ letters_count3  ] ;
+  char  letters3  [ shifr_letters_count3  ] ;
   bool  localerus ; 
 
   // default state repository
@@ -99,9 +90,9 @@ struct  s_ns_shifr  {
   shifr_strcp string_exception ;
 
   // ver2
-  t_raspr2 raspr2 ;
+  shifr_t_raspr2 raspr2 ;
   // ver3
-  t_raspr3 raspr3 ;
+  shifr_t_raspr3 raspr3 ;
 
   //  2 or 3
   //  2 или 3
@@ -135,12 +126,12 @@ struct  s_ns_shifr  {
   // алфавит пароля 62 или 95 или 26 или 10
   int password_alphabet ; 
   // ver2
-  char  volatile  password_letters2 [ password_letters2size ] ;
+  char  volatile  password_letters2 [ shifr_password_letters2size ] ;
   // ver3
-  char  volatile  password_letters3 [ password_letters3size ] ;
+  char  volatile  password_letters3 [ shifr_password_letters3size ] ;
 // private :
-  t_streambuf filebuffrom ;
-  t_streambuf filebufto ;
+  shifr_t_streambuf filebuffrom ;
+  shifr_t_streambuf filebufto ;
   uint8_t old_last_data ;
   uint8_t old_last_sole ;
   // text mode remember string place

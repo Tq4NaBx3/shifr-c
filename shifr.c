@@ -164,10 +164,10 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 # define  number_pub_to_priv  shifr_number_pub_to_priv
 
 # define  shifr_number_pub_to_priv_def( N ) \
-number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
+shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
   shifr_number_type  ( N ) * const n ) { \
-  return  ( number_priv_type  ( N ) * ) ( \
-    ( ( uint8_t * ) n ) - offsetof ( number_priv_type ( N ) , pub ) ) ; }
+  return  ( shifr_number_priv_type  ( N ) * ) ( \
+    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; }
     
 static  inline  shifr_number_pub_to_priv_def  ( v2 )
 static  inline  shifr_number_pub_to_priv_def  ( v3 )
@@ -176,10 +176,10 @@ static  inline  shifr_number_pub_to_priv_def  ( v3 )
 # define  number_const_pub_to_priv  shifr_number_const_pub_to_priv
 
 # define  shifr_number_const_pub_to_priv_def( N ) \
-number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) (  \
+shifr_number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) (  \
   shifr_number_type  ( N ) const * const n ) { \
-  return  ( number_priv_type  ( N ) const * ) ( \
-    ( ( uint8_t * ) n ) - offsetof ( number_priv_type ( N ) , pub ) ) ; }
+  return  ( shifr_number_priv_type  ( N ) const * ) ( \
+    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; }
     
 static  inline  shifr_number_const_pub_to_priv_def  ( v2 )
 static  inline  shifr_number_const_pub_to_priv_def  ( v3 )
@@ -205,7 +205,7 @@ static  inline  number_def_elt_copy ( v3 )
 void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
   uint8_t const byte ) {  \
   if ( byte == 0 ) {  \
-    number_set0 ( N ) ( np ) ; \
+    shifr_number_set0 ( N ) ( np ) ; \
     return  ; } \
   if ( byte == 1 )  \
     return ; \
@@ -292,7 +292,7 @@ static  inline  number_def_dec  ( v3 , shifr_number_size3 )
 # define  shifr_number_def_div_mod(  N , D ) \
 uint8_t shifr_number ## N ## _div_mod ( \
   shifr_number_type ( N ) * const np0 , uint8_t const div ) { \
-  number_priv_type ( N ) * const np = number_pub_to_priv ( N ) ( np0 ) ; \
+  shifr_number_priv_type ( N ) * const np = number_pub_to_priv ( N ) ( np0 ) ; \
   uint8_t modi  = 0 ; \
   uint8_t i = D ; \
   do {  \
@@ -313,7 +313,7 @@ static  inline  number_def_div_mod  ( v3 , shifr_number_size3 )
 # define  shifr_number_def_set_byte(  N , D ) \
 void  shifr_number ## N ## _set_byte  ( shifr_number_type ( N ) * const np0 , \
   uint8_t const x ) { \
-  number_priv_type ( N ) * const np = number_pub_to_priv ( N ) ( np0 ) ; \
+  shifr_number_priv_type ( N ) * const np = number_pub_to_priv ( N ) ( np0 ) ; \
   memset  ( & ( np -> arr [ 1 ] ) , 0 , D - 1 ) ; \
   np -> arr [ 0 ] = x ; }
 # define  number_def_set_byte shifr_number_def_set_byte
@@ -342,7 +342,8 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
   shifr_strp letters , uint8_t const letterscount  ) { \
   char  volatile  * stringi = & ( ( * string )  [ 0 ] ) ; \
   if ( number_not_zero  ( N ) ( password0 ) ) { \
-    number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) ( password0 ) ; \
+    shifr_number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) (  \
+      password0 ) ; \
     do {  \
       /* здесь предыдущие размеры заняли место паролей */ \
       number_dec ( N ) ( & password . pub ) ;  \
@@ -361,11 +362,11 @@ void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp 
   shifr_strcp const letters , uint8_t const letterscount  ) { \
   char  volatile  const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
   if  ( ( * stringi ) == '\00' ) { \
-    number_set0 ( N ) ( password ) ; \
+    shifr_number_set0 ( N ) ( password ) ; \
     return ; } \
-  number_priv_type ( N ) pass ; \
-  number_set0 ( N ) ( & pass . pub ) ; \
-  number_priv_type ( N ) mult ;  \
+  shifr_number_priv_type ( N ) pass ; \
+  shifr_number_set0 ( N ) ( & pass . pub ) ; \
+  shifr_number_priv_type ( N ) mult ;  \
   number_set_byte ( N ) ( & mult . pub , 1 ) ;  \
   do  { \
     uint8_t i = letterscount ;  \
@@ -379,7 +380,7 @@ void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp 
       ( shifr_strcp ) & "wrong letter in password" ) ;  \
     longjmp ( ns_shifrp  -> jump  , 1 ) ; \
 found : ; \
-    { number_priv_type ( N ) tmp = mult ;  \
+    { shifr_number_priv_type ( N ) tmp = mult ;  \
       number_mul_byte ( N ) ( & tmp . pub , ( uint8_t ) ( i + 1 ) ) ; \
       number_add ( N ) ( &  pass . pub , & tmp . pub )  ; }  \
     number_mul_byte ( N ) ( & mult . pub , letterscount ) ; \
@@ -543,7 +544,7 @@ static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
 bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   uint8_t * const encrypteddata , size_t * const  readsp ,
   uint8_t const * restrict * const input_bufferp , size_t const inputs ) {
-  t_streambuf * const restrict me = & ns_shifrp -> filebuffrom ;
+  shifr_t_streambuf * const restrict me = & ns_shifrp -> filebuffrom ;
   if  ( ns_shifrp  -> flagtext  ) {
     uint8_t buf ;
     do  {
@@ -584,7 +585,7 @@ static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
 // secretdatasolesize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
 static void  streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
-  t_streambuf * const me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
+  shifr_t_streambuf * const me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
   uint8_t const secretdatasolesize , bool const  flagtext ,
   uint8_t * restrict * const output_bufferp , size_t * const writesp ,
   size_t  const outputs ) {
@@ -697,7 +698,7 @@ uint8_t streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
 
 lbreak  : ;
 
-  t_streambuf * const me = & ns_shifrp ->  filebufto ;
+  shifr_t_streambuf * const me = & ns_shifrp ->  filebufto ;
 
   if  ( me -> bufbitsize ) {
     ( * output_buffer ) = me -> buf ;
@@ -717,7 +718,7 @@ lbreak  : ;
 void  streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
   uint8_t const encrypteddata , uint8_t * restrict * const output_bufferp ,
   size_t * const writesp ) {
-  t_streambuf * const restrict me  = & ns_shifrp -> filebufto  ;
+  shifr_t_streambuf * const restrict me  = & ns_shifrp -> filebufto  ;
   if  ( ( me -> bufbitsize ) < 5 ) {
     me -> buf = ( uint8_t ) ( ( me -> buf ) bitor
       ( encrypteddata <<  ( me -> bufbitsize ) ) ) ;
@@ -1043,12 +1044,12 @@ void  shifr_generate_pass3 ( t_ns_shifr * const ns_shifrp ) {
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
 void  shifr_pass_to_array2 ( t_ns_shifr * const ns_shifrp ) {
-  number_set0 ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ) ;
-  number_priv_type ( v2 ) mu  ;
+  shifr_number_set0 ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ) ;
+  shifr_number_priv_type ( v2 ) mu  ;
   number_set_byte ( v2 ) ( & mu . pub , 1 ) ;
   uint8_t in = 0 ;
   do {
-    { number_priv_type ( v2 ) mux = mu ;
+    { shifr_number_priv_type ( v2 ) mux = mu ;
       // re += dice [ in ] * mu ;
       number_mul_byte ( v2 ) ( & mux . pub ,
         ns_shifrp -> raspr2  . dice [ in ] ) ;
@@ -1062,12 +1063,12 @@ void  shifr_pass_to_array2 ( t_ns_shifr * const ns_shifrp ) {
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
 void  shifr_pass_to_array3 ( t_ns_shifr * const ns_shifrp ) {
-  number_set0 ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ) ;
-  number_priv_type ( v3 ) mu  ;
+  shifr_number_set0 ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ) ;
+  shifr_number_priv_type ( v3 ) mu  ;
   number_set_byte ( v3 ) ( & mu . pub , 1 ) ;
   uint8_t in = 0 ;
   do {
-    { number_priv_type ( v3 ) mux = mu ;
+    { shifr_number_priv_type ( v3 ) mux = mu ;
       // re += dice [ in ] * mu ;
       number_mul_byte ( v3 ) (
         & mux . pub ,  ns_shifrp -> raspr3  . dice [ in ] ) ;
@@ -1101,29 +1102,29 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
   case 2 :
     switch  ( ns_shifrp -> password_alphabet  ) {
-    case  letters_count :
+    case  shifr_letters_count :
       string_to_password_templ  ( v2 ) ( ns_shifrp ,
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters2 ,
         & ns_shifrp -> raspr2  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters ,  letters_count ) ;
+        ( shifr_strcp ) & ns_shifrp -> letters ,  shifr_letters_count ) ;
       break ;
-    case  letters_count2  :
+    case  shifr_letters_count2  :
       string_to_password_templ  ( v2 ) ( ns_shifrp ,
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters2 ,
         & ns_shifrp -> raspr2  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
+        ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
       break ;
-    case  letters_count3  :
+    case  shifr_letters_count3  :
       string_to_password_templ  ( v2 ) ( ns_shifrp ,
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters2 ,
         & ns_shifrp -> raspr2  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters3 , letters_count3 ) ;
+        ( shifr_strcp ) & ns_shifrp -> letters3 , shifr_letters_count3 ) ;
       break ;
-    case  letters_count4  :
+    case  shifr_letters_count4  :
       string_to_password_templ  ( v2 ) ( ns_shifrp ,
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters2 ,
         & ns_shifrp -> raspr2  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters4 , letters_count4 ) ;
+        ( shifr_strcp ) & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
       break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
@@ -1133,29 +1134,29 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
     break ;
   case 3 :
     switch  ( ns_shifrp -> password_alphabet  ) {
-    case  letters_count :
+    case  shifr_letters_count :
       string_to_password_templ  ( v3 ) ( ns_shifrp ,
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters ,  letters_count ) ;
+        ( shifr_strcp ) & ns_shifrp -> letters ,  shifr_letters_count ) ;
       break ;
-    case  letters_count2  :
+    case  shifr_letters_count2  :
       string_to_password_templ  ( v3 ) ( ns_shifrp , 
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
+        ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
       break ;
-    case  letters_count3  :
+    case  shifr_letters_count3  :
       string_to_password_templ  ( v3 ) ( ns_shifrp , 
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters3 , letters_count3 ) ;
+        ( shifr_strcp ) & ns_shifrp -> letters3 , shifr_letters_count3 ) ;
       break ;
-    case  letters_count4  :
+    case  shifr_letters_count4  :
       string_to_password_templ  ( v3 ) ( ns_shifrp , 
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters4 , letters_count4 ) ;
+        ( shifr_strcp ) & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
       break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
@@ -1213,7 +1214,8 @@ void  password_load ( N ) ( shifr_number_type ( N ) const * const password0 , \
       ( * arrj )  = j ; \
     } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ;  } \
   uint8_t inde  = 0 ; \
-  number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) ( password0 ) ; \
+  shifr_number_priv_type ( N ) password = * number_const_pub_to_priv ( N ) (  \
+    password0 ) ; \
   do {  \
     { uint8_t const cindex = number_div_mod ( N ) ( & password . pub ,  \
         (  uint8_t ) ( SDS - inde  ) ) ;  \
@@ -1252,25 +1254,25 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version ) {
   case  2 :
     switch  ( ns_shifrp -> password_alphabet  ) {
-    case  letters_count :
+    case  shifr_letters_count :
       password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
         & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters ,
-        letters_count ) ;
+        shifr_letters_count ) ;
       break ;
-    case  letters_count2  :
+    case  shifr_letters_count2  :
       password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
         & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters2 ,
-        letters_count2 ) ;
+        shifr_letters_count2 ) ;
       break ;
-    case  letters_count3  :
+    case  shifr_letters_count3  :
       password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
         & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters3 ,
-        letters_count3 ) ;
+        shifr_letters_count3 ) ;
       break ;
-    case  letters_count4  :
+    case  shifr_letters_count4  :
       password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
         & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters4 ,
-        letters_count4 ) ;
+        shifr_letters_count4 ) ;
       break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
@@ -1280,25 +1282,25 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
     break ;
   case 3 :
     switch  ( ns_shifrp -> password_alphabet  ) {
-    case  letters_count :
+    case  shifr_letters_count :
       password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters ,
-        letters_count ) ;
+        shifr_letters_count ) ;
       break ;
-    case  letters_count2  :
+    case  shifr_letters_count2  :
       password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters2 ,
-        letters_count2 ) ;
+        shifr_letters_count2 ) ;
       break ;
-    case  letters_count3  :
+    case  shifr_letters_count3  :
       password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters3 ,
-        letters_count3 ) ;
+        shifr_letters_count3 ) ;
       break ;
-    case  letters_count4  :
+    case  shifr_letters_count4  :
       password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters4 ,
-        letters_count4 ) ;
+        shifr_letters_count4 ) ;
       break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?

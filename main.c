@@ -7,16 +7,14 @@
 # include "inline.h"
 
 # define  streambuf_init  shifr_streambuf_init
-# define  enter_password  shifr_enter_password
 # ifdef SHIFR_DEBUG
 typedef shifr_timestamp_t timestamp_t ;
 # endif
-# define  show_help shifr_show_help
-# define  main_genpsw shifr_main_genpsw
-# define  test_password shifr_test_password
 typedef shifr_strcp strcp ;
 typedef shifr_arrcp arrcp ;
-    
+# define  password_letters2size shifr_password_letters2size
+# define  password_letters3size shifr_password_letters3size
+
 int main  ( int argc , char * argv [ ] ) {
   t_ns_shifr  main_shifr  ;
   shifr_init  ( & main_shifr ) ;
@@ -30,7 +28,7 @@ int main  ( int argc , char * argv [ ] ) {
     return  exc ; }
     
   if  ( argc  <=  1 ) {
-    int const e = show_help ( & main_shifr  ) ;
+    int const e = shifr_show_help ( & main_shifr  ) ;
     shifr_destr ( & main_shifr ) ;
     return  e ; }
   
@@ -85,7 +83,7 @@ int main  ( int argc , char * argv [ ] ) {
           ( strcp ) & u8"Ошибка чтения файла" :
           ( strcp ) & "Error reading file" ) ;
         longjmp ( main_shifr  . jump  , 1 ) ; }
-      test_password ( & main_shifr  , nr  ) ;
+      shifr_test_password ( & main_shifr  , nr  ) ;
       string_to_password  ( & main_shifr  ) ;
       if ( fclose  ( f ) )  {
         int e = errno ; 
@@ -223,7 +221,7 @@ int main  ( int argc , char * argv [ ] ) {
             ( strcp ) & "unrecognized option" ) ;
           longjmp ( main_shifr  . jump  , 1 ) ; } } } }
   if ( flaggenpasswd ) {
-    int const e = main_genpsw ( & main_shifr  ) ;
+    int const e = shifr_main_genpsw ( & main_shifr  ) ;
     shifr_destr ( & main_shifr ) ;
     return  e ; }
 # ifdef SHIFR_DEBUG
@@ -243,7 +241,7 @@ int main  ( int argc , char * argv [ ] ) {
   if ( not flagpasswd )    {
     fputs ( ( main_shifr . localerus ? u8"введите пароль = " :
       "enter the password = " ) , stdout  ) ;
-    enter_password  ( & main_shifr ) ; }
+    shifr_enter_password  ( & main_shifr ) ; }
   if ( flaginputfromfile ) {
     FILE * const f = fopen  ( & ( ( * inputfilename ) [ 0 ] ) , & ( "r" [ 0 ] ) ) ;
     if  ( f == NULL ) {

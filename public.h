@@ -6,13 +6,11 @@
 
 # define  shifr_number_dec_set0( N ) \
   void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * ) ;
-# define  number_dec_set0 shifr_number_dec_set0
 
 # define  shifr_number_set0( N ) shifr_number ## N ## _set0
-# define  number_set0 shifr_number_set0
   
-number_dec_set0 ( v2 )
-number_dec_set0 ( v3 )
+shifr_number_dec_set0 ( v2 )
+shifr_number_dec_set0 ( v3 )
 
 # define  shifr_number_dec_mul_byte(  N ) \
 void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * , uint8_t )  ;
