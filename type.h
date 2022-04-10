@@ -36,18 +36,18 @@ typedef struct  shifr_s_size_io shifr_size_io ;
 
 // log(2,16!) ceil 8 = 6
 // log(2,64!) ceil 8 = 37
-enum  shifr_e_number_size { shifr_number_size2  = 6 , number_size3  = 37  } ;
+enum  shifr_e_number_size { shifr_number_size2  = 6 , shifr_number_size3  = 37  } ;
 typedef enum  shifr_e_number_size e_number_size ;
 
 shifr_number_structtype( v2 )
 shifr_number_typedef( v2 )
-shifr_number_structtype( number_size3 )
-shifr_number_typedef( number_size3 )
+shifr_number_structtype( v3 )
+shifr_number_typedef( v3 )
 
 shifr_number_priv_structtype( v2 )
 shifr_number_priv_typedef( v2 )
-shifr_number_priv_structtype( number_size3 )
-shifr_number_priv_typedef( number_size3 )
+shifr_number_priv_structtype( v3 )
+shifr_number_priv_typedef( v3 )
 
 struct  shifr_s_raspr2  ;
 typedef struct  shifr_s_raspr2  shifr_t_raspr2  ;

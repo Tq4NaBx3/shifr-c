@@ -17,7 +17,7 @@
 # define  number_def  shifr_number_def
   
 number_def  ( v2 )  
-number_def  ( number_size3 )
+number_def  ( v3 )
   
 # define  shifr_number_priv_def( N , D ) \
   struct  shifr_s_number_priv ## N { \
@@ -34,11 +34,11 @@ struct  shifr_s_raspr2  {
   number_priv_type ( v2 ) pass  ;
   } ;
 
-number_def_priv  ( number_size3 , number_size3 )
+number_def_priv  ( v3 , shifr_number_size3 )
 
 struct  shifr_s_raspr3  {
   uint8_t dice  [ shifr_deshi_size3 - 1 ] ;
-  number_priv_type ( number_size3 ) pass  ;
+  number_priv_type ( v3 ) pass  ;
   } ;
 
 // 0x20 (space) ' '    ---     0x7e (tilde) '~'

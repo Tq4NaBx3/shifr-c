@@ -170,7 +170,7 @@ number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
     ( ( uint8_t * ) n ) - offsetof ( number_priv_type ( N ) , pub ) ) ; }
     
 static  inline  shifr_number_pub_to_priv_def  ( v2 )
-static  inline  shifr_number_pub_to_priv_def  ( number_size3 )
+static  inline  shifr_number_pub_to_priv_def  ( v3 )
 
 # define  shifr_number_const_pub_to_priv( N ) shifr_number_const_pub_to_priv_ ## N
 # define  number_const_pub_to_priv  shifr_number_const_pub_to_priv
@@ -182,7 +182,7 @@ number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) (  \
     ( ( uint8_t * ) n ) - offsetof ( number_priv_type ( N ) , pub ) ) ; }
     
 static  inline  shifr_number_const_pub_to_priv_def  ( v2 )
-static  inline  shifr_number_const_pub_to_priv_def  ( number_size3 )
+static  inline  shifr_number_const_pub_to_priv_def  ( v3 )
 
 # define  shifr_number_def_set0( N , D ) \
   void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * const np ) { \
@@ -199,7 +199,7 @@ uint8_t shifr_number ## N ## _elt_copy  ( \
 # define  number_elt_copy shifr_number_elt_copy
 
 static  inline  number_def_elt_copy ( v2 )
-static  inline  number_def_elt_copy ( number_size3 )
+static  inline  number_def_elt_copy ( v3 )
 
 # define  shifr_number_def_mul_byte(  N , D ) \
 void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
@@ -223,8 +223,8 @@ void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
 
 number_def_set0 ( v2 , shifr_number_size2 )
 number_def_mul_byte ( v2 , shifr_number_size2 )
-number_def_set0 ( number_size3 , number_size3 )
-number_def_mul_byte ( number_size3 , number_size3 )
+number_def_set0 ( v3 , shifr_number_size3 )
+number_def_mul_byte ( v3 , shifr_number_size3 )
 
 # define  shifr_number_def_add(  N , D ) \
 void  shifr_number ## N ## _add  ( shifr_number_type ( N ) * const restrict  np  , \
@@ -250,7 +250,7 @@ void  shifr_number ## N ## _add  ( shifr_number_type ( N ) * const restrict  np 
 # define  number_add shifr_number_add
 
 static  inline  number_def_add  ( v2 , shifr_number_size2 )
-static  inline  number_def_add  ( number_size3 , number_size3 )
+static  inline  number_def_add  ( v3 , shifr_number_size3 )
 
 # define  shifr_number_def_not_zero(  N , D ) \
 bool  shifr_number ## N ## _not_zero  ( \
@@ -268,7 +268,7 @@ bool  shifr_number ## N ## _not_zero  ( \
 # define  number_not_zero shifr_number_not_zero
 
 static  inline  number_def_not_zero ( v2 , shifr_number_size2 )
-static  inline  number_def_not_zero ( number_size3 , number_size3 )
+static  inline  number_def_not_zero ( v3 , shifr_number_size3 )
 
 # define  shifr_number_def_dec(  N , D ) \
 void  shifr_number ## N ## _dec ( shifr_number_type ( N ) * const np  ) { \
@@ -287,7 +287,7 @@ void  shifr_number ## N ## _dec ( shifr_number_type ( N ) * const np  ) { \
 # define  number_dec shifr_number_dec
 
 static  inline  number_def_dec  ( v2 , shifr_number_size2 )
-static  inline  number_def_dec  ( number_size3 , number_size3 )
+static  inline  number_def_dec  ( v3 , shifr_number_size3 )
 
 # define  shifr_number_def_div_mod(  N , D ) \
 uint8_t shifr_number ## N ## _div_mod ( \
@@ -308,7 +308,7 @@ uint8_t shifr_number ## N ## _div_mod ( \
 # define  number_div_mod shifr_number_div_mod
 
 static  inline  number_def_div_mod  ( v2 , shifr_number_size2 )
-static  inline  number_def_div_mod  ( number_size3 , number_size3 )
+static  inline  number_def_div_mod  ( v3 , shifr_number_size3 )
 
 # define  shifr_number_def_set_byte(  N , D ) \
 void  shifr_number ## N ## _set_byte  ( shifr_number_type ( N ) * const np0 , \
@@ -322,7 +322,7 @@ void  shifr_number ## N ## _set_byte  ( shifr_number_type ( N ) * const np0 , \
 # define  number_set_byte shifr_number_set_byte
 
 static  inline  number_def_set_byte ( v2 , shifr_number_size2 )
-static  inline  number_def_set_byte ( number_size3 , number_size3 )
+static  inline  number_def_set_byte ( v3 , shifr_number_size3 )
   
 # ifdef SHIFR_DEBUG
 void  printarr  ( shifr_strcp const  name , shifr_arrcp const p ,
@@ -353,7 +353,7 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
   ( * stringi ) = '\00' ;  }
 # define  password_to_string_templ_def  shifr_password_to_string_templ_def
 password_to_string_templ_def  ( v2 )
-password_to_string_templ_def  ( number_size3 )
+password_to_string_templ_def  ( v3 )
 
 # define  shifr_string_to_password_templ_def( N ) \
 void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp , \
@@ -388,7 +388,7 @@ found : ; \
   ( * number_pub_to_priv ( N ) ( password  ) ) = pass ; }
 # define  string_to_password_templ_def  shifr_string_to_password_templ_def
 string_to_password_templ_def  ( v2 )
-string_to_password_templ_def  ( number_size3 )
+string_to_password_templ_def  ( v3 )
   
 # include <unistd.h> // ssize_t
 
@@ -1062,19 +1062,19 @@ void  shifr_pass_to_array2 ( t_ns_shifr * const ns_shifrp ) {
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
 void  shifr_pass_to_array3 ( t_ns_shifr * const ns_shifrp ) {
-  number_set0 ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ) ;
-  number_priv_type ( number_size3 ) mu  ;
-  number_set_byte ( number_size3 ) ( & mu . pub , 1 ) ;
+  number_set0 ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ) ;
+  number_priv_type ( v3 ) mu  ;
+  number_set_byte ( v3 ) ( & mu . pub , 1 ) ;
   uint8_t in = 0 ;
   do {
-    { number_priv_type ( number_size3 ) mux = mu ;
+    { number_priv_type ( v3 ) mux = mu ;
       // re += dice [ in ] * mu ;
-      number_mul_byte ( number_size3 ) (
+      number_mul_byte ( v3 ) (
         & mux . pub ,  ns_shifrp -> raspr3  . dice [ in ] ) ;
-      number_add  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+      number_add  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & mux . pub ) ; }
     //$mu *=  64 - $in ;
-    number_mul_byte ( number_size3 ) ( & mu . pub , ( uint8_t ) ( 0x40 - in ) ) ;
+    number_mul_byte ( v3 ) ( & mu . pub , ( uint8_t ) ( 0x40 - in ) ) ;
     ++  in ;
   } while ( in < 0x40 - 1 ) ; }
 
@@ -1093,7 +1093,7 @@ void  shifr_number  ##  N ##  _princ ( shifr_number_type ( N ) const * const np 
 # define  number_def_princ shifr_number_def_princ
 
 number_def_princ  ( v2 , shifr_number_size2 )
-number_def_princ  ( number_size3 , number_size3 )
+number_def_princ  ( v3 , shifr_number_size3 )
 
 # endif // SHIFR_DEBUG
 
@@ -1134,25 +1134,25 @@ void  string_to_password ( t_ns_shifr * const ns_shifrp ) {
   case 3 :
     switch  ( ns_shifrp -> password_alphabet  ) {
     case  letters_count :
-      string_to_password_templ  ( number_size3 ) ( ns_shifrp ,
+      string_to_password_templ  ( v3 ) ( ns_shifrp ,
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
         ( shifr_strcp ) & ns_shifrp -> letters ,  letters_count ) ;
       break ;
     case  letters_count2  :
-      string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
+      string_to_password_templ  ( v3 ) ( ns_shifrp , 
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
         ( shifr_strcp ) & ns_shifrp -> letters2 , letters_count2 ) ;
       break ;
     case  letters_count3  :
-      string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
+      string_to_password_templ  ( v3 ) ( ns_shifrp , 
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
         ( shifr_strcp ) & ns_shifrp -> letters3 , letters_count3 ) ;
       break ;
     case  letters_count4  :
-      string_to_password_templ  ( number_size3 ) ( ns_shifrp , 
+      string_to_password_templ  ( v3 ) ( ns_shifrp , 
         ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
         & ns_shifrp -> raspr3  . pass . pub ,
         ( shifr_strcp ) & ns_shifrp -> letters4 , letters_count4 ) ;
@@ -1227,7 +1227,7 @@ void  password_load ( N ) ( shifr_number_type ( N ) const * const password0 , \
   memsetv ( arrind  , memsetv_default_char  , sizeof  ( arrind  ) ) ; }
 
 static  inline  shifr_password_load_def (  v2 , shifr_deshi_size2 )
-static  inline  shifr_password_load_def (  number_size3 , shifr_deshi_size3 )
+static  inline  shifr_password_load_def (  v3 , shifr_deshi_size3 )
 
 void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {
@@ -1236,7 +1236,7 @@ void  password_load_uni ( t_ns_shifr * const ns_shifrp ) {
       & ns_shifrp  -> shifr2 , & ns_shifrp  -> deshi2 ) ;
     break ;
   case 3 :
-    password_load ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub , 
+    password_load ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub , 
       & ns_shifrp  -> shifr3 , & ns_shifrp  -> deshi3 ) ;
     break ;
   default :
@@ -1281,22 +1281,22 @@ void  password_to_string  ( t_ns_shifr * const ns_shifrp ) {
   case 3 :
     switch  ( ns_shifrp -> password_alphabet  ) {
     case  letters_count :
-      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+      password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters ,
         letters_count ) ;
       break ;
     case  letters_count2  :
-      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+      password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters2 ,
         letters_count2 ) ;
       break ;
     case  letters_count3  :
-      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+      password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters3 ,
         letters_count3 ) ;
       break ;
     case  letters_count4  :
-      password_to_string_templ  ( number_size3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+      password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters4 ,
         letters_count4 ) ;
       break ;
