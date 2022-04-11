@@ -22,7 +22,7 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
         "generate_password:internal password = " ) , stderr ) ;
-      number_princ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub , stderr  ) ;
+      shifr_number_princ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif
       break ;
@@ -33,7 +33,7 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
         "generate_password:internal password = " ) , stderr ) ;
-      number_princ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub , stderr  ) ;
+      shifr_number_princ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 # endif
       break ;
@@ -56,9 +56,9 @@ static  inline  void  shifr_streambuf_init  ( shifr_t_streambuf * const me  ,
       
 static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  p40 [ shifr_password_letters2size ] ;
-  set_keypress  ( ns_shifrp ) ;
+  shifr_set_keypress  ( ns_shifrp ) ;
   fgets ( ( char  * ) & ( p40 [ 0 ] ) , shifr_password_letters2size , stdin ) ;
-  reset_keypress ( ns_shifrp ) ;
+  shifr_reset_keypress ( ns_shifrp ) ;
   char volatile * j = & ( p40 [ 0 ]  ) ;
   while ( ( ( * j ) not_eq '\n' ) and
     ( ( * j ) not_eq '\00' ) and
@@ -67,34 +67,34 @@ static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   if ( j < ( & ( p40 [ shifr_password_letters2size ] ) ) )
     ( * j ) = '\00' ;
   else  {
-    memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
+    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( shifr_strcp ) & u8"в пароле нет конца строки" :
       ( shifr_strcp ) & "there is no end of line in the password" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   switch ( ns_shifrp -> password_alphabet ) {
   case  shifr_letters_count  :
-    string_to_password_templ  ( v2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
+    shifr_string_to_password_templ  ( v2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
       & ns_shifrp -> raspr2  . pass . pub , ( shifr_strcp ) & ns_shifrp -> letters ,
       shifr_letters_count ) ;
     break ;
   case  shifr_letters_count2  :
-    string_to_password_templ  ( v2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
+    shifr_string_to_password_templ  ( v2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
       & ns_shifrp -> raspr2  . pass . pub , ( shifr_strcp ) & ns_shifrp -> letters2 ,
       shifr_letters_count2 ) ;
     break ;
   case  shifr_letters_count3  :
-    string_to_password_templ  ( v2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
+    shifr_string_to_password_templ  ( v2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
       & ns_shifrp -> raspr2  . pass . pub , ( shifr_strcp ) & ns_shifrp -> letters3 ,
       shifr_letters_count3 ) ;
     break ;
   case  shifr_letters_count4  :
-    string_to_password_templ  ( v2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
+    shifr_string_to_password_templ  ( v2 ) ( ns_shifrp , ( shifr_strvcp ) & p40 , 
       & ns_shifrp -> raspr2  . pass . pub , ( shifr_strcp ) & ns_shifrp -> letters4 ,
       shifr_letters_count4 ) ;
     break ;
   default :
-    memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
+    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
       ( shifr_strcp ) & "unknown password alphabet" ) ;
@@ -102,23 +102,23 @@ static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  password_letters [ shifr_password_letters2size ] ;
   switch  ( ns_shifrp -> password_alphabet  ) {
   case  shifr_letters_count :
-    password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
+    shifr_password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & password_letters , & ns_shifrp -> letters , shifr_letters_count ) ;
     break ;
   case  shifr_letters_count2  :
-    password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
+    shifr_password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & password_letters , & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
     break ;
   case  shifr_letters_count3  :
-    password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
+    shifr_password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & password_letters , & ns_shifrp -> letters3 , shifr_letters_count3 ) ;
     break ;
   case  shifr_letters_count4  :
-    password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
+    shifr_password_to_string_templ  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & password_letters , & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
     break ;
   default :
-    memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
+    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
       ( shifr_strcp ) & "unknown password alphabet" ) ;
@@ -129,15 +129,15 @@ static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
       "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
       , & ( p40 [ 0 ] ) , & ( password_letters [ 0 ] ) ) ;
-  memsetv ( p40 , memsetv_default_char  , sizeof  ( p40 ) ) ;
-  memsetv ( password_letters  , memsetv_default_char  , sizeof  ( password_letters  ) ) ;
-  }
+  shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ;
+  shifr_memsetv ( password_letters  , shifr_memsetv_default_byte ,
+    sizeof  ( password_letters  ) ) ; }
 
 static  inline  void  shifr_enter_password3 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  p60 [ shifr_password_letters3size ] ;
-  set_keypress  ( ns_shifrp ) ;
+  shifr_set_keypress  ( ns_shifrp ) ;
   fgets ( ( char  * ) & ( p60 [ 0 ] ) , shifr_password_letters3size , stdin ) ;
-  reset_keypress ( ns_shifrp ) ;
+  shifr_reset_keypress ( ns_shifrp ) ;
   char  volatile  * j = & ( p60 [ 0 ] ) ;
   while ( ( ( * j ) not_eq '\n' ) and
     ( ( * j ) not_eq '\00' ) and
@@ -146,7 +146,7 @@ static  inline  void  shifr_enter_password3 ( t_ns_shifr * const ns_shifrp ) {
   if ( j < ( & ( p60 [ shifr_password_letters3size ] ) ) )
     ( * j ) = '\00' ;
   else  {
-    memsetv ( p60 , memsetv_default_char  , sizeof  ( p60 ) ) ;
+    shifr_memsetv ( p60 , shifr_memsetv_default_byte , sizeof  ( p60 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( shifr_strcp ) & u8"в пароле нет конца строки" :
       ( shifr_strcp ) & "there is no end of line in the password" ) ;
@@ -154,35 +154,35 @@ static  inline  void  shifr_enter_password3 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  password_letters6 [ shifr_password_letters3size ] ;
   switch  ( ns_shifrp -> password_alphabet  ) {
   case  shifr_letters_count :
-    string_to_password_templ  ( v3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
+    shifr_string_to_password_templ  ( v3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( shifr_strcp ) & ns_shifrp -> letters ,  shifr_letters_count ) ;
-    password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+    shifr_password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters , shifr_letters_count ) ;
     break ;
   case  shifr_letters_count2  :
-    string_to_password_templ  ( v3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
+    shifr_string_to_password_templ  ( v3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
-    password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+    shifr_password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
     break ;
   case  shifr_letters_count3  :
-    string_to_password_templ  ( v3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
+    shifr_string_to_password_templ  ( v3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( shifr_strcp ) & ns_shifrp -> letters3 ,  shifr_letters_count3 ) ;
-    password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+    shifr_password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters3 , shifr_letters_count3 ) ;
     break ;
   case  shifr_letters_count4  :
-    string_to_password_templ  ( v3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
+    shifr_string_to_password_templ  ( v3 ) ( ns_shifrp , ( shifr_strvcp ) & p60 ,
       & ns_shifrp -> raspr3  . pass . pub ,
       ( shifr_strcp ) & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
-    password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
+    shifr_password_to_string_templ  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
       & password_letters6 , & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
     break ;
   default :
-    memsetv ( p60 , memsetv_default_char  , sizeof  ( p60 ) ) ;
+    shifr_memsetv ( p60 , shifr_memsetv_default_byte , sizeof  ( p60 ) ) ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
       ( shifr_strcp ) & "unknown password alphabet" ) ;
@@ -192,9 +192,9 @@ static  inline  void  shifr_enter_password3 ( t_ns_shifr * const ns_shifrp ) {
       u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'.\n" :
       "Warning! Password \'%s\' is very large. Same as \'%s\'.\n" )
       , & ( p60 [ 0 ] ) , & ( password_letters6  [ 0 ] ) ) ;
-  memsetv ( p60 , memsetv_default_char  , sizeof  ( p60 ) ) ;
-  memsetv ( password_letters6 , memsetv_default_char  , sizeof  ( password_letters6 ) ) ;
-  }
+  shifr_memsetv ( p60 , shifr_memsetv_default_byte , sizeof  ( p60 ) ) ;
+  shifr_memsetv ( password_letters6 , shifr_memsetv_default_byte ,
+    sizeof  ( password_letters6 ) ) ; }
       
 static  inline  void  shifr_enter_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
@@ -409,14 +409,14 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
     fputs ( ( localerus ?
       u8"внутренний пароль = " :
       "internal password = " ) , stderr ) ;
-    number_princ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub , stderr  ) ;
+    shifr_number_princ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub , stderr  ) ;
     fputs ( "\n" , stderr ) ;
     break ;
   case  3 :
     fputs ( ( localerus ?
       u8"внутренний пароль = " :
       "internal password = " ) , stderr ) ;
-    number_princ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub , stderr  ) ;
+    shifr_number_princ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub , stderr  ) ;
     fputs ( "\n" , stderr ) ;
     break ;
   default :
@@ -436,25 +436,25 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
     char  volatile  password_letters3_26  [ shifr_password_letters3size ] ;
     switch  ( main_shifrp -> use_version ) {
     case  2 :
-      password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
+      shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
         & main_shifrp -> password_letters2 , & main_shifrp -> letters ,
         shifr_letters_count ) ;
-      password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
+      shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
         & password_letters2_62  , & main_shifrp -> letters2 , shifr_letters_count2 ) ;
-      password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
+      shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
         & password_letters2_10 , & main_shifrp -> letters3 , shifr_letters_count3 ) ;
-      password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
+      shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
         & password_letters2_26  , & main_shifrp -> letters4 , shifr_letters_count4 ) ;
       break ;
     case  3 :
-      password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
+      shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
         & main_shifrp -> password_letters3 , & main_shifrp -> letters ,
         shifr_letters_count ) ;
-      password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
+      shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
         & password_letters3_62  , & main_shifrp -> letters2 , shifr_letters_count2 ) ;
-      password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
+      shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
         & password_letters3_10  , & main_shifrp -> letters3 , shifr_letters_count3 ) ;
-      password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
+      shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
         & password_letters3_26  , & main_shifrp -> letters4 , shifr_letters_count4 ) ;
       break ;
     default :
@@ -491,44 +491,44 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
     case  2 :
       { shifr_number_priv_type ( v2 ) password2 ;
 
-        string_to_password_templ  ( v2 ) ( main_shifrp ,
+        shifr_string_to_password_templ  ( v2 ) ( main_shifrp ,
           ( shifr_strvcp  ) & main_shifrp -> password_letters2 ,
           & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters ,
           shifr_letters_count ) ; 
         fputs ( ( localerus ?
           u8"из строки95 во внутренний пароль = " :
           "from string95 to internal password = " ) , stderr ) ;
-        number_princ  ( v2 ) ( & password2 . pub , stderr  ) ;
+        shifr_number_princ  ( v2 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
-        string_to_password_templ  ( v2 ) ( main_shifrp ,
+        shifr_string_to_password_templ  ( v2 ) ( main_shifrp ,
           ( shifr_strvcp  ) & password_letters2_62  ,
           & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters2 ,
           shifr_letters_count2 ) ;
         fputs ( ( localerus ?
           u8"из строки62 во внутренний пароль = " :
           "from string62 to internal password = " ) , stderr ) ;
-        number_princ  ( v2 ) ( & password2 . pub , stderr  ) ;
+        shifr_number_princ  ( v2 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
         
-        string_to_password_templ  ( v2 ) ( main_shifrp ,
+        shifr_string_to_password_templ  ( v2 ) ( main_shifrp ,
           ( shifr_strvcp  ) & password_letters2_26  ,
           & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters4 ,
           shifr_letters_count4 ) ;
         fputs ( ( localerus ?
           u8"из строки26 во внутренний пароль = " :
           "from string26 to internal password = " ) , stderr ) ;
-        number_princ  ( v2 ) ( & password2 . pub , stderr  ) ;
+        shifr_number_princ  ( v2 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
-        string_to_password_templ  ( v2 ) ( main_shifrp ,
+        shifr_string_to_password_templ  ( v2 ) ( main_shifrp ,
           ( shifr_strvcp  ) & password_letters2_10 ,
           & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters3 ,
           shifr_letters_count3 ) ;
         fputs ( ( localerus ?
           u8"из строки10 во внутренний пароль = " :
           "from string10 to internal password = " ) , stderr ) ;
-        number_princ  ( v2 ) ( & password2 . pub , stderr  ) ;
+        shifr_number_princ  ( v2 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
         }
@@ -536,44 +536,44 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
     case  3 :
       { shifr_number_priv_type ( v3 ) password2 ;
 
-        string_to_password_templ  ( v3 ) ( main_shifrp ,
+        shifr_string_to_password_templ  ( v3 ) ( main_shifrp ,
           ( shifr_strvcp  ) & main_shifrp -> password_letters3 ,
           & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters ,
           shifr_letters_count ) ; 
         fputs ( ( localerus ?
           u8"из строки95 во внутренний пароль = " :
           "from string95 to internal password = " ) , stderr ) ;
-        number_princ  ( v3 ) ( & password2 . pub , stderr  ) ;
+        shifr_number_princ  ( v3 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
-        string_to_password_templ  ( v3 ) ( main_shifrp ,
+        shifr_string_to_password_templ  ( v3 ) ( main_shifrp ,
           ( shifr_strvcp  ) & password_letters3_62  ,
           & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters2 ,
           shifr_letters_count2 ) ;
         fputs ( ( localerus ?
           u8"из строки62 во внутренний пароль = " :
           "from string62 to internal password = " ) , stderr ) ;
-        number_princ  ( v3 ) ( & password2 . pub , stderr  ) ;
+        shifr_number_princ  ( v3 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
         
-        string_to_password_templ  ( v3 ) ( main_shifrp ,
+        shifr_string_to_password_templ  ( v3 ) ( main_shifrp ,
           ( shifr_strvcp  ) & password_letters3_26 ,
           & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters4 ,
           shifr_letters_count4 ) ;
         fputs ( ( localerus ?
           u8"из строки26 во внутренний пароль = " :
           "from string26 to internal password = " ) , stderr ) ;
-        number_princ  ( v3 ) ( & password2 . pub , stderr  ) ;
+        shifr_number_princ  ( v3 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
-        string_to_password_templ  ( v3 ) ( main_shifrp ,
+        shifr_string_to_password_templ  ( v3 ) ( main_shifrp ,
           ( shifr_strvcp  ) & password_letters3_10 ,
           & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters3 ,
           shifr_letters_count3 ) ;
         fputs ( ( localerus ?
           u8"из строки10 во внутренний пароль = " :
           "from string10 to internal password = " ) , stderr ) ;
-        number_princ  ( v3 ) ( & password2 . pub , stderr  ) ;
+        shifr_number_princ  ( v3 ) ( & password2 . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
 
         }
@@ -610,21 +610,21 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       ( strcp ) & "unknown password alphabet" ) ;
     longjmp ( main_shifrp -> jump , 1 ) ; }
 # endif
-    memsetv ( main_shifrp -> password_letters2  , memsetv_default_char  ,
+    shifr_memsetv ( main_shifrp -> password_letters2  , shifr_memsetv_default_byte ,
       sizeof  ( main_shifrp -> password_letters2  ) ) ;
-    memsetv ( main_shifrp -> password_letters3  , memsetv_default_char  ,
+    shifr_memsetv ( main_shifrp -> password_letters3  , shifr_memsetv_default_byte ,
       sizeof  ( main_shifrp -> password_letters3  ) ) ;
-    memsetv ( password_letters2_62  , memsetv_default_char  ,
+    shifr_memsetv ( password_letters2_62  , shifr_memsetv_default_byte ,
       sizeof  ( password_letters2_62  ) ) ;
-    memsetv ( password_letters3_62  , memsetv_default_char  ,
+    shifr_memsetv ( password_letters3_62  , shifr_memsetv_default_byte ,
       sizeof  ( password_letters3_62  ) ) ;
-    memsetv ( password_letters2_26  , memsetv_default_char  ,
+    shifr_memsetv ( password_letters2_26  , shifr_memsetv_default_byte ,
       sizeof  ( password_letters2_26  ) ) ;
-    memsetv ( password_letters3_26  , memsetv_default_char  ,
+    shifr_memsetv ( password_letters3_26  , shifr_memsetv_default_byte ,
       sizeof  ( password_letters3_26  ) ) ;
-    memsetv ( password_letters2_10  , memsetv_default_char  ,
+    shifr_memsetv ( password_letters2_10  , shifr_memsetv_default_byte ,
       sizeof  ( password_letters2_10  ) ) ;
-    memsetv ( password_letters3_10  , memsetv_default_char  ,
+    shifr_memsetv ( password_letters3_10  , shifr_memsetv_default_byte ,
       sizeof  ( password_letters3_10  ) ) ;
     return  0 ; }      
       
@@ -654,7 +654,7 @@ static  inline  void  shifr_test_password ( t_ns_shifr  * const main_shifrp ,
               ( psw_unii < 'A' or psw_unii > 'Z' ) ) {
               psw_uni [ i ] = '\00' ;
               break ; } }
-          psw_unii  = memsetv_default_char  ; }
+          psw_unii  = shifr_memsetv_default_byte ; }
         break ;
       case  shifr_letters_count3  :
         { size_t i  = 0 ;
@@ -718,7 +718,7 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
           longjmp ( main_shifrp -> jump  , 1 ) ; }
         break ; }
     } while ( true ) ;      
-      { uint8_t const bytes = streambuf_writeflushzero3 ( main_shifrp ,
+      { uint8_t const bytes = shifr_streambuf_writeflushzero3 ( main_shifrp ,
           ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
         if ( bytes ) {
           writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , bytes , 1 ,

@@ -14,6 +14,9 @@ typedef shifr_strcp strcp ;
 typedef shifr_arrcp arrcp ;
 # define  password_letters2size shifr_password_letters2size
 # define  password_letters3size shifr_password_letters3size
+# define  number_princ shifr_number_princ
+# define  printarr  shifr_printarr
+# define  string_to_password  shifr_string_to_password
 
 int main  ( int argc , char * argv [ ] ) {
   t_ns_shifr  main_shifr  ;
@@ -129,7 +132,7 @@ int main  ( int argc , char * argv [ ] ) {
       fputs ( "\n" , stderr ) ;
 # endif                    
         }
-      password_to_string  ( & main_shifr ) ;
+      shifr_password_to_string  ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG
       if ( main_shifr . use_version == 3 ) {
         if  ( strcmp ( ( char * ) main_shifr  . password_letters3 , argv  [ argj  ] ) )  
@@ -272,7 +275,7 @@ int main  ( int argc , char * argv [ ] ) {
     main_shifr  . fileto  = f ;    }
   streambuf_init  ( & main_shifr . filebuffrom , main_shifr  . filefrom )  ;
   streambuf_init  ( & main_shifr . filebufto , main_shifr  . fileto )  ;
-  password_load_uni ( & main_shifr ) ;
+  shifr_password_load_uni ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 3 )  {
     printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr3 ,
