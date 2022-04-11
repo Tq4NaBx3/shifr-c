@@ -1,3 +1,7 @@
+#
+# Шифр ©2020-2 Глебов А.Н.
+# Shifr ©2020-2 Glebe A.N.
+#
 GCC = gcc
 #GCC = gcc-8
 #GCC = gcc-9
@@ -12,9 +16,9 @@ SHIFR_COMPILE = $(SHIFR_GCCRUN) -c
 DEPENDtypeh = type.h define.h
 DEPENDstructh = struct.h $(DEPENDtypeh)
 DEPENDpublich = public.h $(DEPENDtypeh) define.h
-DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh)
+DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh) inline-pri.h
 DEPENDmainc = main.c define.h $(DEPENDinlineh)
-DEPENDshifrc = shifr.c $(DEPENDpublich) $(DEPENDstructh) define.h
+DEPENDshifrc = shifr.c define.h $(DEPENDinlineh)
 shifr: $(SHIFR_OBJECTS) main.o
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) main.o -o shifr
 	@chmod 0555 shifr

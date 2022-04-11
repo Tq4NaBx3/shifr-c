@@ -1,3 +1,6 @@
+// Шифр ©2020-2 Глебов А.Н.
+// Shifr ©2020-2 Glebe A.N.
+
 # ifndef  SHIFR_TYPE_H
 # define  SHIFR_TYPE_H
 

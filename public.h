@@ -1,8 +1,12 @@
+// Шифр ©2020-2 Глебов А.Н.
+// Shifr ©2020-2 Glebe A.N.
+
 # ifndef  SHIFR_PUBLIC_H
 # define  SHIFR_PUBLIC_H
 
-# include "type.h"
+# include <stdio.h> // FILE
 # include "define.h"
+# include "type.h"
 
 # define  shifr_number_dec_set0( N ) \
   void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * ) ;
