@@ -688,26 +688,26 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       longjmp ( main_shifrp -> jump , 1 ) ; }
 # else
   switch  ( main_shifrp -> password_alphabet  ) {
-  case  letters_count :
+  case  shifr_letters_count :
     puts  ( ( char * ) & ( ( ( main_shifrp -> use_version == 3 ) ?
       main_shifrp -> password_letters3 : main_shifrp -> password_letters2 ) [ 0 ] ) ) ;
     break ;
-  case  letters_count2  :
+  case  shifr_letters_count2  :
     puts  ( ( char * ) & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_62 :
       password_letters2_62 ) [ 0 ] ) ) ;
     break ;
-  case  letters_count3  :
+  case  shifr_letters_count3  :
     puts  ( ( char * ) & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_10 :
       password_letters2_10 ) [ 0 ] ) ) ;
     break ;
-  case  letters_count4  :
+  case  shifr_letters_count4  :
     puts  ( ( char * ) & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_26 :
       password_letters2_26 ) [ 0 ] ) ) ;
     break ;
   default :
     main_shifrp -> string_exception  = ( localerus ?
-      ( strcp ) & u8"неизвестный алфавит пароля" :
-      ( strcp ) & "unknown password alphabet" ) ;
+      ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
+      ( shifr_strcp ) & "unknown password alphabet" ) ;
     longjmp ( main_shifrp -> jump , 1 ) ; }
 # endif
     shifr_memsetv ( main_shifrp -> password_letters2  , shifr_memsetv_default_byte ,

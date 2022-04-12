@@ -33,7 +33,7 @@ static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
 
 // ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
 static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
-  return  ( char ) ( ';'  + bits6 ) ; }
+  return  ( char ) ( ( ( uint8_t ) ';' ) + bits6 ) ; }
   
 static inline void  data_xor3  ( uint8_t * const restrict  old_last_data ,
   uint8_t * const restrict  old_last_sole ,

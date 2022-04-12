@@ -145,224 +145,33 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 
 # include <errno.h>
 # include "define.h"
-
-# ifdef SHIFR_SYSCALL_RANDOM
-# include <sys/syscall.h>
-# else
-# include <sys/random.h>
-# endif
-
 # include "inline.h"
-
-# define  shifr_number_def_set0( N , D ) \
-  void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * const np ) { \
-    memset  ( & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) , 0 , D ) ; }
-
-# define  shifr_number_def_mul_byte(  N , D ) \
-void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
-  uint8_t const byte ) {  \
-  if ( byte == 0 ) {  \
-    shifr_number_set0 ( N ) ( np ) ; \
-    return  ; } \
-  if ( byte == 1 )  \
-    return ; \
-  uint8_t per = 0 ; \
-  { uint8_t i = 0 ; \
-    do { \
-      uint16_t const x = ( uint16_t ) ( ( ( uint16_t  ) ( \
-        shifr_number_elt_copy ( N ) ( np , i ) ) ) * \
-        ( ( uint16_t  ) byte  ) + ( ( uint16_t  ) per ) ) ; \
-      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] =  \
-        ( uint8_t ) ( x bitand 0xff ) ; \
-      per = ( uint8_t ) ( x >>  8 ) ; \
-      ++  i ; \
-    } while ( i < D ) ; } }
+# include "private.h"
+# include "template.h"
 
 shifr_number_def_set0 ( v2 , shifr_number_size2 )
-shifr_number_def_mul_byte ( v2 , shifr_number_size2 )
 shifr_number_def_set0 ( v3 , shifr_number_size3 )
+
+shifr_number_def_mul_byte ( v2 , shifr_number_size2 )
 shifr_number_def_mul_byte ( v3 , shifr_number_size3 )
-  
+
 # ifdef SHIFR_DEBUG
 void  shifr_printarr  ( shifr_strcp const  name , shifr_arrcp const p ,
   size_t const arrsize , FILE * const f ) {
-  fprintf  ( f  , u8"%s = [ " , * name  ) ;
+  fprintf  ( f  , "%s = [ " , * name  ) ;
   uint8_t const * i = & ( ( * p ) [ 0 ] ) ;
   do {
     fprintf  ( f  , "%x , " , ( int ) ( * i ) ) ; 
     ++  i ;
   } while ( i not_eq  & ( ( * p ) [ arrsize ] ) ) ;
-  fputs ( u8"]\n" , f ) ; }
+  fputs ( "]\n" , f ) ; }
 # endif
-    
-# define  shifr_password_to_string_templ_def( N ) \
-void  shifr_password  ##  N ##  _to_string_templ ( \
-  shifr_number_type ( N ) const * const password0 , shifr_strvp const string , \
-  shifr_strp letters , uint8_t const letterscount  ) { \
-  char  volatile  * stringi = & ( ( * string )  [ 0 ] ) ; \
-  if ( shifr_number_not_zero  ( N ) ( password0 ) ) { \
-    shifr_number_priv_type ( N ) password = * shifr_number_const_pub_to_priv ( N ) ( \
-      password0 ) ; \
-    do {  \
-      /* здесь предыдущие размеры заняли место паролей */ \
-      shifr_number_dec ( N ) ( & password . pub ) ;  \
-      ( * stringi ) = ( * letters ) [ \
-        shifr_number_div_mod ( N ) ( & password . pub , letterscount ) ] ;  \
-      ++  stringi ; \
-    } while ( shifr_number_not_zero ( N ) ( & password . pub ) ) ; }  \
-  ( * stringi ) = '\00' ; }
 
 shifr_password_to_string_templ_def  ( v2 )
 shifr_password_to_string_templ_def  ( v3 )
 
-# define  shifr_string_to_password_templ_def( N ) \
-void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp , \
-  shifr_strvcp  const string  , shifr_number_type ( N ) * const password ,  \
-  shifr_strcp const letters , uint8_t const letterscount  ) { \
-  char  volatile  const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
-  if  ( ( * stringi ) == '\00' ) { \
-    shifr_number_set0 ( N ) ( password ) ; \
-    return ; } \
-  shifr_number_priv_type ( N ) pass ; \
-  shifr_number_set0 ( N ) ( & pass . pub ) ; \
-  shifr_number_priv_type ( N ) mult ;  \
-  shifr_number_set_byte ( N ) ( & mult . pub , 1 ) ;  \
-  do  { \
-    uint8_t i = letterscount ;  \
-    do {  \
-      -- i ;  \
-      if ( ( * stringi ) == ( * letters ) [ i ] ) \
-        goto found ; \
-    } while ( i ) ; \
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?  \
-      ( shifr_strcp ) & u8"неправильная буква в пароле" : \
-      ( shifr_strcp ) & "wrong letter in password" ) ;  \
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
-found : ; \
-    { shifr_number_priv_type ( N ) tmp = mult ;  \
-      shifr_number_mul_byte ( N ) ( & tmp . pub , ( uint8_t ) ( i + 1 ) ) ; \
-      shifr_number_add ( N ) ( &  pass . pub , & tmp . pub )  ; }  \
-    shifr_number_mul_byte ( N ) ( & mult . pub , letterscount ) ; \
-    ++  stringi ; \
-  } while ( ( * stringi ) not_eq '\00' ) ;  \
-  ( * shifr_number_pub_to_priv ( N ) ( password  ) ) = pass ; }
-
 shifr_string_to_password_templ_def  ( v2 )
 shifr_string_to_password_templ_def  ( v3 )
-
-// generate random number [ fr .. to ]
-static  unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
-  unsigned  int const fr , unsigned  int const to ) {
-# ifdef SHIFR_DEBUG
-  if ( fr >= to ) {
-    fprintf ( stderr  , "uirandfrto : fr >= to , fr = %u , to = %u\n"  ,
-      fr , to ) ;
-    ns_shifrp  -> string_exception  = ( shifr_strcp ) "uirandfrto : fr >= to" ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-  if ( fr + 0x100 <= to ) {
-    fprintf ( stderr  , "uirandfrto : fr + 0x100 <= to , fr = %u , to = %u\n"  ,
-      fr , to ) ;
-    ns_shifrp  -> string_exception  = ( shifr_strcp ) "uirandfrto : fr + 0x100 <= to" ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-# endif
-  uint8_t buf ;
-  do {
-# ifdef SHIFR_DEBUG
-    ssize_t const r = 
-# endif
-# ifdef SHIFR_SYSCALL_RANDOM
-      syscall ( SYS_getrandom , & buf , 1 , 0 ) ;
-# else
-      getrandom ( & buf , 1 , 0 ) ;
-# endif
-# ifdef SHIFR_DEBUG
-    if ( r == -1 ) {
-      perror  ( "uirandfrto : getrandom" ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "uirandfrto : getrandom" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-    if ( r not_eq 1 ) {
-      fprintf ( stderr  , "uirandfrto : r = %ld not_eq 1\n"  , r ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "uirandfrto : r not_eq 1" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-# endif // SHIFR_DEBUG
-  } while ( buf + 0x100 % ( to - fr + 1 ) >= 0x100 ) ;
-  return  fr + buf % ( to - fr + 1 ) ; }
-
-// data_size = 4
-static  void shifr_datasole2 ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrcp const secretdata , shifr_arrp const secretdatasole ,
-  size_t const data_size ) {
-  uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
-  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
-  uint8_t ran ;
-# ifdef SHIFR_DEBUG
-  ssize_t const r =
-# endif
-# ifdef SHIFR_SYSCALL_RANDOM
-    syscall ( SYS_getrandom , & ran , 1 , 0 ) ;
-# else
-    getrandom ( & ran , 1 , 0 ) ;
-# endif
-# ifdef SHIFR_DEBUG
-    if ( r == -1 ) {
-      perror  ( "datasole2 : getrandom" ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "datasole2 : getrandom" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-    if ( r not_eq 1 ) {
-      fprintf ( stderr  , "datasole2 : r = %ld not_eq 1\n"  , r ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "datasole2 : r not_eq 1" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-# endif // SHIFR_DEBUG
-  do {
-    -- id ;
-    --  ids ;
-    // главное данные , хвост - соль : 10 =>
-    //   10_00 или 10_01 или 10_10 или 10_11
-    // в таблице всё рядом, 4 варианта равномерно распределены
-    ( * ids ) = ( uint8_t ) (
-      ( ( * id  ) <<  2 ) bitor
-      ( ran bitand  0x3 ) ) ;
-    ran >>= 2 ;
-  } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
-
-// data_size = 1 .. 3
-static void shifr_datasole3 ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrcp const secretdata , shifr_arrp const secretdatasole ,
-  size_t const data_size ) {
-  uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
-  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ data_size ] ) ;
-  int const arans = ( ( data_size == 3 ) ? 2 : 1 ) ;
-  uint8_t aran [ arans ] ;
-# ifdef SHIFR_DEBUG
-  ssize_t const r = 
-# ifdef SHIFR_SYSCALL_RANDOM
-    syscall ( SYS_getrandom , & ( aran [ 0 ] ) , arans , 0 ) ;
-# else
-    getrandom ( & ( aran [ 0 ] ) , ( size_t ) arans , 0 ) ;
-# endif
-    if ( r == -1 ) {
-      perror  ( "datasole3 : getrandom" ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "datasole3 : getrandom" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-    if ( r not_eq arans ) {
-      fprintf ( stderr  , "datasole3 : r = %ld not_eq %d\n"  , r , arans ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "datasole3 : r not_eq arans" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-# endif // SHIFR_DEBUG
-  unsigned  int ran = ( ( unsigned  int ) ( aran [ 0 ] ) ) ;
-  if ( arans == 2 )
-    ran |=  ( ( ( unsigned  int ) ( aran [ 1 ] ) ) << 8 ) ;
-  do {
-    -- id ;
-    --  ids ;
-    // главное данные , хвост - соль : 101 =>
-    //   101_000 или 101_001 или ... или 101_111
-    // в таблице всё рядом, 8 вариантов равномерно распределены
-    ( * ids ) = ( uint8_t )
-      ( ( ( unsigned int ) ( ( * id  ) <<  3 ) ) bitor
-      ( ran bitand  0x7 ) ) ;
-    ran >>= 3 ;
-  } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
 
 // Отключить эхо-вывод и буферизацию ввода
 void  shifr_set_keypress  ( t_ns_shifr * const ns_shifrp ) {
@@ -430,67 +239,6 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 2 ) ;
   return  false ; }
 
-// пишу по шесть бит
-// secretdatasolesize - количество шести-битных отделов (2 или 3)
-// encrypteddata - массив шести-битных чисел
-// I write in six bits
-// secretdatasolesize - the number of six-bit divisions (2 or 3)
-// encrypteddata - array of six-bit numbers
-static void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
-  shifr_t_streambuf * const me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
-  uint8_t const secretdatasolesize , bool const  flagtext ,
-  uint8_t * restrict * const output_bufferp , size_t * const writesp ,
-  size_t  const outputs ) {
-  if  ( flagtext  ) {
-    uint8_t i = 0 ;
-    do {
-      char  buf2  = bits6_to_letter ( ( * encrypteddata ) [ i ] ) ;
-        if ( ( * writesp ) >= outputs ) {
-          ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-            ( shifr_strcp ) & u8"streambuf_write3: переполнение буфера (flagtext)"  :
-            ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagtext)" ) ;
-          longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-        ( * * output_bufferp ) = ( uint8_t ) buf2 ;
-        ++  ( * output_bufferp )  ;
-        ++  ( * writesp ) ;
-        ++  ( me -> bytecount ) ;
-        if  ( ( me -> bytecount ) >=  60  ) {
-          if ( ( * writesp ) >= outputs ) {
-            ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-              ( shifr_strcp ) & u8"streambuf_write3: переполнение буфера для '\\n'"  :
-              ( shifr_strcp ) & "streambuf_write3: buffer overflow for '\\n'" ) ;
-            longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-          ( * * output_bufferp ) = '\n' ;
-          ++  ( * output_bufferp )  ;
-          ++  ( * writesp ) ;
-          me -> bytecount = 0 ; }
-      ++  i ;
-    } while ( i < secretdatasolesize ) ; }
-  else  {
-    uint8_t i = 0 ;
-    do {
-      if  ( ( me -> bufbitsize ) < 2 ) {
-        me -> buf = ( me -> buf ) bitor
-          ( uint8_t ) ( ( ( * encrypteddata ) [ i ] ) << ( me -> bufbitsize ) ) ;
-        me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 6 ) ; }
-      else  {
-        uint8_t const to_write  = ( uint8_t ) ( ( ( ( * encrypteddata ) [ i ] ) <<
-          ( me -> bufbitsize  ) ) bitor ( me -> buf ) ) ;
-        if ( ( * writesp ) >= outputs ) {
-          ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-            ( shifr_strcp ) & u8"streambuf_write3: переполнение буфера (flagdigit)"  :
-            ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagdigit)" ) ;
-          longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-        ( * * output_bufferp ) = to_write ;
-        ++  ( * output_bufferp )  ;
-        ++  ( * writesp ) ;
-        // + 6 - 8
-        me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) - 2U ) ;
-        me -> buf = ( uint8_t ) ( ( ( * encrypteddata ) [ i ] ) >>
-          ( 6 - ( me -> bufbitsize ) ) ) ;  } 
-        ++  i ;
-      } while ( i < secretdatasolesize ) ; } }
-
 uint8_t shifr_streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
   shifr_arrps arrpsp ) {
   uint8_t result  = 0 ;
@@ -534,27 +282,6 @@ lbreak  : ;
     ++  output_buffer ;
     ++  result  ; }
   return  result  ; }
-
-// версия 3 пишу три бита для расшифровки
-// version 3 write three bits to decode
-static  void  shifr_streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
-  uint8_t const encrypteddata , uint8_t * restrict * const output_bufferp ,
-  size_t * const writesp ) {
-  shifr_t_streambuf * const restrict me  = & ns_shifrp -> filebufto  ;
-  if  ( ( me -> bufbitsize ) < 5 ) {
-    me -> buf = ( uint8_t ) ( ( me -> buf ) bitor
-      ( encrypteddata <<  ( me -> bufbitsize ) ) ) ;
-    me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 3U ) ; }
-  else  {
-    uint8_t const to_write  = ( uint8_t ) ( ( encrypteddata   << (
-      me -> bufbitsize ) ) bitor ( me -> buf ) ) ;
-    ( * * output_bufferp ) = to_write  ;
-    ++  ( * output_bufferp  ) ;
-    ++  ( * writesp ) ;
-    // + 3 - 8
-    me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) - 5U ) ;
-    me -> buf =  ( uint8_t ) ( encrypteddata   >>
-      ( 3 - ( me -> bufbitsize ) ) ) ; } }
 
 // returns size loads & writes
 shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
@@ -848,17 +575,6 @@ void  shifr_pass_to_array3 ( t_ns_shifr * const ns_shifrp ) {
   } while ( in < 0x40 - 1 ) ; }
 
 # ifdef SHIFR_DEBUG
-
-# define  shifr_number_def_princ( N , D ) \
-void  shifr_number  ##  N ##  _princ ( shifr_number_type ( N ) const * const np , \
-  FILE * const fs ) { \
-  fputs ( "[ " , fs ) ; \
-  uint8_t i = D ;  \
-  do {  \
-    -- i ;  \
-    fprintf ( fs  , "%x , " , shifr_number_elt_copy ( N ) ( np , i ) ) ; \
-  } while ( i ) ; \
-  fputs ( "]" , fs ) ; }
 
 shifr_number_def_princ  ( v2 , shifr_number_size2 )
 shifr_number_def_princ  ( v3 , shifr_number_size3 )
