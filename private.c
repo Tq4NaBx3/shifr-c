@@ -85,6 +85,9 @@ void shifr_datasole2 ( t_ns_shifr * const ns_shifrp ,
     // главное данные , хвост - соль : 10 =>
     //   10_00 или 10_01 или 10_10 или 10_11
     // в таблице всё рядом, 4 варианта равномерно распределены
+    // the main thing is data , the tail is salt : 10 =>
+    //   10_00 or 10_01 or 10_10 or 10_11
+    // in the table, everything is side by side, 4 options are evenly distributed
     ( * ids ) = ( uint8_t ) (
       ( ( * id  ) <<  2 ) bitor
       ( ran bitand  0x3 ) ) ;
@@ -124,6 +127,9 @@ void shifr_datasole3 ( t_ns_shifr * const ns_shifrp ,
     // главное данные , хвост - соль : 101 =>
     //   101_000 или 101_001 или ... или 101_111
     // в таблице всё рядом, 8 вариантов равномерно распределены
+    // the main thing is data , the tail is salt : 101 =>
+    //   101_000 or 101_001 or ... or 101_111
+    // in the table, everything is side by side, 8 options are evenly distributed
     ( * ids ) = ( uint8_t )
       ( ( ( unsigned int ) ( ( * id  ) <<  3 ) ) bitor
       ( ran bitand  0x7 ) ) ;

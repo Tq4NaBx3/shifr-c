@@ -16,10 +16,12 @@ SHIFR_COMPILE = $(SHIFR_GCCRUN) -c
 DEPENDtypeh = type.h define.h
 DEPENDtemplateh = template.h define.h
 DEPENDprivateh = private.h $(DEPENDtypeh)
-DEPENDprivatec = private.c $(DEPENDprivateh) $(DEPENDstructh) define.h inline-pri.h
-DEPENDstructh = struct.h $(DEPENDtypeh)
+DEPENDprivatec = private.c $(DEPENDprivateh) $(DEPENDstructh) define.h $(DEPENDinlineprih)
+DEPENDstructh = struct.h $(DEPENDtypeh) $(DEPENDtemplateh) template-pri.h
 DEPENDpublich = public.h $(DEPENDtypeh) define.h
-DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh) inline-pri.h
+DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh) $(DEPENDinlineprih) \
+ $(DEPENDtemplateh)
+DEPENDinlineprih = inline-pri.h template-pri.h
 DEPENDmainc = main.c define.h $(DEPENDinlineh)
 DEPENDshifrc = shifr.c define.h $(DEPENDinlineh) $(DEPENDprivateh) $(DEPENDtemplateh)
 shifr: $(SHIFR_OBJECTS) main.o

@@ -174,6 +174,7 @@ shifr_string_to_password_templ_def  ( v2 )
 shifr_string_to_password_templ_def  ( v3 )
 
 // Отключить эхо-вывод и буферизацию ввода
+// Disable echo output and input buffering
 void  shifr_set_keypress  ( t_ns_shifr * const ns_shifrp ) {
   if  ( tcgetattr ( 0 , & ns_shifrp  -> stored_termios  ) ) {
     char const * const se = strerror ( errno ) ;
@@ -195,6 +196,7 @@ void  shifr_set_keypress  ( t_ns_shifr * const ns_shifrp ) {
     longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
  
 // Восстановление дефолтного состояния
+// Restoring the default state
 void  shifr_reset_keypress  ( t_ns_shifr * const ns_shifrp ) {
   if  ( tcsetattr ( 0 , TCSANOW , & ns_shifrp -> stored_termios ) ) {
     char const * const se = strerror ( errno ) ;
@@ -252,7 +254,8 @@ uint8_t shifr_streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
   shifr_datasole3 ( ns_shifrp , ( shifr_arrcp ) & ns_shifrp -> secretdata ,
     & ns_shifrp -> secretdatasole , 1 )  ;
   uint8_t secretdatasolesize  = 1 ;  
-  // после подсоления, данные переворачиваем предыдущим ксором
+  // после подсоления, данные переворачиваем предыдущим xor-ом
+  // after settling in, we turn the data over with the previous xor
   data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
     & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
   uint8_t encrypteddata [ 3 ] ;
@@ -299,7 +302,8 @@ shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
       [ 3 ] = ( buf >>  6 ) bitand 0x3 } ;
     uint8_t secretdatasole  [ 4 ] ;
     shifr_datasole2 ( ns_shifrp , & secretdata , & secretdatasole , 4 )  ;
-    // после подсоления, данные переворачиваем предыдущим ксором
+    // после подсоления, данные переворачиваем предыдущим xor-ом
+    // after settling in, we turn the data over with the previous xor
     shifr_data_xor2 ( ns_shifrp , & secretdatasole , 4 )  ;
     uint8_t encrypteddata [ 4 ] ;
     shifr_crypt_decrypt ( & secretdatasole , ( shifr_arrcp ) & ns_shifrp  -> shifr2 ,
@@ -310,7 +314,7 @@ shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
 // 1639 ^ 1/2 = 40.48
 // 1639 % 40 = 0 .. 39
 // 1639 / 40 = 40.97
-// делаем [0] % 40 , [1] % 40 , [2] % 41
+// делаем make [0] % 40 , [1] % 40 , [2] % 41
 // 'R' = 82 .. 'z' = 122
     if  ( ns_shifrp  -> flagtext  ) {
       uint16_t  buf16 = ( uint16_t  ) (
@@ -418,6 +422,7 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
     shifr_datasole3 ( ns_shifrp , ( shifr_arrcp ) & ( ns_shifrp -> secretdata ) ,
       & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
     // после подсоления, данные переворачиваем предыдущим ксором
+    // after settling in, we turn the data over with the previous xor
     data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
       & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
     shifr_crypt_decrypt ( & ns_shifrp -> secretdatasole ,
@@ -444,7 +449,7 @@ shifr_size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps con
 // 1639 ^ 1/2 = 40.48
 // 1639 % 40 = 0 .. 39
 // 1639 / 40 = 40.97
-// делаем [0] % 40 , [1] % 40 , [2] % 41
+// делаем make [0] % 40 , [1] % 40 , [2] % 41
 // 'R' = 82 .. 'z' = 122
       // читаем три буквы ' a 1 b' -> декодируем в два байта "XY"
       // reads three letters ' a 1 b' -> decode to two bytes "XY"

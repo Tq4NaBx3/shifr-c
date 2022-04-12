@@ -11,20 +11,11 @@
 # include <termios.h>
 # include <stdbool.h>
 # include "type.h"
-
-# define  shifr_number_def( N ) \
-  struct  shifr_s_number ## N { \
-    uint8_t _ ; \
-  } ;
+# include "template.h"
+# include "template-pri.h"
   
 shifr_number_def  ( v2 )  
 shifr_number_def  ( v3 )
-  
-# define  shifr_number_priv_def( N , D ) \
-  struct  shifr_s_number_priv ## N { \
-    uint8_t arr [ D ] ; \
-    shifr_number_type ( N ) pub ; \
-  } ;
 
 shifr_number_priv_def ( v2 , shifr_number_size2 )
 

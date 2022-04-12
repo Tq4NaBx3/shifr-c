@@ -5,25 +5,10 @@
 # define  SHIFR_INLINE_PRI_H
 
 # include <stddef.h> // offsetof
+# include "template-pri.h"
 
-# define  shifr_number_pub_to_priv( N ) shifr_number_pub_to_priv_ ## N
-
-# define  shifr_number_pub_to_priv_def( N ) \
-shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
-  shifr_number_type  ( N ) * const n ) { \
-  return  ( shifr_number_priv_type  ( N ) * ) ( \
-    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; }
-    
 static  inline  shifr_number_pub_to_priv_def  ( v2 )
 static  inline  shifr_number_pub_to_priv_def  ( v3 )
-
-# define  shifr_number_const_pub_to_priv( N ) shifr_number_const_pub_to_priv_ ## N
-
-# define  shifr_number_const_pub_to_priv_def( N ) \
-shifr_number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) (  \
-  shifr_number_type  ( N ) const * const n ) { \
-  return  ( shifr_number_priv_type  ( N ) const * ) ( \
-    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; }
     
 static  inline  shifr_number_const_pub_to_priv_def  ( v2 )
 static  inline  shifr_number_const_pub_to_priv_def  ( v3 )
@@ -46,9 +31,14 @@ static inline void  data_xor3  ( uint8_t * const restrict  old_last_data ,
     //   101_000 или 101_001 или ... или 101_111
     // в таблице всё рядом, 8 вариантов равномерно распределены
     // данные сыпью предыдущей солью
+    // the main thing is data , the tail is salt : 101 =>
+    //   101_000 or 101_001 or ... or 101_111
+    // in the table, everything is side by side, 8 options are evenly distributed
+    // the data is a rash of the previous salt
     ( * ids ) = ( uint8_t ) ( ( * ids ) xor  ( ( * old_last_sole ) << 3  ) ) ;
     ( * ids ) xor_eq  ( * old_last_data ) ;
     // берю свежую соль
+    // I take fresh salt
     ( * old_last_sole ) = cur_sole ;
     ( * old_last_data ) = cur_data ;
     ++  ids ;
@@ -74,9 +64,14 @@ static inline void  shifr_data_xor2  ( t_ns_shifr * const ns_shifrp ,
     //   01_00 или 01_01 или 01_10 или 01_11
     // в таблице всё рядом, 4 варианта равномерно распределены
     // данные сыпью предыдущей солью
+    // the main thing is data , the tail is salt : 01 =>
+    //   01_00 or 01_01 or 01_10 or 01_11
+    // in the table, everything is side by side, 4 options are evenly distributed
+    // the data is a rash of the previous salt
     ( * ids ) = ( uint8_t ) ( ( * ids ) xor ( ( ns_shifrp -> old_last_sole ) << 2  ) ) ;
     ( * ids ) xor_eq  ( ns_shifrp -> old_last_data ) ;
     // беру свежую соль
+    // I take fresh salt
     ns_shifrp -> old_last_sole = cur_sole ;
     ns_shifrp -> old_last_data = cur_data ;
     ++  ids ;
