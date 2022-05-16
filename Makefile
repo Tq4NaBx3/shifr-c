@@ -15,20 +15,20 @@ SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion -Wno-clobbere
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDtypeh = type.h define.h
 DEPENDtemplateh = template.h define.h
-DEPENDprivateh = private.h $(DEPENDtypeh)
+DEPENDprivateh = private.h $(DEPENDtypeh) $(DEPENDtemplateh)
 DEPENDprivatec = private.c $(DEPENDprivateh) $(DEPENDstructh) define.h $(DEPENDinlineprih)
 DEPENDstructh = struct.h $(DEPENDtypeh) $(DEPENDtemplateh) template-pri.h
 DEPENDpublich = public.h $(DEPENDtypeh) define.h
 DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh) $(DEPENDinlineprih) \
- $(DEPENDtemplateh)
+ $(DEPENDtemplateh) $(DEPENDprivateh)
 DEPENDinlineprih = inline-pri.h template-pri.h
 DEPENDmainc = main.c define.h $(DEPENDinlineh)
-DEPENDshifrc = shifr.c define.h $(DEPENDinlineh) $(DEPENDprivateh) $(DEPENDtemplateh)
+DEPENDshifrc = shifr.c define.h $(DEPENDinlineh) $(DEPENDtemplateh)
 shifr: $(SHIFR_OBJECTS) main.o
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) main.o -o shifr
 	@chmod 0555 shifr
 shifr.o: $(DEPENDshifrc)
-	@$(SHIFR_COMPILE) -D_GNU_SOURCE shifr.c
+	@$(SHIFR_COMPILE) shifr.c
 private.o: $(DEPENDprivatec)
 	@$(SHIFR_COMPILE) private.c
 main.o: $(DEPENDmainc)
@@ -41,7 +41,7 @@ clean:
 	@rm -f libshifr.so
 asm: $(SHIFR_ASM)
 shifr.s: $(DEPENDshifrc)
-	@$(SHIFR_GCCRUN) -D_GNU_SOURCE shifr.c $(SHIFR_ASM_OPTIONS)
+	@$(SHIFR_GCCRUN) shifr.c $(SHIFR_ASM_OPTIONS)
 main.s: $(DEPENDmainc)
 	@$(SHIFR_GCCRUN) main.c $(SHIFR_ASM_OPTIONS)
 private.s: $(DEPENDprivatec)

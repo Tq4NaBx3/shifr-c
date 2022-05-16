@@ -220,3 +220,36 @@ void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * const password
   struct  shifr_s_number ## N { \
     uint8_t _ ; \
   } ;
+
+# define  shifr_password_to_string_templ( N ) shifr_password  ##  N ##  _to_string_templ
+  
+# define  shifr_password_to_string_templ_dec( N ) \
+void  shifr_password_to_string_templ  ( N ) ( \
+  shifr_number_type ( N ) const * password0 , shifr_strvp string ,  \
+  shifr_strp letters , uint8_t letterscount  ) ;
+
+# define  shifr_string_to_password_templ( N ) shifr_string_to_password  ##  N ##  _templ
+
+# define  shifr_string_to_password_templ_dec( N ) \
+void  shifr_string_to_password_templ  ( N ) ( t_ns_shifr * , shifr_strvcp  string , \
+  shifr_number_type ( N ) * password , shifr_strcp letters , uint8_t letterscount  ) ;
+
+# ifdef SHIFR_DEBUG
+
+# define  shifr_number_princ( N ) shifr_number  ##  N ##  _princ
+
+# define  shifr_number_dec_princ( N ) \
+void  shifr_number_princ  ( N ) ( shifr_number_type ( N ) const * np ,  \
+  FILE * fs ) ;
+
+# endif // SHIFR_DEBUG
+
+# define  shifr_number_mul_byte( N ) shifr_number ## N ## _mul_byte
+
+# define  shifr_number_dec_mul_byte(  N ) \
+void  shifr_number_mul_byte ( N ) ( shifr_number_type ( N ) * , uint8_t )  ;
+
+# define  shifr_number_set0( N ) shifr_number ## N ## _set0
+
+# define  shifr_number_dec_set0( N ) \
+  void shifr_number_set0( N )  ( shifr_number_type  ( N ) * ) ;
