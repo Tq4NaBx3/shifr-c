@@ -24,6 +24,8 @@ DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh) $(DEPENDinli
 DEPENDinlineprih = inline-pri.h template-pri.h
 DEPENDmainc = main.c define.h $(DEPENDinlineh)
 DEPENDshifrc = shifr.c define.h $(DEPENDinlineh) $(DEPENDprivateh) $(DEPENDtemplateh)
+DEPENDexample = example.c define.h $(DEPENDinlineh)
+EXAMPLE_OBJECTS = example.o
 shifr: $(SHIFR_OBJECTS) main.o
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) main.o -o shifr
 	@chmod 0555 shifr
@@ -54,3 +56,7 @@ lib: $(SHIFR_OBJECTS)
 	@sudo cp *.h /usr/local/include/shifr
 	@sudo cp libshifr.so /usr/local/lib
 	@sudo ldconfig /usr/local/lib
+example: $(EXAMPLE_OBJECTS) shifr.o private.o
+	@$(SHIFR_GCCRUN) $(EXAMPLE_OBJECTS) shifr.o private.o -o example
+example.o: $(DEPENDexample)
+	@$(SHIFR_COMPILE) example.c
