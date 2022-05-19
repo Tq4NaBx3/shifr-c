@@ -72,8 +72,7 @@ static  inline  void  shifr_streambuf_init  ( shifr_t_streambuf * const me  ,
   FILE  * const f ) {
   me -> file  = f ;
   me -> buf = 0 ;
-  me -> bufbitsize = 0 ;
-  me -> bytecount = 0 ; }
+  me -> bufbitsize = 0 ; }
       
 static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  p40 [ shifr_password_letters2size ] ;
@@ -284,8 +283,9 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
       ++ i  ;
       ++ j  ;
     } while ( i <= 'z' ) ; }
-  ns_shifrp  -> filefrom  = stdin ;
-  ns_shifrp  -> fileto = stdout ; }      
+  ns_shifrp ->  filefrom  = stdin ;
+  ns_shifrp ->  fileto = stdout ;
+  ns_shifrp ->  bytecountw  = 0 ; }
       
 # ifdef SHIFR_DEBUG
 

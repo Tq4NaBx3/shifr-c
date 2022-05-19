@@ -56,9 +56,6 @@ struct  shifr_s_streambuf {
   FILE  * file  ;
   uint8_t buf ;
   uint8_t bufbitsize  ;
-  // для : write6 , writeflushzero в текстовом режиме
-  // for : write6 , writeflushzero in text mode
-  int bytecount ; 
   } ;
   
 struct  s_ns_shifr  {
@@ -126,6 +123,9 @@ struct  s_ns_shifr  {
 // private :
   shifr_t_streambuf filebuffrom ;
   shifr_t_streambuf filebufto ;
+  // для : write6 , writeflushzero в текстовом режиме
+  // for : write6 , writeflushzero in text mode
+  int bytecountw  ; 
   uint8_t old_last_data ;
   uint8_t old_last_sole ;
   // text mode remember string place

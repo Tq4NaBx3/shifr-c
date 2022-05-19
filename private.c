@@ -159,8 +159,8 @@ void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
         ( * * output_bufferp ) = ( uint8_t ) buf2 ;
         ++  ( * output_bufferp )  ;
         ++  ( * writesp ) ;
-        ++  ( me -> bytecount ) ;
-        if  ( ( me -> bytecount ) >=  60  ) {
+        ++  ( ns_shifrp ->  bytecountw  ) ;
+        if  ( ( ns_shifrp ->  bytecountw  ) >=  60  ) {
           if ( ( * writesp ) >= outputs ) {
             ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
               ( shifr_strcp ) & u8"streambuf_write3: переполнение буфера для '\\n'"  :
@@ -169,7 +169,7 @@ void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
           ( * * output_bufferp ) = '\n' ;
           ++  ( * output_bufferp )  ;
           ++  ( * writesp ) ;
-          me -> bytecount = 0 ; }
+          ns_shifrp ->  bytecountw  = 0 ; }
       ++  i ;
     } while ( i < secretdatasolesize ) ; }
   else  {

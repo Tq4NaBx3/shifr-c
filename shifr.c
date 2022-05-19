@@ -270,16 +270,16 @@ uint8_t shifr_streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
 
 lbreak  : ;
 
-  shifr_t_streambuf * const me = & ns_shifrp ->  filebufto ;
+  { shifr_t_streambuf * const me = & ns_shifrp ->  filebufto ;
 
-  if  ( me -> bufbitsize ) {
-    ( * output_buffer ) = me -> buf ;
-    ++  output_buffer ;
-    ++  result  ;
-    me -> bufbitsize = 0 ; }
+    if  ( me -> bufbitsize ) {
+      ( * output_buffer ) = me -> buf ;
+      ++  output_buffer ;
+      ++  result  ;
+      me -> bufbitsize = 0 ; } } // me
 
-  if ( ns_shifrp  -> flagtext and ( me -> bytecount ) )  {
-    me -> bytecount = 0 ;
+  if ( ns_shifrp  -> flagtext and ( ns_shifrp ->  bytecountw  ) ) {
+    ns_shifrp ->  bytecountw  = 0 ;
     ( * output_buffer ) = '\n' ;
     ++  output_buffer ;
     ++  result  ; }
