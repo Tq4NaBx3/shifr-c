@@ -259,33 +259,33 @@ int main  ( int argc , char * argv [ ] ) {
     flagclosefilefrom = true ;
     main_shifr  . filefrom = f ;    }
   if ( flagoutputtofile ) {
-    FILE * const f = fopen  ( & ( ( * outputfilename  ) [ 0 ] ) , & ( "w" [ 0 ] ) ) ;
+    FILE * const f = fopen  ( & ( ( * outputfilename  ) [ 0 ] ) ,
+      & ( "w" [ 0 ] ) ) ;
     if  ( f == NULL ) {
       int const e = errno ; 
       fprintf ( stderr  , ( main_shifr . localerus ?
         u8"Ошибка записи файла \"%s\" : %s\n" :
-        "Error writing file \"%s\" : %s\n"  ) , & ( ( * outputfilename  ) [ 0 ] ) ,
+        "Error writing file \"%s\" : %s\n"  ) ,
+        & ( ( * outputfilename  ) [ 0 ] ) ,
         strerror  ( e ) ) ;
       main_shifr  . string_exception  = ( main_shifr . localerus ?
         ( strcp ) & u8"Ошибка записи файла" :
         ( strcp ) & "Error writing file" ) ;
-      longjmp(main_shifr  . jump,1); }
+      longjmp(main_shifr  . jump  , 1 ) ; }
     flagclosefileto = true ;
-    main_shifr  . fileto  = f ;    }
-  shifr_streambuf_init  ( & main_shifr . filebuffrom , main_shifr  . filefrom )  ;
-  shifr_streambuf_init  ( & main_shifr . filebufto , main_shifr  . fileto )  ;
+    main_shifr  . fileto  = f ; }
   shifr_password_load_uni ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 3 )  {
     printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr3 ,
       shifr_deshi_size3 , stderr  ) ;
-    printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi3 , shifr_deshi_size3 ,
-      stderr  ) ; }
+    printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi3 ,
+      shifr_deshi_size3 , stderr  ) ; }
   else  {
-    printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr2 , shifr_deshi_size2 ,
-      stderr  ) ;
-    printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi2 , shifr_deshi_size2 ,
-      stderr  ) ; }
+    printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr2 ,
+      shifr_deshi_size2 , stderr  ) ;
+    printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi2 ,
+      shifr_deshi_size2 , stderr  ) ; }
 # endif // SHIFR_DEBUG
   enum  { inputbuffersize = 0x1000  } ;
   enum  { outputbuffersize  = 0x3100  } ; // 0x30cd

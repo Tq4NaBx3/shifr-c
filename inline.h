@@ -68,9 +68,7 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
         ( shifr_strcp ) & "generate_password:unrecognized version" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-static  inline  void  shifr_streambuf_init  ( shifr_t_streambuf * const me  ,
-  FILE  * const f ) {
-  me -> file  = f ;
+static  inline  void  shifr_streambuf_init  ( shifr_t_streambuf * const me ) {
   me -> buf = 0 ;
   me -> bufbitsize = 0 ; }
       
@@ -285,8 +283,8 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
     } while ( i <= 'z' ) ; }
   ns_shifrp ->  filefrom  = stdin ;
   ns_shifrp ->  fileto  = stdout  ;
-  shifr_streambuf_init  ( & ns_shifrp ->  filebuffrom , stdin ) ;
-  shifr_streambuf_init  ( & ns_shifrp ->  filebufto , stdout  ) ;
+  shifr_streambuf_init  ( & ns_shifrp ->  filebuffrom ) ;
+  shifr_streambuf_init  ( & ns_shifrp ->  filebufto ) ;
   ns_shifrp ->  bytecountw  = 0 ; }
       
 # ifdef SHIFR_DEBUG
