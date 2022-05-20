@@ -53,7 +53,10 @@ enum  { shifr_letters_count3 = ( ( UINT8_C ( '9' ) - UINT8_C ( '0' ) ) + 1U ) } 
 enum  { shifr_password_letters2size = 30 , shifr_password_letters3size = 180 } ;
 
 struct  shifr_s_streambuf {
+  
+// ! remove => FILE * file => already in struct shifr
   FILE  * file  ;
+  
   uint8_t buf ;
   uint8_t bufbitsize  ;
   } ;

@@ -6,7 +6,6 @@
 # include "define.h"
 # include "inline.h"
 
-# define  streambuf_init  shifr_streambuf_init
 # ifdef SHIFR_DEBUG
 typedef shifr_timestamp_t timestamp_t ;
 # endif
@@ -273,8 +272,8 @@ int main  ( int argc , char * argv [ ] ) {
       longjmp(main_shifr  . jump,1); }
     flagclosefileto = true ;
     main_shifr  . fileto  = f ;    }
-  streambuf_init  ( & main_shifr . filebuffrom , main_shifr  . filefrom )  ;
-  streambuf_init  ( & main_shifr . filebufto , main_shifr  . fileto )  ;
+  shifr_streambuf_init  ( & main_shifr . filebuffrom , main_shifr  . filefrom )  ;
+  shifr_streambuf_init  ( & main_shifr . filebufto , main_shifr  . fileto )  ;
   shifr_password_load_uni ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 3 )  {

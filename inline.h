@@ -284,7 +284,9 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
       ++ j  ;
     } while ( i <= 'z' ) ; }
   ns_shifrp ->  filefrom  = stdin ;
-  ns_shifrp ->  fileto = stdout ;
+  ns_shifrp ->  fileto  = stdout  ;
+  shifr_streambuf_init  ( & ns_shifrp ->  filebuffrom , stdin ) ;
+  shifr_streambuf_init  ( & ns_shifrp ->  filebufto , stdout  ) ;
   ns_shifrp ->  bytecountw  = 0 ; }
       
 # ifdef SHIFR_DEBUG
