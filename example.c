@@ -10,10 +10,6 @@ int main  ( int argc , char * argv [ ] ) {
   strncpy ( ( char * ) shif . password_letters3 , "qwerty" ,
           shifr_password_letters3size ) ; 
   shifr_string_to_password  ( & shif ) ;
-  
-// ! buf , bufbitsize to init fun
-  shif . filebufto . buf = 0 ;
-  
   shifr_password_load_uni ( & shif ) ;
   enum { inbufsize = 0x100 } ;
   uint8_t inbuf [ inbufsize ] = "Lambda" ;
@@ -44,6 +40,9 @@ int main  ( int argc , char * argv [ ] ) {
   
   enum { outbuffsize = 0x40 } ;
   uint8_t outbuff [ outbuffsize ] ;
+  
+// ! to write flush for encrypt and decrypt
+  
   uint8_t const bytes = shifr_streambuf_writeflushzero3 ( & shif ,
           ( shifr_arrps ) { .p = & outbuff , .s = outbuffsize - 1 } ) ;
   fprintf ( stdout  , "flush bytes = %u\n" , bytes ) ;
@@ -81,6 +80,16 @@ int main  ( int argc , char * argv [ ] ) {
   decbuf2 [ sizeiodec2 . o ] = '\00' ;
   fprintf ( stdout , "decbuf = `%s`\n" , decbuf2 ) ;
   
-  
+  enum { decbuffsize = 0x10 } ;
+  uint8_t decbuff [ decbuffsize ] ;
+  shifr_size_io sizeiodecf  = shifr_decrypt3  ( & shif ,
+    ( shifr_arrcps  ) { . cp  = ( shifr_arrcp ) & outbuff ,
+      . s = bytes } ,
+    ( shifr_arrps ) { . p = & decbuff , . s = decbuffsize - 1 } ) ;
+  fprintf ( stdout , "outbuf = `%s`\n" , outbuff ) ;
+  fprintf ( stdout  , "sizeio . i = %zu .o = %zu\n" , sizeiodecf . i ,
+    sizeiodecf . o ) ;
+  decbuff [ sizeiodecf . o ] = '\00' ;
+  fprintf ( stdout , "decbuf = `%s`\n" , decbuff ) ;  
   
   shifr_destr ( & shif ) ; }

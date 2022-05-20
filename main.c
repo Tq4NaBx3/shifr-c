@@ -34,7 +34,7 @@ int main  ( int argc , char * argv [ ] ) {
     showhelp  = true  ;
   else
     if ( argc  ==  2 ) {
-      if ( ( strcmp ( argv [ 1  ] , u8"--рус" ) ==  0 ) or
+      if ( ( strcmp ( argv [ 1 ] , u8"--рус" ) ==  0 ) or
         ( strcmp ( argv [ 1 ] , "--rus" ) ==  0 ) ) {
         main_shifr . localerus = true ;
         showhelp  = true  ; }
@@ -56,8 +56,8 @@ int main  ( int argc , char * argv [ ] ) {
   bool  flagreadinput = false ;
   bool  flagreadoutput = false ;
   bool  flagreadpasswdfromfile  = false ;
-  strcp inputfilename = ( strcp ) & u8""  ;
-  strcp outputfilename  = ( strcp ) & u8""  ;
+  strcp inputfilename = ( strcp ) & ""  ;
+  strcp outputfilename  = ( strcp ) & ""  ;
   bool  flaginputfromfile = false ;
   bool  flagoutputtofile  = false ;
   bool  flagclosefilefrom = false ;
@@ -82,10 +82,12 @@ int main  ( int argc , char * argv [ ] ) {
       size_t  ns  ;
       if ( main_shifr . use_version == 2 ) {
         ns  = password_letters2size ;
-        nr = fread  ( ( char * ) & main_shifr  . password_letters2 , 1 , ns , f ) ; }
+        nr = fread  ( ( char * ) & main_shifr  . password_letters2 , 1 , ns ,
+          f ) ; }
       else {
         ns  = password_letters3size ;
-        nr = fread  ( ( char * ) & main_shifr  . password_letters3 , 1 , ns , f ) ; }
+        nr = fread  ( ( char * ) & main_shifr  . password_letters3 , 1 , ns ,
+          f ) ; }
       if ( nr >= ns ) {
         main_shifr  . string_exception  = ( main_shifr . localerus ?
           ( strcp ) & u8"Файл пароля очень большой" :
@@ -148,13 +150,15 @@ int main  ( int argc , char * argv [ ] ) {
       shifr_password_to_string  ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG
       if ( main_shifr . use_version == 3 ) {
-        if  ( strcmp ( ( char * ) main_shifr  . password_letters3 , argv  [ argj  ] ) )  
+        if  ( strcmp ( ( char * ) main_shifr  . password_letters3 ,
+            argv  [ argj  ] ) )  
           fprintf  ( stderr , main_shifr . localerus ?
             u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
             "Warning! Password \'%s\' is very large. Same as \'%s\'\n"
             , argv  [ argj  ] , & ( main_shifr  . password_letters3  [ 0 ] ) ) ; }
       else {
-        if  ( strcmp ( ( char * ) main_shifr  . password_letters2 , argv  [ argj  ] ) )  
+        if  ( strcmp ( ( char * ) main_shifr  . password_letters2 ,
+            argv  [ argj  ] ) )  
           fprintf  ( stderr , main_shifr . localerus ?
             u8"Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
             "Warning! Password \'%s\' is very large. Same as \'%s\'\n"
@@ -253,7 +257,7 @@ int main  ( int argc , char * argv [ ] ) {
     main_shifr  . string_exception  = ( main_shifr . localerus ?
       ( strcp ) & u8"так зашифровывать или расшифровывать ?" :
       ( strcp ) & "so encrypt or decrypt ?" ) ;
-    longjmp(main_shifr  . jump,1); }
+    longjmp ( main_shifr  . jump  , 1 ) ; }
 
   timestamp_t t0 = get_timestamp();
   
@@ -267,7 +271,8 @@ int main  ( int argc , char * argv [ ] ) {
       "enter the password = " ) , stdout  ) ;
     shifr_enter_password  ( & main_shifr ) ; }
   if ( flaginputfromfile ) {
-    FILE * const f = fopen  ( & ( ( * inputfilename ) [ 0 ] ) , & ( "r" [ 0 ] ) ) ;
+    FILE * const f = fopen  ( & ( ( * inputfilename ) [ 0 ] ) ,
+      & ( "r" [ 0 ] ) ) ;
     if  ( f == NULL ) {
       int const e = errno ; 
       fprintf ( stderr  , ( main_shifr . localerus ?
@@ -277,7 +282,7 @@ int main  ( int argc , char * argv [ ] ) {
       main_shifr  . string_exception  = ( main_shifr . localerus ?
         ( strcp ) & u8"Ошибка чтения файла" :
         ( strcp ) & "Error reading file" ) ;
-      longjmp(main_shifr  . jump,1); }
+      longjmp ( main_shifr  . jump  , 1 ) ; }
     flagclosefilefrom = true ;
     main_shifr  . filefrom = f ;    }
   if ( flagoutputtofile ) {
@@ -347,8 +352,8 @@ int main  ( int argc , char * argv [ ] ) {
         & ( ( * inputfilename ) [ 0 ] ) , strerror  ( e ) ) ;
       resulterror = 2 ; } }
 # ifdef SHIFR_DEBUG
-    timestamp_t t1 = get_timestamp();
-    long  double secs = (t1 - t0) / 1000000.0L;      
+    timestamp_t const t1 = get_timestamp  ( ) ;
+    long  double const  secs = ( t1 - t0 ) / 1000000.0L  ;      
   fprintf ( stderr  , ( main_shifr . localerus ?  u8"время = %Lf сек\n" :
     "time = %Lf sec\n" ) , secs  ) ;
 # endif // SHIFR_DEBUG
