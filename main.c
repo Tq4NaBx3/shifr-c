@@ -29,7 +29,21 @@ int main  ( int argc , char * argv [ ] ) {
     shifr_destr ( & main_shifr ) ;
     return  exc ; }
     
-  if  ( argc  <=  1 ) {
+  bool  showhelp  = false ;
+  if  ( argc  <=  1 )
+    showhelp  = true  ;
+  else
+    if ( argc  ==  2 ) {
+      if ( ( strcmp ( argv [ 1  ] , u8"--рус" ) ==  0 ) or
+        ( strcmp ( argv [ 1 ] , "--rus" ) ==  0 ) ) {
+        main_shifr . localerus = true ;
+        showhelp  = true  ; }
+      else
+        if ( ( strcmp ( argv [ 1 ] , u8"--анг" ) ==  0 ) or
+          ( strcmp ( argv [ 1 ] , "--eng" ) ==  0 ) ) {
+          main_shifr . localerus = false  ;
+          showhelp  = true  ; } }
+  if  ( showhelp ) {
     int const e = shifr_show_help ( & main_shifr  ) ;
     shifr_destr ( & main_shifr ) ;
     return  e ; }
@@ -104,8 +118,8 @@ int main  ( int argc , char * argv [ ] ) {
       if  ( flagpasswd  ) {
         main_shifr  . string_exception  = ( main_shifr . localerus ?
           ( strcp ) & u8"пароль уже задан" :
-          ( strcp ) & "password already set" );
-        longjmp(main_shifr  . jump,1); }
+          ( strcp ) & "password already set" )  ;
+        longjmp(main_shifr  . jump  , 1 ) ; }
 
       if ( main_shifr . use_version == 2 ) {
         strncpy ( ( char * ) main_shifr  . password_letters2 , argv  [ argj  ] ,
@@ -214,6 +228,14 @@ int main  ( int argc , char * argv [ ] ) {
         if (( strcmp ( argv[argj] , u8"--а10" ) ==  0 ) or
           ( strcmp ( argv[argj] , "--a10" ) ==  0 )) { 
           main_shifr . password_alphabet = 10 ; }
+        else
+        if (  ( strcmp ( argv [ argj  ] , u8"--рус" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--rus" ) ==  0 ) ) {
+          main_shifr . localerus = true ; }
+        else
+        if (  ( strcmp ( argv [ argj  ] , u8"--анг" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--eng" ) ==  0 ) ) {
+          main_shifr . localerus = false  ; }
         else {
           fprintf ( stderr , ( main_shifr . localerus ?
             u8"неопознанная опция : \'%s\'\n" :

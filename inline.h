@@ -351,6 +351,12 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
       u8" ( по-умолчанию )" :
       "  --3\tusing three bit encryption, key = 296 bits ( 45 - 90 letters )."
       " ( by default )") ;
+    puts  ( localerus ?
+      u8"  --рус или\n  --rus\tрусский язык" :
+      "  --rus\trussian language" ) ;
+    puts  ( localerus ?
+      u8"  --анг или\n  --eng\tанглийский язык" :
+      "  --eng\tenglish language" ) ;
     fputs  ( localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
@@ -358,7 +364,8 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
       do {
         fputc ( * cj  , stdout  ) ;
         ++ cj ;
-      } while ( cj not_eq ( & ( main_shifrp -> letters [ shifr_letters_count ] ) ) ) ; }
+      } while ( cj not_eq ( & ( main_shifrp -> letters [ shifr_letters_count ] ) )
+        ) ; }
     fputs ( ( main_shifrp -> localerus ?
       u8"\'\n  --а62 или\n  --a62\t\'" :
       "\'\n  --a62\t\'" ) , stdout  ) ;
@@ -366,34 +373,32 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
       do {
         fputc ( * cj  , stdout  ) ;
         ++ cj ;
-      } while ( cj not_eq ( & ( main_shifrp -> letters2 [ shifr_letters_count2 ] ) ) ) ; }
+      } while ( cj not_eq ( & ( main_shifrp -> letters2 [ shifr_letters_count2 ] )
+          ) ) ; }
     fputs ( ( main_shifrp -> localerus ?
       u8"\'\t(по умолчанию)\n" :
       "\'\t(by default)\n"  ) , stdout  ) ;
 
     fputs ( ( main_shifrp -> localerus ?
       u8"  --а26 или\n  --a26\t\'" :
-      "\'\n  --a26\t\'" ) , stdout  ) ;
+      "  --a26\t\'" ) , stdout  ) ;
     { char const * cj = & ( main_shifrp -> letters4 [ 0 ] ) ;
       do {
         fputc ( * cj  , stdout  ) ;
         ++ cj ;
-      } while ( cj not_eq ( & ( main_shifrp -> letters4 [ shifr_letters_count4 ] ) ) ) ; }
-    fputs ( ( main_shifrp -> localerus ?
-      u8"\'\n" :
-      "\'\n"  ) , stdout  ) ;
+      } while ( cj not_eq ( & ( main_shifrp -> letters4 [ shifr_letters_count4 ] )
+          ) ) ; }
+    fputs ( ( main_shifrp -> localerus ?  u8"\'\n" :  "\'\n"  ) , stdout  ) ;
       
-    fputs ( ( localerus ?
-      u8"  --а10 или\n  --a10\t\'" :
-      "\'\n  --a10\t\'" ) , stdout  ) ;
+    fputs ( ( localerus ? u8"  --а10 или\n  --a10\t\'" :
+      "  --a10\t\'" ) , stdout  ) ;
     { char const * cj = & ( main_shifrp -> letters3 [ 0 ] ) ;
       do {
         fputc ( * cj  , stdout  ) ;
         ++ cj ;
-      } while ( cj not_eq ( & ( main_shifrp -> letters3 [ shifr_letters_count3 ] ) ) ) ; }
-    fputs ( ( localerus ?
-      u8"\'\n" :
-      "\'\n"  ) , stdout  ) ;
+      } while ( cj not_eq ( & ( main_shifrp -> letters3 [ shifr_letters_count3 ] )
+          ) ) ; }
+    fputs ( ( localerus ? u8"\'\n" :  "\'\n"  ) , stdout  ) ;
 
     puts  ( localerus ?
       u8"Пример использования :"  :
