@@ -41,9 +41,7 @@ int main  ( int argc , char * argv [ ] ) {
   enum { outbuffsize = 0x40 } ;
   uint8_t outbuff [ outbuffsize ] ;
   
-// ! to write flush for encrypt and decrypt
-  
-  uint8_t const bytes = shifr_streambuf_writeflushzero3 ( & shif ,
+  uint8_t const bytes = shifr_flush ( & shif ,
           ( shifr_arrps ) { .p = & outbuff , .s = outbuffsize - 1 } ) ;
   fprintf ( stdout  , "flush bytes = %u\n" , bytes ) ;
   outbuff [ bytes ] = '\00' ;

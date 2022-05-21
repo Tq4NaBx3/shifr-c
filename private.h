@@ -71,7 +71,7 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * , shifr_arrcps input , shifr_arrps 
 Finished buffer encryption, returns output_buffer size written
 Заканчивает шифрование буфера, возвращает размер записаных данных.
 */
-size_t  shifr_encrypt2_flush  ( t_ns_shifr * , shifr_arrps output )  ;
+uint8_t shifr_encrypt2_flush  ( t_ns_shifr * , shifr_arrps output )  ;
 
 /*
 Decryption

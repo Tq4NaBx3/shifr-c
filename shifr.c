@@ -240,10 +240,45 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 2 ) ;
   return  false ; }
 
+uint8_t shifr_flush ( t_ns_shifr  * const ns_shifrp , shifr_arrps const output  ) {
+  switch  ( ns_shifrp ->  use_version ) {
+  case  2 :
+    return  shifr_encrypt2_flush  ( ns_shifrp , output  ) ;
+  case  3 :
+    return  shifr_streambuf_writeflushzero3 ( ns_shifrp , output  ) ;
+  default : ;
+# ifdef SHIFR_DEBUG
+    fprintf ( stderr , ( ns_shifrp  -> localerus ? 
+      u8"shifr_flush : неизвестная версия %d\n" :
+      "shifr_flush : unknown version %d\n" ) , ns_shifrp ->  use_version ) ;
+    ns_shifrp ->  string_exception  = ( shifr_strcp ) & "shifr_flush : unknown version" ;
+    longjmp ( ns_shifrp ->  jump  , 1 ) ;
+# endif
+    }
+  }
+  
+/*
+Finished buffer encryption, returns output_buffer size written
+Заканчивает шифрование буфера, возвращает размер записаных данных.
+*/
+uint8_t shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
+  shifr_arrps const output ) {
+# ifdef SHIFR_DEBUG
+  if ( output . s == 0 ) {
+    ns_shifrp ->  string_exception  = ( shifr_strcp ) &
+      "shifr_encrypt2_flush:output . s == 0" ;
+    longjmp ( ns_shifrp ->  jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
+  if ( ns_shifrp  -> flagtext and ns_shifrp  -> charcount ) {
+    ns_shifrp  -> charcount = 0 ;
+    ( * output . p ) [ 0 ] = '\n' ;
+    return  1 ; }
+  return  0 ; }
+  
 uint8_t shifr_streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrps arrpsp ) {
+  shifr_arrps const arrpsp ) {
   uint8_t result  = 0 ;
-  uint8_t * output_buffer = &((*  arrpsp  . p)[0]) ;
+  uint8_t * output_buffer = & ( ( * arrpsp  . p ) [ 0 ] ) ;
   if  ( ns_shifrp -> bitscount ==  0 )
     goto  lbreak ;
   if  ( ns_shifrp -> bitscount ==  1 )
@@ -288,8 +323,8 @@ lbreak  : ;
 // returns size loads & writes
 shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
   shifr_arrps const output  ) {
-  uint8_t const * restrict  input_buffer = &((* input . cp)[0]) ;
-  uint8_t * restrict  output_buffer = &((*  output  . p)[0]) ;
+  uint8_t const * restrict  input_buffer = &  ( ( * input . cp  ) [ 0 ] ) ;
+  uint8_t * restrict  output_buffer = & ( ( * output  . p ) [ 0 ] ) ;
   size_t  reads = 0 ;
   size_t  writes  = 0 ;
   while ( reads < input . s and writes + 4 <= output . s ) {
@@ -348,24 +383,6 @@ shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
       writes  +=  2 ;
       output_buffer +=  2 ; } }
   return  ( shifr_size_io ) { .i  = reads , .o  = writes  } ; }
-
-/*
-Finished buffer encryption, returns output_buffer size written
-Заканчивает шифрование буфера, возвращает размер записаных данных.
-*/
-size_t  shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrps const output ) {
-# ifdef SHIFR_DEBUG
-  if ( output . s == 0 ) {
-    ns_shifrp ->  string_exception  = ( shifr_strcp ) &
-      "shifr_encrypt2_flush:output . s == 0" ;
-    longjmp ( ns_shifrp ->  jump  , 1 ) ; }
-# endif // SHIFR_DEBUG
-  if ( ns_shifrp  -> flagtext and ns_shifrp  -> charcount ) {
-    ns_shifrp  -> charcount = 0 ;
-    ( * output . p ) [ 0 ] = '\n' ;
-    return  1 ; }
-  return  0 ; }
 
 // returns size loads & writes
 shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,

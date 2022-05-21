@@ -39,4 +39,6 @@ void  shifr_password_to_string  ( t_ns_shifr * ) ;
 
 void  shifr_destr ( t_ns_shifr * ) ;
 
+uint8_t shifr_flush ( t_ns_shifr  * , shifr_arrps ) ;
+
 # endif // SHIFR_PUBLIC_H

@@ -741,7 +741,7 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
           longjmp ( main_shifrp -> jump  , 1 ) ; }
         break ; }
     } while ( true ) ;      
-      { uint8_t const bytes = shifr_streambuf_writeflushzero3 ( main_shifrp ,
+      { uint8_t const bytes = shifr_flush ( main_shifrp ,
           ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
         if ( bytes ) {
           writecount = fwrite ( & ( ( * outputbufferp ) [ 0 ] ) , bytes , 1 ,
@@ -785,7 +785,7 @@ static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * const main_shifrp ,
           longjmp ( main_shifrp -> jump  , 1 ) ; }
         break ; }
     } while ( true ) ;
-    size_t const sizeout = shifr_encrypt2_flush  ( main_shifrp ,
+    size_t const sizeout = shifr_flush ( main_shifrp ,
       ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize }  ) ;
     if  ( sizeout ) {
       writecount = fwrite ( & ( ( * outputbufferp ) [ 0 ] ) , sizeout , 1 ,
