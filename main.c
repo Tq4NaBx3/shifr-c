@@ -284,7 +284,7 @@ int main  ( int argc , char * argv [ ] ) {
         ( strcp ) & "Error reading file" ) ;
       longjmp ( main_shifr  . jump  , 1 ) ; }
     flagclosefilefrom = true ;
-    main_shifr  . filefrom = f ;    }
+    main_shifr  . filebuffrom . file = f ; }
   if ( flagoutputtofile ) {
     FILE * const f = fopen  ( & ( ( * outputfilename  ) [ 0 ] ) ,
       & ( "w" [ 0 ] ) ) ;
@@ -300,7 +300,7 @@ int main  ( int argc , char * argv [ ] ) {
         ( strcp ) & "Error writing file" ) ;
       longjmp(main_shifr  . jump  , 1 ) ; }
     flagclosefileto = true ;
-    main_shifr  . fileto  = f ; }
+    main_shifr  . filebufto . file = f ; }
   shifr_password_load_uni ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 3 )  {
@@ -335,7 +335,7 @@ int main  ( int argc , char * argv [ ] ) {
         & outputbuffer  , outputbuffersize  ) ; }
   int resulterror  = 0 ;
   if ( flagclosefileto  ) {
-    if  ( fclose  ( main_shifr  . fileto  ) ) {
+    if  ( fclose  ( main_shifr  . filebufto . file ) ) {
       int const e = errno ;
       fprintf  (  stderr, ( main_shifr . localerus ?
         u8"Ошибка закрытия файла записи \"%s\" : %s\n" :
@@ -343,8 +343,8 @@ int main  ( int argc , char * argv [ ] ) {
         & ( ( * outputfilename ) [ 0 ] ) , strerror  ( e ) ) ;
       resulterror = 1 ; } }
   if ( flagclosefilefrom ) {
-    if  ( ( not feof ( main_shifr  . filefrom ) ) and 
-      fclose  ( main_shifr  . filefrom ) ) {
+    if  ( ( not feof ( main_shifr  . filebuffrom . file ) ) and 
+      fclose  ( main_shifr  . filebuffrom . file ) ) {
       int const e = errno ; 
       fprintf ( stderr  , ( main_shifr . localerus ?
         u8"Ошибка закрытия файла чтения \"%s\" : %s\n" :

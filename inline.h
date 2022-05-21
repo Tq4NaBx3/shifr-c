@@ -68,10 +68,11 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
         ( shifr_strcp ) & "generate_password:unrecognized version" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-static  inline  void  shifr_streambuf_init  ( shifr_t_streambuf * const me ) {
-  me -> buf = 0 ;
-  me -> bufbitsize = 0 ; }
-      
+static  inline  void  shifr_streambuf_init  ( shifr_t_streambuf * const me  , FILE  * const f ) {
+  me  ->  file  = f ;
+  me  ->  buf = 0 ;
+  me  ->  bufbitsize  = 0 ; }
+
 static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  p40 [ shifr_password_letters2size ] ;
   shifr_set_keypress  ( ns_shifrp ) ;
@@ -281,10 +282,8 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
       ++ i  ;
       ++ j  ;
     } while ( i <= 'z' ) ; }
-  ns_shifrp ->  filefrom  = stdin ;
-  ns_shifrp ->  fileto  = stdout  ;
-  shifr_streambuf_init  ( & ns_shifrp ->  filebuffrom ) ;
-  shifr_streambuf_init  ( & ns_shifrp ->  filebufto ) ;
+  shifr_streambuf_init  ( & ns_shifrp ->  filebuffrom , stdin ) ;
+  shifr_streambuf_init  ( & ns_shifrp ->  filebufto , stdout  ) ;
   ns_shifrp ->  bytecountw  = 0 ; }
       
 # ifdef SHIFR_DEBUG
@@ -706,8 +705,8 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
     size_t  writecount  ;
     shifr_size_io sizeio  ;
     do  {
-      size_t const  readcount = fread ( & ( (*inputbufferp) [ 0 ] ) , 1 , inputbuffersize ,
-        main_shifrp -> filefrom ) ;
+      size_t const  readcount = fread ( & ( ( * inputbufferp  ) [ 0 ] ) , 1 , inputbuffersize ,
+        main_shifrp -> filebuffrom . file ) ;
       if ( readcount  ) {
           sizeio  = shifr_encrypt3  ( main_shifrp ,
             ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp , .s = readcount } ,
@@ -725,17 +724,17 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
             "sizeio . o > outputbuffersize" ;
           longjmp ( main_shifrp -> jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
-        writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeio . o , 1 ,
-          main_shifrp -> fileto ) ;
+        writecount = fwrite ( & ( ( * outputbufferp ) [ 0 ] ) , sizeio . o , 1 ,
+          main_shifrp -> filebufto . file ) ;
         if ( writecount == 0 ) {
           main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
             ( shifr_strcp ) & u8"v3:ошибка записи в файл" :
             ( shifr_strcp ) & "v3:error writing to file" ) ;
           longjmp ( main_shifrp -> jump  , 1 ) ; }
-        if ( feof ( main_shifrp -> filefrom ) ) 
+        if ( feof ( main_shifrp -> filebuffrom . file ) ) 
           break ; }
       else {
-        if ( ferror ( main_shifrp -> filefrom ) ) {
+        if ( ferror ( main_shifrp -> filebuffrom . file ) ) {
           main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
             ( shifr_strcp ) & u8"ошибка чтения файла" :
             ( shifr_strcp ) & "error reading the file" ) ;
@@ -745,8 +744,8 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
       { uint8_t const bytes = shifr_streambuf_writeflushzero3 ( main_shifrp ,
           ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
         if ( bytes ) {
-          writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , bytes , 1 ,
-            main_shifrp -> fileto ) ;
+          writecount = fwrite ( & ( ( * outputbufferp ) [ 0 ] ) , bytes , 1 ,
+            main_shifrp -> filebufto . file ) ;
           if ( writecount == 0 ) {
             main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
               ( shifr_strcp ) & u8"v3:ошибка записи в файл ( writecount == 0 )" :
@@ -759,8 +758,8 @@ static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * const main_shifrp ,
     size_t  writecount  ;
     shifr_size_io sizeio  ;
     do  {
-      size_t const  readcount = fread ( & ( (* inputbufferp) [ 0 ] ) , 1 , inputbuffersize
-        , main_shifrp -> filefrom ) ;
+      size_t const  readcount = fread ( & ( ( * inputbufferp  ) [ 0 ] ) , 1 , inputbuffersize
+        , main_shifrp -> filebuffrom . file ) ;
       if ( readcount  ) {
           sizeio  = shifr_encrypt2  ( main_shifrp ,
             ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp , .s = readcount } ,
@@ -772,14 +771,14 @@ static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * const main_shifrp ,
           main_shifrp -> string_exception  = ( shifr_strcp ) & "sizeio . i < readcount" ;
           longjmp ( main_shifrp -> jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
-        writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeio . o , 1 ,
-          main_shifrp -> fileto ) ;
+        writecount = fwrite ( & ( ( * outputbufferp ) [ 0 ] ) , sizeio . o , 1 ,
+          main_shifrp -> filebufto . file ) ;
         if ( writecount == 0 )
           goto Exc ;
-        if ( feof ( main_shifrp -> filefrom ) )
+        if ( feof ( main_shifrp -> filebuffrom . file ) )
           break ; }
       else {
-        if ( ferror ( main_shifrp -> filefrom ) ) {
+        if ( ferror ( main_shifrp -> filebuffrom . file ) ) {
           main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
             ( shifr_strcp ) & u8"ошибка чтения файла" :
             ( shifr_strcp ) & "error reading the file" ) ;
@@ -789,8 +788,8 @@ static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * const main_shifrp ,
     size_t const sizeout = shifr_encrypt2_flush  ( main_shifrp ,
       ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize }  ) ;
     if  ( sizeout ) {
-      writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeout , 1 ,
-        main_shifrp -> fileto ) ;
+      writecount = fwrite ( & ( ( * outputbufferp ) [ 0 ] ) , sizeout , 1 ,
+        main_shifrp -> filebufto . file ) ;
       if ( writecount == 0 ) {
 Exc :
         main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
@@ -804,8 +803,8 @@ static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * const main_shifrp ,
       size_t  writecount  ;
       shifr_size_io sizeio  ;
       do  {
-        size_t const  readcount = fread ( & (  (*inputbufferp) [ 0 ] ) , 1 ,
-          inputbuffersize , main_shifrp -> filefrom ) ;
+        size_t const  readcount = fread ( & ( ( * inputbufferp  ) [ 0 ] ) , 1 ,
+          inputbuffersize , main_shifrp -> filebuffrom . file ) ;
         if ( readcount  ) {
           sizeio  = shifr_decrypt2  ( main_shifrp ,
             ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp , .s = readcount } ,
@@ -817,17 +816,17 @@ static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * const main_shifrp ,
             main_shifrp -> string_exception  = ( shifr_strcp ) & "sizeio . i < readcount" ;
             longjmp ( main_shifrp -> jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
-          writecount = fwrite ( & ( (*outputbufferp) [ 0 ] ) , sizeio . o , 1 ,
-            main_shifrp -> fileto ) ;
+          writecount = fwrite ( & ( ( * outputbufferp ) [ 0 ] ) , sizeio . o , 1 ,
+            main_shifrp -> filebufto . file ) ;
           if ( writecount == 0 ) {
             main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
               ( shifr_strcp ) & u8"ошибка записи в файл" :
               ( shifr_strcp ) & "error writing to file" ) ;
             longjmp ( main_shifrp -> jump  , 1 ) ; }
-          if ( feof ( main_shifrp -> filefrom ) )
+          if ( feof ( main_shifrp -> filebuffrom . file ) )
             break ; } // if readcount
         else {
-          if ( ferror ( main_shifrp -> filefrom ) ) {
+          if ( ferror ( main_shifrp -> filebuffrom . file ) ) {
             main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
               ( shifr_strcp ) & u8"ошибка чтения файла" :
               ( shifr_strcp ) & "error reading the file" ) ;
@@ -842,7 +841,7 @@ static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * const main_shifrp ,
   shifr_size_io sizeio  ;
   do  {
     size_t const  readcount = fread ( & ( ( * inputbufferp  ) [ 0 ] ) , 1 ,
-      inputbuffersize , main_shifrp -> filefrom ) ;
+      inputbuffersize , main_shifrp -> filebuffrom . file ) ;
     if ( readcount  ) {
       sizeio  = shifr_decrypt3  ( main_shifrp ,
         ( shifr_arrcps  ) { . cp  = ( shifr_arrcp ) inputbufferp ,
@@ -857,16 +856,16 @@ static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * const main_shifrp ,
         longjmp ( main_shifrp -> jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
       writecount = fwrite ( & ( ( * outputbufferp ) [ 0 ] ) , sizeio . o , 1 ,
-        main_shifrp -> fileto ) ;
+        main_shifrp -> filebufto . file ) ;
       if ( writecount == 0 ) {
         main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
           ( shifr_strcp ) & u8"ошибка записи в файл" :
           ( shifr_strcp ) & "error writing to file" ) ;
         longjmp ( main_shifrp -> jump  , 1 ) ; }
-      if ( feof ( main_shifrp -> filefrom ) )
+      if ( feof ( main_shifrp -> filebuffrom . file ) )
         break ; } // if readcount
     else {
-      if ( ferror ( main_shifrp -> filefrom ) ) {
+      if ( ferror ( main_shifrp -> filebuffrom . file ) ) {
         main_shifrp -> string_exception  = ( main_shifrp -> localerus ?
           ( shifr_strcp ) & u8"ошибка чтения файла" :
           ( shifr_strcp ) & "error reading the file" ) ;

@@ -53,6 +53,7 @@ enum  { shifr_letters_count3 = ( ( UINT8_C ( '9' ) - UINT8_C ( '0' ) ) + 1U ) } 
 enum  { shifr_password_letters2size = 30 , shifr_password_letters3size = 180 } ;
 
 struct  shifr_s_streambuf {  
+  FILE  * file  ;
   uint8_t buf ;
   uint8_t bufbitsize  ;
   } ;
@@ -88,8 +89,6 @@ struct  s_ns_shifr  {
   //  2 или 3
   int use_version ; 
 
-  FILE  * filefrom  ;
-  FILE  * fileto  ;
   bool  flagtext  ;
 
   uint8_t shifr2 [ shifr_deshi_size2 ] ;
