@@ -13,17 +13,10 @@
 shifr_number_dec_princ  ( v2 )
 shifr_number_dec_princ  ( v3 )
 
-void  shifr_printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize , FILE * f ) ;
+void  shifr_printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize ,
+  FILE * f ) ;
 
 # endif // SHIFR_DEBUG
-
-/*
- Translation of the internal password '-> raspr. pass' 
-to the encryption table '-> shifr', decryption '-> deshi'
- Перевод внутреннего пароля '-> raspr  . pass' в таблицы шифрования '-> shifr' ,
-дешифровки '-> deshi'
-*/
-void  shifr_password_load_uni ( t_ns_shifr * ) ;
 
 /*
 Password translation by letters '-> password_letters' to internal '-> raspr. pass'
@@ -40,5 +33,7 @@ void  shifr_password_to_string  ( t_ns_shifr * ) ;
 void  shifr_destr ( t_ns_shifr * ) ;
 
 uint8_t shifr_flush ( t_ns_shifr  * , shifr_arrps ) ;
+
+void  shifr_sole_init ( t_ns_shifr  * ) ;
 
 # endif // SHIFR_PUBLIC_H

@@ -5,7 +5,8 @@
 
 # define  shifr_number_def_set0( N , D ) \
   void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * const np ) { \
-    memset  ( & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) , 0 , D ) ; }
+    memset  ( & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) , 0 ,  \
+      D ) ; }
 
 # define  shifr_number_def_mul_byte(  N , D ) \
 void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
@@ -45,9 +46,10 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
   ( * stringi ) = '\00' ; }
 
 # define  shifr_string_to_password_templ_def( N ) \
-void  shifr_string_to_password  ##  N ##  _templ ( t_ns_shifr * const ns_shifrp , \
-  shifr_strvcp  const string  , shifr_number_type ( N ) * const password ,  \
-  shifr_strcp const letters , uint8_t const letterscount  ) { \
+void  shifr_string_to_password  ##  N ##  _templ (  \
+  t_ns_shifr * const ns_shifrp , shifr_strvcp  const string  ,  \
+  shifr_number_type ( N ) * const password , shifr_strcp const letters ,  \
+  uint8_t const letterscount  ) { \
   char  volatile  const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
   if  ( ( * stringi ) == '\00' ) { \
     shifr_number_set0 ( N ) ( password ) ; \
@@ -221,18 +223,21 @@ void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * const password
     uint8_t _ ; \
   } ;
 
-# define  shifr_password_to_string_templ( N ) shifr_password  ##  N ##  _to_string_templ
+# define  shifr_password_to_string_templ( N ) \
+  shifr_password  ##  N ##  _to_string_templ
   
 # define  shifr_password_to_string_templ_dec( N ) \
 void  shifr_password_to_string_templ  ( N ) ( \
   shifr_number_type ( N ) const * password0 , shifr_strvp string ,  \
   shifr_strp letters , uint8_t letterscount  ) ;
 
-# define  shifr_string_to_password_templ( N ) shifr_string_to_password  ##  N ##  _templ
+# define  shifr_string_to_password_templ( N ) \
+  shifr_string_to_password  ##  N ##  _templ
 
 # define  shifr_string_to_password_templ_dec( N ) \
-void  shifr_string_to_password_templ  ( N ) ( t_ns_shifr * , shifr_strvcp  string , \
-  shifr_number_type ( N ) * password , shifr_strcp letters , uint8_t letterscount  ) ;
+void  shifr_string_to_password_templ  ( N ) ( t_ns_shifr * , \
+  shifr_strvcp  string , shifr_number_type ( N ) * password , \
+  shifr_strcp letters , uint8_t letterscount  ) ;
 
 # ifdef SHIFR_DEBUG
 

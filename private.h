@@ -117,4 +117,12 @@ shifr_number_dec_mul_byte ( v3 )
 shifr_number_dec_set0 ( v2 )
 shifr_number_dec_set0 ( v3 )
 
+/*
+ Translation of the internal password '-> raspr. pass' 
+to the encryption table '-> shifr', decryption '-> deshi'
+ Перевод внутреннего пароля '-> raspr  . pass' в таблицы шифрования '-> shifr' ,
+дешифровки '-> deshi'
+*/
+void  shifr_password_load_uni ( t_ns_shifr * ) ;
+
 # endif // SHIFR_PRIVATE_H

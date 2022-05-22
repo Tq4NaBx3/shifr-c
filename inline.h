@@ -230,7 +230,8 @@ static  inline  void  shifr_enter_password ( t_ns_shifr * const ns_shifrp ) {
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( shifr_strcp ) & u8"enter_password:Неизвестная версия" :
         ( shifr_strcp ) & "enter_password:Unknown version" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+  shifr_password_load_uni ( ns_shifrp ) ; }
 
 static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
   ns_shifrp ->  use_version  = 3  ;

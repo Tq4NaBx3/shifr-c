@@ -15,7 +15,6 @@ typedef shifr_arrcp arrcp ;
 # define  password_letters3size shifr_password_letters3size
 # define  number_princ shifr_number_princ
 # define  printarr  shifr_printarr
-# define  string_to_password  shifr_string_to_password
 
 int main  ( int argc , char * argv [ ] ) {
   t_ns_shifr  main_shifr  ;
@@ -29,7 +28,7 @@ int main  ( int argc , char * argv [ ] ) {
     shifr_destr ( & main_shifr ) ;
     return  exc ; }
     
-  bool  showhelp  = false ;
+  { bool  showhelp  = false ;
   if  ( argc  <=  1 )
     showhelp  = true  ;
   else
@@ -46,7 +45,7 @@ int main  ( int argc , char * argv [ ] ) {
   if  ( showhelp ) {
     int const e = shifr_show_help ( & main_shifr  ) ;
     shifr_destr ( & main_shifr ) ;
-    return  e ; }
+    return  e ; } } // showhelp
   
   bool  flagenc = false ;
   bool  flagdec = false ;
@@ -102,7 +101,7 @@ int main  ( int argc , char * argv [ ] ) {
           ( strcp ) & "Error reading file" ) ;
         longjmp ( main_shifr  . jump  , 1 ) ; }
       shifr_test_password ( & main_shifr  , nr  ) ;
-      string_to_password  ( & main_shifr  ) ;
+      shifr_string_to_password  ( & main_shifr  ) ;
       if ( fclose  ( f ) )  {
         int e = errno ; 
         fprintf ( stderr  , ( main_shifr . localerus ?
@@ -126,7 +125,7 @@ int main  ( int argc , char * argv [ ] ) {
       if ( main_shifr . use_version == 2 ) {
         strncpy ( ( char * ) main_shifr  . password_letters2 , argv  [ argj  ] ,
           password_letters2size  ) ;
-        string_to_password  ( & main_shifr ) ;
+        shifr_string_to_password  ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG
       fputs ( ( main_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
@@ -138,7 +137,7 @@ int main  ( int argc , char * argv [ ] ) {
       else {
         strncpy ( ( char * ) main_shifr  . password_letters3 , argv  [ argj  ] ,
           password_letters3size ) ; 
-        string_to_password  ( & main_shifr ) ;
+        shifr_string_to_password  ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG                           
       fputs ( ( main_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
@@ -147,8 +146,8 @@ int main  ( int argc , char * argv [ ] ) {
       fputs ( "\n" , stderr ) ;
 # endif                    
         }
-      shifr_password_to_string  ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG
+      shifr_password_to_string  ( & main_shifr ) ;
       if ( main_shifr . use_version == 3 ) {
         if  ( strcmp ( ( char * ) main_shifr  . password_letters3 ,
             argv  [ argj  ] ) )  
@@ -168,69 +167,69 @@ int main  ( int argc , char * argv [ ] ) {
         flagreadpasswd = false  ; }
       else
         if ( flagreadinput ) {
-          inputfilename = (char const (*)[])(argv[argj]) ;
+          inputfilename = ( char const (  * ) [ ] ) ( argv  [ argj  ] ) ;
           flaginputfromfile = true ;
           flagreadinput = false ; }
         else
          if ( flagreadoutput ) {
-          outputfilename = (char const (*)[])(argv[argj]) ;
+          outputfilename = (  char const (  * ) [ ] ) ( argv  [ argj  ] ) ;
           flagoutputtofile = true ;
           flagreadoutput = false ; }
         else 
-      if (( strcmp ( argv[argj] , u8"--ген-пар" ) ==  0 ) or
-        (strcmp ( argv[argj] , "--gen-pas" ) ==  0)) 
+      if (  ( strcmp ( argv [ argj  ] , u8"--ген-пар" ) ==  0 ) or
+        ( strcmp ( argv [ argj  ] , "--gen-pas" ) ==  0  ) ) 
         flaggenpasswd = true  ; 
       else  {
-        if (( strcmp ( argv[argj] , u8"--зашифр" ) ==  0 ) or
-          ( strcmp ( argv[argj] , "--encrypt" ) ==  0 ) ) {
+        if (  ( strcmp ( argv [ argj  ] , u8"--зашифр" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--encrypt" ) ==  0 ) ) {
           flagenc = true ;
           flagdec = false ; }
         else
-        if (( strcmp ( argv[argj] , u8"--расшифр" ) ==  0 )or
-          ( strcmp ( argv[argj] , "--decrypt" ) ==  0 )) { 
+        if (  ( strcmp ( argv [ argj  ] , u8"--расшифр" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--decrypt" ) ==  0 ) ) { 
           flagdec = true ;
           flagenc = false ; }
         else
-        if (( strcmp ( argv[argj] , u8"--пар" ) ==  0 )or
-          ( strcmp ( argv[argj] , "--pas" ) ==  0 )) { 
+        if (  ( strcmp ( argv [ argj  ] , u8"--пар" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--pas" ) ==  0 ) ) { 
           flagreadpasswd  = true  ; }
         else
-        if (( strcmp ( argv[argj] , u8"--пар-путь" ) ==  0 )or
-          ( strcmp ( argv[argj] , "--pas-path" ) ==  0 )) { 
+        if (  ( strcmp ( argv [ argj  ] , u8"--пар-путь" ) ==  0 )  or
+          ( strcmp ( argv [ argj  ] , "--pas-path" ) ==  0 )  ) { 
           flagreadpasswdfromfile  = true  ; }
         else
-        if (( strcmp ( argv[argj] , u8"--вход" ) ==  0 )or
-          ( strcmp ( argv[argj] , "--input" ) ==  0 )) { 
+        if (  ( strcmp ( argv [ argj  ] , u8"--вход" ) ==  0 )  or
+          ( strcmp ( argv [ argj  ] , "--input" ) ==  0 ) ) { 
           flagreadinput  = true  ; }
         else
-        if (( strcmp ( argv[argj] , u8"--выход" ) ==  0 ) or
-          ( strcmp ( argv[argj] , "--output" ) ==  0 )){ 
+        if (  ( strcmp ( argv [ argj  ] , u8"--выход" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--output" ) ==  0 )  ) { 
           flagreadoutput  = true  ; }  
         else
-        if (( strcmp ( argv[argj] , u8"--текст" ) ==  0 ) or
-          ( strcmp ( argv[argj] , "--text" ) ==  0 )){ 
+        if (  ( strcmp ( argv [ argj  ] , u8"--текст" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--text" ) ==  0 ) ) { 
           main_shifr  . flagtext = true  ; }
         else
-        if ( strcmp ( argv[argj] , u8"--3" ) ==  0 ){ 
+        if ( strcmp ( argv  [ argj  ] , u8"--3" ) ==  0 )  { 
           main_shifr . use_version = 3 ; }
         else
-        if ( strcmp ( argv[argj] , u8"--2" ) ==  0 ){ 
+        if ( strcmp ( argv  [ argj  ] , u8"--2" ) ==  0 )  { 
           main_shifr . use_version = 2 ; }
         else
-        if (( strcmp ( argv[argj] , u8"--а95" ) ==  0 ) or
-          ( strcmp ( argv[argj] , "--a95" ) ==  0 )) { 
+        if (  ( strcmp ( argv [ argj  ] , u8"--а95" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--a95" ) ==  0 ) ) { 
           main_shifr . password_alphabet = 95 ; }
         else
-        if (( strcmp ( argv[argj] , u8"--а62" ) ==  0 ) or
-          ( strcmp ( argv[argj] , "--a62" ) ==  0 )) { 
+        if (  ( strcmp ( argv [ argj  ] , u8"--а62" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--a62" ) ==  0 ) ) { 
           main_shifr . password_alphabet = 62 ; }
         else
-        if (( strcmp ( argv[argj] , u8"--а26" ) ==  0 ) or
-          ( strcmp ( argv[argj] , "--a26" ) ==  0 )) { 
+        if (  ( strcmp ( argv [ argj  ] , u8"--а26" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--a26" ) ==  0 ) ) { 
           main_shifr . password_alphabet = 26 ; }
         else
-        if (( strcmp ( argv[argj] , u8"--а10" ) ==  0 ) or
-          ( strcmp ( argv[argj] , "--a10" ) ==  0 )) { 
+        if (  ( strcmp ( argv [ argj  ] , u8"--а10" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--a10" ) ==  0 ) ) { 
           main_shifr . password_alphabet = 10 ; }
         else
         if (  ( strcmp ( argv [ argj  ] , u8"--рус" ) ==  0 ) or
@@ -259,14 +258,14 @@ int main  ( int argc , char * argv [ ] ) {
       ( strcp ) & "so encrypt or decrypt ?" ) ;
     longjmp ( main_shifr  . jump  , 1 ) ; }
 
-  timestamp_t t0 = get_timestamp();
+  timestamp_t t0 = get_timestamp  ( ) ;
   
 # endif // SHIFR_DEBUG
   // по-умолчанию шифруем
   // encrypted by default
   if ( not flagdec  )
     flagenc = true  ;
-  if ( not flagpasswd )    {
+  if ( not flagpasswd ) {
     fputs ( ( main_shifr . localerus ? u8"введите пароль = " :
       "enter the password = " ) , stdout  ) ;
     shifr_enter_password  ( & main_shifr ) ; }
@@ -301,7 +300,6 @@ int main  ( int argc , char * argv [ ] ) {
       longjmp(main_shifr  . jump  , 1 ) ; }
     flagclosefileto = true ;
     main_shifr  . filebufto . file = f ; }
-  shifr_password_load_uni ( & main_shifr ) ;
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 3 )  {
     printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr3 ,

@@ -10,17 +10,18 @@ CSTANDARD = -std=c11
 SHIFR_OBJECTS = shifr.o private.o
 SHIFR_ASM = shifr.s main.s private.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
-SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion -Wno-clobbered \
- -Wpedantic $(CSTANDARD) -Os
+SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion \
+ -Wno-clobbered -Wpedantic $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDtypeh = type.h define.h
 DEPENDtemplateh = template.h define.h
 DEPENDprivateh = private.h $(DEPENDtypeh) $(DEPENDtemplateh)
-DEPENDprivatec = private.c $(DEPENDprivateh) $(DEPENDstructh) define.h $(DEPENDinlineprih)
+DEPENDprivatec = private.c $(DEPENDprivateh) $(DEPENDstructh) define.h \
+ $(DEPENDinlineprih)
 DEPENDstructh = struct.h $(DEPENDtypeh) $(DEPENDtemplateh) template-pri.h
 DEPENDpublich = public.h $(DEPENDtypeh) define.h
-DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh) $(DEPENDinlineprih) \
- $(DEPENDtemplateh) $(DEPENDprivateh)
+DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh) \
+ $(DEPENDinlineprih) $(DEPENDtemplateh) $(DEPENDprivateh)
 DEPENDinlineprih = inline-pri.h template-pri.h
 DEPENDmainc = main.c define.h $(DEPENDinlineh)
 DEPENDshifrc = shifr.c define.h $(DEPENDinlineh) $(DEPENDtemplateh)
@@ -60,3 +61,5 @@ example: $(EXAMPLE_OBJECTS) shifr.o private.o
 	@$(SHIFR_GCCRUN) $(EXAMPLE_OBJECTS) shifr.o private.o -o example
 example.o: $(DEPENDexample)
 	@$(SHIFR_COMPILE) example.c
+example.s: $(DEPENDexample)
+	@$(SHIFR_GCCRUN) example.c $(SHIFR_ASM_OPTIONS)

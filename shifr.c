@@ -240,22 +240,25 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 2 ) ;
   return  false ; }
 
-uint8_t shifr_flush ( t_ns_shifr  * const ns_shifrp , shifr_arrps const output  ) {
+uint8_t shifr_flush ( t_ns_shifr  * const ns_shifrp ,
+  shifr_arrps const output  ) {
   switch  ( ns_shifrp ->  use_version ) {
   case  2 :
     return  shifr_encrypt2_flush  ( ns_shifrp , output  ) ;
   case  3 :
     return  shifr_streambuf_writeflushzero3 ( ns_shifrp , output  ) ;
-  default : ;
+  default :
 # ifdef SHIFR_DEBUG
     fprintf ( stderr , ( ns_shifrp  -> localerus ? 
       u8"shifr_flush : неизвестная версия %d\n" :
       "shifr_flush : unknown version %d\n" ) , ns_shifrp ->  use_version ) ;
-    ns_shifrp ->  string_exception  = ( shifr_strcp ) & "shifr_flush : unknown version" ;
+    ns_shifrp ->  string_exception  = ( shifr_strcp ) &
+      "shifr_flush : unknown version" ;
     longjmp ( ns_shifrp ->  jump  , 1 ) ;
+# else
+    return  0 ;
 # endif
-    }
-  }
+    } }
   
 /*
 Finished buffer encryption, returns output_buffer size written
@@ -676,7 +679,8 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( shifr_strcp ) & u8"string_to_password : версия не поддерживается" :
       ( shifr_strcp ) & "string_to_password : version is not supported" ) ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+  shifr_password_load_uni ( ns_shifrp ) ; }
 
 void  shifr_password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version )  {
@@ -691,7 +695,8 @@ void  shifr_password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
       u8"password_load:версия %d не поддерживается\n" :
-      "password_load:version %d is not supported" ) , ns_shifrp -> use_version )  ;
+      "password_load:version %d is not supported" ) ,
+      ns_shifrp -> use_version )  ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( shifr_strcp ) & u8"password_load:версия не поддерживается" :
       ( shifr_strcp ) & "password_load:version is not supported" ) ;
@@ -779,3 +784,21 @@ void  shifr_destr ( t_ns_shifr * const ns_shifrp ) {
     sizeof  ( ns_shifrp ->  password_letters2 ) ) ;
   shifr_memsetv ( ns_shifrp ->  password_letters3 , shifr_memsetv_default_byte ,
     sizeof  ( ns_shifrp ->  password_letters3 ) ) ; }
+
+void  shifr_sole_init ( t_ns_shifr  * const ns_shifrp ) {
+  ns_shifrp ->  old_last_data = 0 ;
+  ns_shifrp ->  old_last_sole = 0 ;
+  ns_shifrp ->  filebuffrom . buf = 0 ;
+  ns_shifrp ->  filebuffrom . bufbitsize  = 0 ;
+  ns_shifrp ->  filebufto . buf = 0 ;
+  ns_shifrp ->  filebufto . bufbitsize  = 0 ;
+  ns_shifrp ->  bytecountw  = 0 ;
+  ns_shifrp ->  buf2index = 0 ;
+  ns_shifrp ->  bitscount = 0 ;
+  ns_shifrp ->  charcount = 0 ;
+  for ( int i = 0 ; i < 3 ; ++ i )
+    ns_shifrp ->  secretdatasole  [ i ] = 0 ;
+  for ( int i = 0 ; i < 4 ; ++ i )
+    ns_shifrp ->  secretdata  [ i ] = 0 ;
+  for ( int i = 0 ; i < 3 ; ++ i )
+    ns_shifrp ->  buf2  [ i ] = 0 ; }

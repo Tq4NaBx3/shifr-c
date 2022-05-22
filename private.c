@@ -28,7 +28,8 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
   if ( fr + 0x100 <= to ) {
     fprintf ( stderr  , "uirandfrto : fr + 0x100 <= to , fr = %u , to = %u\n"  ,
       fr , to ) ;
-    ns_shifrp  -> string_exception  = ( shifr_strcp ) "uirandfrto : fr + 0x100 <= to" ;
+    ns_shifrp  -> string_exception  = ( shifr_strcp )
+      "uirandfrto : fr + 0x100 <= to" ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
 # endif
   uint8_t buf ;
@@ -48,7 +49,8 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
       longjmp ( ns_shifrp  -> jump  , 1 ) ; }
     if ( r not_eq 1 ) {
       fprintf ( stderr  , "uirandfrto : r = %ld not_eq 1\n"  , r ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "uirandfrto : r not_eq 1" ;
+      ns_shifrp  -> string_exception  = ( shifr_strcp )
+        "uirandfrto : r not_eq 1" ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
   } while ( buf + 0x100 % ( to - fr + 1 ) >= 0x100 ) ;
@@ -115,7 +117,8 @@ void shifr_datasole3 ( t_ns_shifr * const ns_shifrp ,
       longjmp ( ns_shifrp  -> jump  , 1 ) ; }
     if ( r not_eq arans ) {
       fprintf ( stderr  , "datasole3 : r = %ld not_eq %d\n"  , r , arans ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "datasole3 : r not_eq arans" ;
+      ns_shifrp  -> string_exception  = ( shifr_strcp ) 
+        "datasole3 : r not_eq arans" ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; }
 # endif // SHIFR_DEBUG
   unsigned  int ran = ( ( unsigned  int ) ( aran [ 0 ] ) ) ;
