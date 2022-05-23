@@ -68,11 +68,6 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
         ( shifr_strcp ) & "generate_password:unrecognized version" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
-static  inline  void  shifr_streambuf_init  ( shifr_t_streambuf * const me  , FILE  * const f ) {
-  me  ->  file  = f ;
-  me  ->  buf = 0 ;
-  me  ->  bufbitsize  = 0 ; }
-
 static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  p40 [ shifr_password_letters2size ] ;
   shifr_set_keypress  ( ns_shifrp ) ;
@@ -237,11 +232,6 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
   ns_shifrp ->  use_version  = 3  ;
   ns_shifrp ->  flagtext = false  ;
   ns_shifrp ->  password_alphabet = 62  ;
-  ns_shifrp ->  old_last_data = 0 ;
-  ns_shifrp ->  old_last_sole = 0 ;
-  ns_shifrp ->  charcount = 0 ;
-  ns_shifrp ->  buf2index = 0 ;
-  ns_shifrp ->  bitscount = 0 ;
   { char * j = & ( ns_shifrp -> letters [ 0 ] ) ;
     uint8_t i = ' ' ;
     do {
@@ -283,9 +273,9 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
       ++ i  ;
       ++ j  ;
     } while ( i <= 'z' ) ; }
-  shifr_streambuf_init  ( & ns_shifrp ->  filebuffrom , stdin ) ;
-  shifr_streambuf_init  ( & ns_shifrp ->  filebufto , stdout  ) ;
-  ns_shifrp ->  bytecountw  = 0 ; }
+  ns_shifrp ->  filebuffrom . file  = stdin ;
+  ns_shifrp ->  filebufto . file  = stdout  ;
+  shifr_sole_init ( ns_shifrp ) ; }
       
 # ifdef SHIFR_DEBUG
 
