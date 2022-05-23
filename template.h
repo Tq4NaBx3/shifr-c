@@ -28,6 +28,15 @@ void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
       ++  i ; \
     } while ( i < D ) ; } }
     
+/*
+Translation of the big number 'raspr.pass' to string 'password_letters'
+Перевод большого числа 'raspr.pass ' в строку 'password_letters'
+
+ 0 - ''
+ 1 - '0' , 2 - '1'
+ 3 - '00' , 4 - '01' , 5 - '10' , 6 - '11'
+*/
+    
 # define  shifr_password_to_string_templ_def( N ) \
 void  shifr_password  ##  N ##  _to_string_templ ( \
   shifr_number_type ( N ) const * const password0 , shifr_strvp const string , \
@@ -37,6 +46,7 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
     shifr_number_priv_type ( N ) password = * shifr_number_const_pub_to_priv ( N ) ( \
       password0 ) ; \
     do {  \
+      /* here the previous sizes took the place of passwords */ \
       /* здесь предыдущие размеры заняли место паролей */ \
       shifr_number_dec ( N ) ( & password . pub ) ;  \
       ( * stringi ) = ( * letters ) [ \
@@ -176,20 +186,21 @@ void  shifr_number ## N ## _set_byte  ( shifr_number_type ( N ) * const np0 , \
 
 # define  shifr_number_set_byte( N ) shifr_number ## N ## _set_byte
 
-// пароль раскладываем в таблицу шифровки , дешифровки
-  // пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
-  // пароль делим на 16, остаются 15! вариантов пароля
-// пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
-//  секретных кодов для соли+данных 0x1  
-// в deshi нужна соль
+/*
+пароль раскладываем в таблицу шифровки , дешифровки
+  пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
+  пароль делим на 16, остаются 15! вариантов пароля
+пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
+секретных кодов для соли+данных 0x1  
+в deshi нужна соль
 
-// we lay out the password in the table of encryption, decryption
-// password % 0x10 = 0xa means that 0xa is the encrypted code for salt + data 0x0
-// divide the password by 16, 15! remain password options
-// password % 0xf = 0xa is the sequence number for the remaining NOT occupied from
-//  0xff secret codes for salt + data 0x1
-// deshi needs salt
-
+we lay out the password in the table of encryption, decryption
+password % 0x10 = 0xa means that 0xa is the encrypted code for salt + data 0x0
+divide the password by 16, 15! remain password options
+password % 0xf = 0xa is the sequence number for the remaining NOT occupied from
+0xff secret codes for salt + data 0x1
+deshi needs salt
+*/
 # define  shifr_password_load( N ) shifr_password_  ##  N ##  _load
 
 # define  shifr_password_load_def(  N , SDS ) \
@@ -198,25 +209,25 @@ void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * const password
   shifr_initarr ( shifrp  , 0xff  , SDS ) ; \
   shifr_initarr ( deship  , 0xff  , SDS ) ; \
   uint8_t volatile  arrind  [ SDS ] ; \
-  { uint8_t volatile  * arrj  = & ( arrind  [ SDS  ] ) ;  \
+  { uint8_t volatile  * arrj  = & ( arrind  [ SDS  ] ) ; \
     uint8_t j = SDS  ;  \
     do  { \
       --  arrj  ; \
       --  j ; \
       ( * arrj )  = j ; \
-    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ;  } \
+    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; } \
   uint8_t inde  = 0 ; \
   shifr_number_priv_type ( N ) password = * shifr_number_const_pub_to_priv ( N ) ( \
     password0 ) ; \
-  do {  \
+  do { \
     { uint8_t const cindex = shifr_number_div_mod ( N ) ( & password . pub ,  \
         (  uint8_t ) ( SDS - inde  ) ) ; \
-      uint8_t volatile  * const arrind_cindexp = & (  arrind [ cindex ] ) ; \
+      uint8_t volatile  * const arrind_cindexp = & ( arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
       memmove ( ( uint8_t * ) arrind_cindexp , ( uint8_t * ) arrind_cindexp + 1 , \
         ( size_t  ) ( SDS  - inde  - cindex - 1 ) ) ; } \
-    ++ inde  ;  \
+    ++ inde  ; \
   } while ( inde < SDS ) ; \
   shifr_memsetv ( arrind  , shifr_memsetv_default_byte , sizeof  ( arrind  ) ) ; }
 

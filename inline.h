@@ -34,11 +34,12 @@ static  inline  shifr_number_def_div_mod  ( v3 , shifr_number_size3 )
 static  inline  shifr_number_def_set_byte ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_set_byte ( v3 , shifr_number_size3 )
 
+// generate big number as password to raspr.pass
 static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version  ) {
     case  2 : 
-      shifr_generate_pass2  ( ns_shifrp ) ;
-      shifr_pass_to_array2  ( ns_shifrp ) ;
+      shifr_generate_dices2  ( ns_shifrp ) ;
+      shifr_dices_to_number2  ( ns_shifrp ) ;
 # ifdef SHIFR_DEBUG
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
@@ -48,8 +49,8 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
 # endif
       break ;
     case 3 :
-      shifr_generate_pass3  ( ns_shifrp ) ;
-      shifr_pass_to_array3  ( ns_shifrp ) ;
+      shifr_generate_dices3  ( ns_shifrp ) ;
+      shifr_dices_to_number3  ( ns_shifrp ) ;
 # ifdef SHIFR_DEBUG
       fputs ( ( ns_shifrp -> localerus ?
         u8"generate_password:внутренний пароль = " :
@@ -410,6 +411,7 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     puts  ( "  2+2" ) ;
     return 0 ; }      
       
+// generate big number as password, convert to string and puts
 static  inline  void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
   shifr_generate_password ( main_shifrp ) ;
   bool  const localerus = main_shifrp -> localerus  ;

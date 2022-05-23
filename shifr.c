@@ -540,18 +540,20 @@ shifr_size_io shifr_decrypt3 ( t_ns_shifr * const ns_shifrp , shifr_arrcps const
       & writes ) ; } // while
   return  ( shifr_size_io ) { . i  = reads , .  o  = writes  } ; }
 
+// generate array raspr2.dice
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass2 ( t_ns_shifr * const ns_shifrp ) {
+void  shifr_generate_dices2 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t * j = & ( ns_shifrp -> raspr2  . dice [ 0 ] ) ;
   uint8_t i  = 0x10 - 1 ; // 15
   do {
     ( * j ) = ( uint8_t ) shifr_uirandfrto  ( ns_shifrp , 0 , i ) ;
-    -- i  ;
-    ++ j  ;
+    --  i ;
+    ++  j ;
   } while ( i >= 1 ) ; }
 
+// generate array raspr3.dice
 // inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
-void  shifr_generate_pass3 ( t_ns_shifr * const ns_shifrp ) {
+void  shifr_generate_dices3 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t * j = & ( ns_shifrp -> raspr3  . dice [ 0 ] ) ;
   uint8_t i  = 0x40 - 1 ; // 63
   do {
@@ -560,9 +562,10 @@ void  shifr_generate_pass3 ( t_ns_shifr * const ns_shifrp ) {
     ++ j  ;
   } while ( i >= 1 ) ; }
 
+// convert raspr2.dice as array to big number raspr2.pass
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
-void  shifr_pass_to_array2 ( t_ns_shifr * const ns_shifrp ) {
+void  shifr_dices_to_number2 ( t_ns_shifr * const ns_shifrp ) {
   shifr_number_set0 ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ) ;
   shifr_number_priv_type ( v2 ) mu  ;
   shifr_number_set_byte ( v2 ) ( & mu . pub , 1 ) ;
@@ -579,9 +582,10 @@ void  shifr_pass_to_array2 ( t_ns_shifr * const ns_shifrp ) {
     ++  in ;
   } while ( in < 0x10 - 1 ) ; }
 
+// convert raspr3.dice as array to big number raspr3.pass
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
-void  shifr_pass_to_array3 ( t_ns_shifr * const ns_shifrp ) {
+void  shifr_dices_to_number3 ( t_ns_shifr * const ns_shifrp ) {
   shifr_number_set0 ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ) ;
   shifr_number_priv_type ( v3 ) mu  ;
   shifr_number_set_byte ( v3 ) ( & mu . pub , 1 ) ;
@@ -605,6 +609,11 @@ shifr_number_def_princ  ( v3 , shifr_number_size3 )
 
 # endif // SHIFR_DEBUG
 
+/*
+'password_letters' as string to 'raspr.pass' as big number
+Перевод  пароля буквами 'password_letters' в большое число 'raspr.pass'
++ shifr_password_load_uni
+*/
 void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
   case 2 :
@@ -682,8 +691,14 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
     longjmp ( ns_shifrp  -> jump  , 1 ) ; }
   shifr_password_load_uni ( ns_shifrp ) ; }
 
+/*
+ Translation of big number 'raspr. pass' 
+to the encryption table 'shifr', decryption 'deshi'
+ Перевод большого числа 'raspr  . pass' в таблицы шифрования 'shifr' ,
+дешифровки 'deshi'
+*/
 void  shifr_password_load_uni ( t_ns_shifr * const ns_shifrp ) {
-  switch ( ns_shifrp -> use_version )  {
+  switch ( ns_shifrp -> use_version ) {
   case 2 :
     shifr_password_load ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
       & ns_shifrp  -> shifr2 , & ns_shifrp  -> deshi2 ) ;
@@ -702,6 +717,14 @@ void  shifr_password_load_uni ( t_ns_shifr * const ns_shifrp ) {
       ( shifr_strcp ) & "password_load:version is not supported" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
+/*
+Translation of the big number 'raspr.pass' to string 'password_letters'
+Перевод большого числа 'raspr.pass ' в строку 'password_letters'
+
+ 0 - ''
+ 1 - '0' , 2 - '1'
+ 3 - '00' , 4 - '01' , 5 - '10' , 6 - '11'
+*/
 void  shifr_password_to_string  ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version ) {
   case  2 :
