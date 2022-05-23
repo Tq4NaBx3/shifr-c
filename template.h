@@ -84,11 +84,13 @@ found : ; \
 void  shifr_number  ##  N ##  _princ ( shifr_number_type ( N ) const * const np , \
   FILE * const fs ) { \
   fputs ( "[ " , fs ) ; \
-  uint8_t i = D ;  \
-  do {  \
-    -- i ;  \
-    fprintf ( fs  , "%x , " , shifr_number_elt_copy ( N ) ( np , i ) ) ; \
-  } while ( i ) ; \
+  uint8_t i = D - 1 ;  \
+  do  { \
+    fprintf ( fs  , "%x " , shifr_number_elt_copy ( N ) ( np , i ) ) ; \
+    if ( ! i ) \
+      break ; \
+    --  i ; \
+  } while ( true ) ; \
   fputs ( "]" , fs ) ; }
 
 # endif // SHIFR_DEBUG

@@ -410,10 +410,10 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     puts  ( "  2+2" ) ;
     return 0 ; }      
       
-static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
+static  inline  void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
   shifr_generate_password ( main_shifrp ) ;
   bool  const localerus = main_shifrp -> localerus  ;
-# ifdef SHIFR_DEBUG    
+# ifdef SHIFR_DEBUG
   switch ( main_shifrp -> use_version ) {
   case  2 :
     fputs ( ( localerus ?
@@ -437,7 +437,6 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       ( shifr_strcp ) & u8"flaggenpasswd : неопознанная версия" :
       ( shifr_strcp ) & "flaggenpasswd : unrecognized version" ) ;
     longjmp ( main_shifrp -> jump  , 1 ) ; }
-# endif
     char  volatile  password_letters2_62  [ shifr_password_letters2size ] ;
     char  volatile  password_letters3_62  [ shifr_password_letters3size ] ;
     char  volatile  password_letters2_10  [ shifr_password_letters2size ] ;
@@ -476,7 +475,6 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         ( shifr_strcp ) & u8"показать пароль : неопознанная версия" :
         ( shifr_strcp ) & "show password : unrecognized version" ) ;
       longjmp ( main_shifrp -> jump  , 1 ) ; }
-# ifdef SHIFR_DEBUG        
     printf  ( ( localerus ?
       u8"--a95\tбуквами, знаками между кавычек = \'%s\'\n" : 
       "--a95\tby letters, signs between quotes = \'%s\'\n"  ) ,
@@ -596,47 +594,86 @@ static  inline  int shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         ( shifr_strcp ) & u8"неизвестная версия" :
         ( shifr_strcp ) & "unknown version" ) ;
       longjmp ( main_shifrp -> jump , 1 ) ; }
-# else
-  switch  ( main_shifrp -> password_alphabet  ) {
-  case  shifr_letters_count :
-    puts  ( ( char * ) & ( ( ( main_shifrp -> use_version == 3 ) ?
-      main_shifrp -> password_letters3 : main_shifrp -> password_letters2 ) [ 0 ] ) ) ;
+  shifr_memsetv ( password_letters2_62  , shifr_memsetv_default_byte ,
+    sizeof  ( password_letters2_62  ) ) ;
+  shifr_memsetv ( password_letters3_62  , shifr_memsetv_default_byte ,
+    sizeof  ( password_letters3_62  ) ) ;
+  shifr_memsetv ( password_letters2_26  , shifr_memsetv_default_byte ,
+    sizeof  ( password_letters2_26  ) ) ;
+  shifr_memsetv ( password_letters3_26  , shifr_memsetv_default_byte ,
+    sizeof  ( password_letters3_26  ) ) ;
+  shifr_memsetv ( password_letters2_10  , shifr_memsetv_default_byte ,
+    sizeof  ( password_letters2_10  ) ) ;
+  shifr_memsetv ( password_letters3_10  , shifr_memsetv_default_byte ,
+    sizeof  ( password_letters3_10  ) ) ;
+# else // not SHIFR_DEBUG
+  switch  ( main_shifrp -> use_version ) {
+  case  2 :
+    switch  ( main_shifrp -> password_alphabet  ) {
+    case  shifr_letters_count :
+      shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
+        & main_shifrp -> password_letters2 , & main_shifrp -> letters ,
+        shifr_letters_count ) ;
+      break ;
+    case  shifr_letters_count2  :
+      shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
+        & main_shifrp -> password_letters2 , & main_shifrp -> letters2 , shifr_letters_count2 ) ;
+      break ;
+    case  shifr_letters_count3  :
+      shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
+        & main_shifrp -> password_letters2 , & main_shifrp -> letters3 , shifr_letters_count3 ) ;
+      break ;
+    case  shifr_letters_count4  :
+      shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
+        & main_shifrp -> password_letters2 , & main_shifrp -> letters4 , shifr_letters_count4 ) ;
+      break ;
+    default :
+      main_shifrp -> string_exception  = ( localerus ?
+        ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
+        ( shifr_strcp ) & "unknown password alphabet" ) ;
+      longjmp ( main_shifrp -> jump , 1 ) ; }
+    puts  ( ( char * ) & ( main_shifrp -> password_letters2 [ 0 ] ) ) ;
     break ;
-  case  shifr_letters_count2  :
-    puts  ( ( char * ) & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_62 :
-      password_letters2_62 ) [ 0 ] ) ) ;
-    break ;
-  case  shifr_letters_count3  :
-    puts  ( ( char * ) & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_10 :
-      password_letters2_10 ) [ 0 ] ) ) ;
-    break ;
-  case  shifr_letters_count4  :
-    puts  ( ( char * ) & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_26 :
-      password_letters2_26 ) [ 0 ] ) ) ;
+  case  3 :
+    switch  ( main_shifrp -> password_alphabet  ) {
+    case  shifr_letters_count :
+      shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
+        & main_shifrp -> password_letters3 , & main_shifrp -> letters ,
+        shifr_letters_count ) ;
+      break ;
+    case  shifr_letters_count2  :
+      shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
+        & main_shifrp -> password_letters3 , & main_shifrp -> letters2 , shifr_letters_count2 ) ;
+      break ;
+    case  shifr_letters_count3  :
+      shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
+        & main_shifrp -> password_letters3 , & main_shifrp -> letters3 , shifr_letters_count3 ) ;
+      break ;
+    case  shifr_letters_count4  :
+      shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
+        & main_shifrp -> password_letters3 , & main_shifrp -> letters4 , shifr_letters_count4 ) ;
+      break ;
+    default :
+      main_shifrp -> string_exception  = ( localerus ?
+        ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
+        ( shifr_strcp ) & "unknown password alphabet" ) ;
+      longjmp ( main_shifrp -> jump , 1 ) ; }
+    puts  ( ( char * ) & ( main_shifrp -> password_letters3 [ 0 ] ) ) ;
     break ;
   default :
-    main_shifrp -> string_exception  = ( localerus ?
-      ( shifr_strcp ) & u8"неизвестный алфавит пароля" :
-      ( shifr_strcp ) & "unknown password alphabet" ) ;
-    longjmp ( main_shifrp -> jump , 1 ) ; }
-# endif
-    shifr_memsetv ( main_shifrp -> password_letters2  , shifr_memsetv_default_byte ,
-      sizeof  ( main_shifrp -> password_letters2  ) ) ;
-    shifr_memsetv ( main_shifrp -> password_letters3  , shifr_memsetv_default_byte ,
-      sizeof  ( main_shifrp -> password_letters3  ) ) ;
-    shifr_memsetv ( password_letters2_62  , shifr_memsetv_default_byte ,
-      sizeof  ( password_letters2_62  ) ) ;
-    shifr_memsetv ( password_letters3_62  , shifr_memsetv_default_byte ,
-      sizeof  ( password_letters3_62  ) ) ;
-    shifr_memsetv ( password_letters2_26  , shifr_memsetv_default_byte ,
-      sizeof  ( password_letters2_26  ) ) ;
-    shifr_memsetv ( password_letters3_26  , shifr_memsetv_default_byte ,
-      sizeof  ( password_letters3_26  ) ) ;
-    shifr_memsetv ( password_letters2_10  , shifr_memsetv_default_byte ,
-      sizeof  ( password_letters2_10  ) ) ;
-    shifr_memsetv ( password_letters3_10  , shifr_memsetv_default_byte ,
-      sizeof  ( password_letters3_10  ) ) ;
-    return  0 ; }      
+      fprintf ( stderr , ( localerus ?
+        u8"показать пароль : неопознанная версия : \'%d\'\n" :
+        "show password : unrecognized version : \'%d\'\n" ) ,
+        main_shifrp -> use_version ) ;
+      main_shifrp -> string_exception  = ( localerus ?
+        ( shifr_strcp ) & u8"показать пароль : неопознанная версия" :
+        ( shifr_strcp ) & "show password : unrecognized version" ) ;
+      longjmp ( main_shifrp -> jump  , 1 ) ; }
+# endif // SHIFR_DEBUG
+  shifr_memsetv ( main_shifrp -> password_letters2  , shifr_memsetv_default_byte ,
+    sizeof  ( main_shifrp -> password_letters2  ) ) ;
+  shifr_memsetv ( main_shifrp -> password_letters3  , shifr_memsetv_default_byte ,
+    sizeof  ( main_shifrp -> password_letters3  ) ) ; }
       
 static  inline  void  shifr_test_password ( t_ns_shifr  * const main_shifrp ,
   size_t  const nr  ) {

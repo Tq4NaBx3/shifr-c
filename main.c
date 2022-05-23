@@ -248,9 +248,9 @@ int main  ( int argc , char * argv [ ] ) {
             ( strcp ) & "unrecognized option" ) ;
           longjmp ( main_shifr  . jump  , 1 ) ; } } } }
   if ( flaggenpasswd ) {
-    int const e = shifr_main_genpsw ( & main_shifr  ) ;
+    shifr_main_genpsw ( & main_shifr  ) ;
     shifr_destr ( & main_shifr ) ;
-    return  e ; }
+    return  0 ; }
 # ifdef SHIFR_DEBUG
   if  ( flagenc and flagdec ) {
     main_shifr  . string_exception  = ( main_shifr . localerus ?
