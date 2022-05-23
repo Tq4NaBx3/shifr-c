@@ -351,12 +351,8 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
       u8" ( по-умолчанию )" :
       "  --3\tusing three bit encryption, key = 296 bits ( 45 - 90 letters )."
       " ( by default )") ;
-    puts  ( localerus ?
-      u8"  --рус или\n  --rus\tрусский язык" :
-      "  --rus\trussian language" ) ;
-    puts  ( localerus ?
-      u8"  --анг или\n  --eng\tанглийский язык" :
-      "  --eng\tenglish language" ) ;
+    puts  ( u8"  --rus или\n  --рус\tрусский язык"  ) ;
+    puts  ( u8"  --анг or\n  --eng\tenglish language" ) ;
     fputs  ( localerus ?  
       u8"Буквы в пароле (алфавит):\n  --а95 или\n  --a95\t\'" :
       "Letters in password (alphabet):\n  --a95\t\'" , stdout ) ;
