@@ -55,38 +55,46 @@ void  shifr_password  ##  N ##  _to_string_templ ( \
     } while ( shifr_number_not_zero ( N ) ( & password . pub ) ) ; }  \
   ( * stringi ) = '\00' ; }
 
+/*
+'string' as string to 'password' as big number
+ + create tables shifr deshi
+Перевод  пароля буквами 'string' в большое число 'password'
+ + создаём таблицы shifr deshi
+*/
 # define  shifr_string_to_password_templ_def( N ) \
-void  shifr_string_to_password  ##  N ##  _templ (  \
-  t_ns_shifr * const ns_shifrp , shifr_strvcp  const string  ,  \
-  shifr_number_type ( N ) * const password , shifr_strcp const letters ,  \
+void  shifr_string_to_password  ##  N ##  _templ ( \
+  t_ns_shifr * const ns_shifrp , shifr_strvcp  const string , \
+  shifr_number_type ( N ) * const password , shifr_strcp const letters , \
   uint8_t const letterscount  ) { \
   char  volatile  const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
   if  ( ( * stringi ) == '\00' ) { \
     shifr_number_set0 ( N ) ( password ) ; \
-    return ; } \
+    goto  load  ; } \
   shifr_number_priv_type ( N ) pass ; \
   shifr_number_set0 ( N ) ( & pass . pub ) ; \
-  shifr_number_priv_type ( N ) mult ;  \
-  shifr_number_set_byte ( N ) ( & mult . pub , 1 ) ;  \
+  shifr_number_priv_type ( N ) mult ; \
+  shifr_number_set_byte ( N ) ( & mult . pub , 1 ) ; \
   do  { \
-    uint8_t i = letterscount ;  \
-    do {  \
-      -- i ;  \
+    uint8_t i = letterscount ; \
+    do { \
+      -- i ; \
       if ( ( * stringi ) == ( * letters ) [ i ] ) \
         goto found ; \
     } while ( i ) ; \
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?  \
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
       ( shifr_strcp ) & u8"неправильная буква в пароле" : \
-      ( shifr_strcp ) & "wrong letter in password" ) ;  \
+      ( shifr_strcp ) & "wrong letter in password" ) ; \
     longjmp ( ns_shifrp  -> jump  , 1 ) ; \
 found : ; \
-    { shifr_number_priv_type ( N ) tmp = mult ;  \
+    { shifr_number_priv_type ( N ) tmp = mult ; \
       shifr_number_mul_byte ( N ) ( & tmp . pub , ( uint8_t ) ( i + 1 ) ) ; \
-      shifr_number_add ( N ) ( &  pass . pub , & tmp . pub )  ; }  \
+      shifr_number_add ( N ) ( &  pass . pub , & tmp . pub ) ; } \
     shifr_number_mul_byte ( N ) ( & mult . pub , letterscount ) ; \
     ++  stringi ; \
-  } while ( ( * stringi ) not_eq '\00' ) ;  \
-  ( * shifr_number_pub_to_priv ( N ) ( password  ) ) = pass ; }
+  } while ( ( * stringi ) not_eq '\00' ) ; \
+  ( * shifr_number_pub_to_priv ( N ) ( password  ) ) = pass ; \
+load  : \
+  shifr_password_load_uni ( ns_shifrp ) ; }
 
 # ifdef SHIFR_DEBUG
 
@@ -204,7 +212,8 @@ deshi needs salt
 # define  shifr_password_load( N ) shifr_password_  ##  N ##  _load
 
 # define  shifr_password_load_def(  N , SDS ) \
-void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * const password0 , \
+void  shifr_password_load ( N ) ( \
+  shifr_number_type ( N ) const * const password0 , \
   shifr_arrp const shifrp , shifr_arrp const deship ) { \
   shifr_initarr ( shifrp  , 0xff  , SDS ) ; \
   shifr_initarr ( deship  , 0xff  , SDS ) ; \
@@ -231,6 +240,51 @@ void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * const password
   } while ( inde < SDS ) ; \
   shifr_memsetv ( arrind  , shifr_memsetv_default_byte , sizeof  ( arrind  ) ) ; }
 
+/*
+пароль раскладываем в таблицу шифровки , дешифровки
+  пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
+  пароль делим на 16, остаются 15! вариантов пароля
+пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
+секретных кодов для соли+данных 0x1  
+в deshi нужна соль
+
+we lay out the password in the table of encryption, decryption
+password % 0x10 = 0xa means that 0xa is the encrypted code for salt + data 0x0
+divide the password by 16, 15! remain password options
+password % 0xf = 0xa is the sequence number for the remaining NOT occupied from
+0xff secret codes for salt + data 0x1
+deshi needs salt
+*/
+# define  shifr_password_from_dice( N ) shifr_password_  ##  N ##  _from_dice
+
+# define  shifr_password_from_dice_def(  N , SDS ) \
+void  shifr_password_from_dice  ( N ) ( \
+  uint8_t const * const dice  , \
+  shifr_arrp const shifrp , shifr_arrp const deship ) { \
+  shifr_initarr ( shifrp  , 0xff  , SDS ) ; \
+  shifr_initarr ( deship  , 0xff  , SDS ) ; \
+  uint8_t volatile  arrind  [ SDS ] ; \
+  { uint8_t volatile  * arrj  = & ( arrind  [ SDS  ] ) ; \
+    uint8_t j = SDS  ; \
+    do  { \
+      --  arrj  ; \
+      --  j ; \
+      ( * arrj )  = j ; \
+    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; } \
+  uint8_t inde  = 0 ; \
+  do { \
+    { uint8_t const cindex  = ( inde == SDS - 1 ? 0 : dice  [ inde  ] ) ; \
+      uint8_t volatile  * const arrind_cindexp = & ( arrind [ cindex ] ) ; \
+      ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
+      ( * deship ) [ * arrind_cindexp ] = inde ;  \
+      memmove ( ( uint8_t * ) arrind_cindexp , ( uint8_t * )  \
+        arrind_cindexp + 1 , \
+        ( size_t  ) ( SDS  - inde  - cindex - 1 ) ) ; } \
+    ++ inde  ; \
+  } while ( inde < SDS ) ; \
+  shifr_memsetv ( arrind  , shifr_memsetv_default_byte ,  \
+    sizeof  ( arrind  ) ) ; }
+  
 # define  shifr_number_def( N ) \
   struct  shifr_s_number ## N { \
     uint8_t _ ; \

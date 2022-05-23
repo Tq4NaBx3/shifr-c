@@ -20,8 +20,9 @@ void  shifr_printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize ,
 
 /*
 'password_letters' as string to 'raspr.pass' as big number
+ + tables shifr deshi
 Перевод  пароля буквами 'password_letters' в большое число 'raspr.pass'
- + shifr_password_load_uni
+ + таблицы shifr deshi
 */
 void  shifr_string_to_password ( t_ns_shifr * ) ;
 

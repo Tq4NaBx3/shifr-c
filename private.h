@@ -40,20 +40,26 @@ void  shifr_streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
   uint8_t const encrypteddata , uint8_t * restrict * const output_bufferp ,
   size_t * const writesp )  ;
 
+// ! to remove , make random 0..16!-1
 // generate array raspr2.dice
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
 void  shifr_generate_dices2 ( t_ns_shifr * ) ;
 
+// ! to remove , make random 0..64!-1
 // generate array raspr3.dice
 // inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
 void  shifr_generate_dices3 ( t_ns_shifr * ) ;
 
+// ! to remove , make random 0..16!-1
 // convert raspr2.dice as array to big number raspr2.pass
+//  + create tables shifr deshi
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
 void  shifr_dices_to_number2 ( t_ns_shifr * ) ;
 
+// ! to remove , make random 0..64!-1
 // convert raspr3.dice as array to big number raspr3.pass
+//  + create tables shifr deshi
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
 void  shifr_dices_to_number3 ( t_ns_shifr * ) ;
@@ -128,5 +134,6 @@ to the encryption table 'shifr', decryption 'deshi'
 дешифровки 'deshi'
 */
 void  shifr_password_load_uni ( t_ns_shifr * ) ;
+void  shifr_password_from_dice_uni ( t_ns_shifr * ) ;
 
 # endif // SHIFR_PRIVATE_H

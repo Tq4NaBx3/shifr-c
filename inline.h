@@ -35,6 +35,7 @@ static  inline  shifr_number_def_set_byte ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_set_byte ( v3 , shifr_number_size3 )
 
 // generate big number as password to raspr.pass
+//  + create tables shifr deshi
 static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version  ) {
     case  2 : 
@@ -69,12 +70,14 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
         ( shifr_strcp ) & "generate_password:unrecognized version" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; } }
 
+// from stdin get password string -> make big number
+//  + create tables shifr deshi
 static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  p40 [ shifr_password_letters2size ] ;
   shifr_set_keypress  ( ns_shifrp ) ;
   fgets ( ( char  * ) & ( p40 [ 0 ] ) , shifr_password_letters2size , stdin ) ;
   shifr_reset_keypress ( ns_shifrp ) ;
-  char volatile * j = & ( p40 [ 0 ]  ) ;
+  char volatile * j = & ( p40 [ 0 ] ) ;
   while ( ( ( * j ) not_eq '\n' ) and
     ( ( * j ) not_eq '\00' ) and
     ( j < ( & ( p40 [ shifr_password_letters2size ] ) ) ) )
@@ -148,6 +151,8 @@ static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
   shifr_memsetv ( password_letters  , shifr_memsetv_default_byte ,
     sizeof  ( password_letters  ) ) ; }
 
+// from stdin get password string -> make big number
+//  + create tables shifr deshi
 static  inline  void  shifr_enter_password3 ( t_ns_shifr * const ns_shifrp ) {
   char  volatile  p60 [ shifr_password_letters3size ] ;
   shifr_set_keypress  ( ns_shifrp ) ;
@@ -211,6 +216,7 @@ static  inline  void  shifr_enter_password3 ( t_ns_shifr * const ns_shifrp ) {
   shifr_memsetv ( password_letters6 , shifr_memsetv_default_byte ,
     sizeof  ( password_letters6 ) ) ; }
       
+// from stdin get password string -> make big number -> tables shifr deshi
 static  inline  void  shifr_enter_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
     case  3 :
@@ -410,8 +416,9 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
       "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;
     puts  ( "  2+2" ) ;
     return 0 ; }      
-      
+
 // generate big number as password, convert to string and puts
+// in debug mode creates tables shifr deshi many times
 static  inline  void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
   shifr_generate_password ( main_shifrp ) ;
   bool  const localerus = main_shifrp -> localerus  ;
@@ -901,5 +908,8 @@ static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * const main_shifrp ,
 
 static  inline  shifr_password_load_def (  v2 , shifr_deshi_size2 )
 static  inline  shifr_password_load_def (  v3 , shifr_deshi_size3 )            
-            
+
+static  inline  shifr_password_from_dice_def (  v2 , shifr_deshi_size2 )
+static  inline  shifr_password_from_dice_def (  v3 , shifr_deshi_size3 )            
+
 # endif //  SHIFR_INLINE_H
