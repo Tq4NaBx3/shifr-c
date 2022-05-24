@@ -1,5 +1,4 @@
 // make example && ./example
-# include "define.h"
 # include "inline.h"
 
 int main  ( int argc , char * argv [ ] ) {

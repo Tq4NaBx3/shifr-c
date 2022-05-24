@@ -14,7 +14,6 @@ typedef shifr_arrcp arrcp ;
 # define  password_letters2size shifr_password_letters2size
 # define  password_letters3size shifr_password_letters3size
 # define  number_princ shifr_number_princ
-# define  printarr  shifr_printarr
 
 int main  ( int argc , char * argv [ ] ) {
   t_ns_shifr  main_shifr  ;
@@ -286,14 +285,14 @@ int main  ( int argc , char * argv [ ] ) {
     main_shifr  . filebufto . file = f ; }
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 3 )  {
-    printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr3 ,
+    shifr_printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr3 ,
       shifr_deshi_size3 , stderr  ) ;
-    printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi3 ,
+    shifr_printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi3 ,
       shifr_deshi_size3 , stderr  ) ; }
   else  {
-    printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr2 ,
+    shifr_printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr2 ,
       shifr_deshi_size2 , stderr  ) ;
-    printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi2 ,
+    shifr_printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi2 ,
       shifr_deshi_size2 , stderr  ) ; }
 # endif // SHIFR_DEBUG
   enum  { inputbuffersize = 0x1000  } ;
