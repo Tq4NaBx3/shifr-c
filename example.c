@@ -1,5 +1,4 @@
 // make example && ./example
-# include <string.h>
 # include "define.h"
 # include "inline.h"
 
