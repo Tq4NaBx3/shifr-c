@@ -141,7 +141,7 @@ struct  s_ns_shifr  {
   // for : write6 , writeflushzero in text mode
   int bytecountw  ; 
   uint8_t old_last_data ;
-  uint8_t old_last_sole ;
+  uint8_t old_last_salt ;
   // text mode remember string place
   int charcount ;
   // stream buffer ver 2 for decrypt text mode
@@ -151,7 +151,7 @@ struct  s_ns_shifr  {
   // ver3
   int bitscount ;
   uint8_t secretdata  [ 4 ] ;
-  uint8_t secretdatasole  [ 3 ] ;
+  uint8_t secretdatasalt  [ 3 ] ;
   } ;
 
 struct  shifr_s_arrcps  {

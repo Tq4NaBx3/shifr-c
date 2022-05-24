@@ -43,7 +43,7 @@ int main  ( int argc , char * argv [ ] ) {
   
   fputs ( "--- decrypt ---\n" , stdout ) ;
   
-  shifr_sole_init ( & shif  ) ;
+  shifr_salt_init ( & shif  ) ;
   
   enum { decbufsize = 0x100 } ;
   uint8_t decbuf [ decbufsize ] ;

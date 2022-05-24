@@ -48,6 +48,6 @@ void  shifr_destr ( t_ns_shifr * ) ;
 
 uint8_t shifr_flush ( t_ns_shifr  * , shifr_arrps ) ;
 
-void  shifr_sole_init ( t_ns_shifr  * ) ;
+void  shifr_salt_init ( t_ns_shifr  * ) ;
 
 # endif // SHIFR_PUBLIC_H

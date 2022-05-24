@@ -42,6 +42,8 @@ clean:
 	@rm -f main.o
 	@rm -f $(SHIFR_ASM)
 	@rm -f libshifr.so
+	@rm -f example
+	@rm -f example.s
 asm: $(SHIFR_ASM)
 shifr.s: $(DEPENDshifrc)
 	@$(SHIFR_GCCRUN) shifr.c $(SHIFR_ASM_OPTIONS)

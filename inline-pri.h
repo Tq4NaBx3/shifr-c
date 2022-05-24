@@ -21,12 +21,12 @@ static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
   return  ( char ) ( ( ( uint8_t ) ';' ) + bits6 ) ; }
   
 static inline void  data_xor3  ( uint8_t * const restrict  old_last_data ,
-  uint8_t * const restrict  old_last_sole ,
-  shifr_arrp  const secretdatasole  , size_t  const data_size ) {
-  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
+  uint8_t * const restrict  old_last_salt ,
+  shifr_arrp  const secretdatasalt  , size_t  const data_size ) {
+  uint8_t * restrict  ids = & ( ( * secretdatasalt  ) [ 0 ] ) ;
   do {
     uint8_t const cur_data = ( * ids ) >> 3 ;
-    uint8_t const cur_sole = ( * ids ) bitand 0x7 ;
+    uint8_t const cur_salt = ( * ids ) bitand 0x7 ;
     // главное данные , хвост - соль : 101 =>
     //   101_000 или 101_001 или ... или 101_111
     // в таблице всё рядом, 8 вариантов равномерно распределены
@@ -35,14 +35,14 @@ static inline void  data_xor3  ( uint8_t * const restrict  old_last_data ,
     //   101_000 or 101_001 or ... or 101_111
     // in the table, everything is side by side, 8 options are evenly distributed
     // the data is a rash of the previous salt
-    ( * ids ) = ( uint8_t ) ( ( * ids ) xor  ( ( * old_last_sole ) << 3  ) ) ;
+    ( * ids ) = ( uint8_t ) ( ( * ids ) xor  ( ( * old_last_salt ) << 3  ) ) ;
     ( * ids ) xor_eq  ( * old_last_data ) ;
     // берю свежую соль
     // I take fresh salt
-    ( * old_last_sole ) = cur_sole ;
+    ( * old_last_salt ) = cur_salt ;
     ( * old_last_data ) = cur_data ;
     ++  ids ;
-  } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }  
+  } while ( ids not_eq & ( ( * secretdatasalt ) [ data_size ] ) ) ; }  
   
 static inline void  shifr_crypt_decrypt ( shifr_arrp const datap ,
   shifr_arrcp const tablep , shifr_arrp const encrp , size_t const data_size ) {
@@ -55,11 +55,11 @@ static inline void  shifr_crypt_decrypt ( shifr_arrp const datap ,
   } while ( id not_eq & ( ( * datap ) [ 0 ] ) ) ; }  
   
 static inline void  shifr_data_xor2  ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrp  const secretdatasole  , size_t  const data_size ) {
-  uint8_t * restrict  ids = & ( ( * secretdatasole  ) [ 0 ] ) ;
+  shifr_arrp  const secretdatasalt  , size_t  const data_size ) {
+  uint8_t * restrict  ids = & ( ( * secretdatasalt  ) [ 0 ] ) ;
   do {
-    uint8_t const cur_data = ( * ids ) >> 2 ;
-    uint8_t const cur_sole = ( * ids ) bitand 0x3 ;
+    uint8_t const cur_data  = ( * ids ) >> 2 ;
+    uint8_t const cur_salt  = ( * ids ) bitand  0x3 ;
     // главное данные , хвост - соль : 01 =>
     //   01_00 или 01_01 или 01_10 или 01_11
     // в таблице всё рядом, 4 варианта равномерно распределены
@@ -68,40 +68,41 @@ static inline void  shifr_data_xor2  ( t_ns_shifr * const ns_shifrp ,
     //   01_00 or 01_01 or 01_10 or 01_11
     // in the table, everything is side by side, 4 options are evenly distributed
     // the data is a rash of the previous salt
-    ( * ids ) = ( uint8_t ) ( ( * ids ) xor ( ( ns_shifrp -> old_last_sole ) << 2  ) ) ;
+    ( * ids ) = ( uint8_t ) ( ( * ids ) xor ( ( ns_shifrp -> old_last_salt )
+        << 2  ) ) ;
     ( * ids ) xor_eq  ( ns_shifrp -> old_last_data ) ;
     // беру свежую соль
     // I take fresh salt
-    ns_shifrp -> old_last_sole = cur_sole ;
-    ns_shifrp -> old_last_data = cur_data ;
+    ns_shifrp ->  old_last_salt = cur_salt  ;
+    ns_shifrp ->  old_last_data = cur_data  ;
     ++  ids ;
-  } while ( ids not_eq & ( ( * secretdatasole ) [ data_size ] ) ) ; }  
+  } while ( ids not_eq & ( ( * secretdatasalt ) [ data_size ] ) ) ; }  
   
-static inline void  shifr_decrypt_sole2 ( shifr_arrp const datap ,
+static inline void  shifr_decrypt_salt2 ( shifr_arrp const datap ,
   shifr_arrcp const tablep , shifr_arrp const decrp , size_t const data_size ,
-  uint8_t * const restrict old_last_sole , uint8_t * const restrict old_last_data ) {
+  uint8_t * const restrict old_last_salt , uint8_t * const restrict old_last_data ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
   uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
   do {
-    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
-      ( * ide ) = ( data_sole >>  2 ) xor ( * old_last_sole ) ;
-      ( * old_last_sole ) = ( uint8_t ) (
-        (  data_sole bitand  0x3 ) xor ( * old_last_data ) ) ; }
+    { uint8_t const data_salt = ( * tablep ) [ * id ] ;
+      ( * ide ) = ( data_salt >>  2 ) xor ( * old_last_salt ) ;
+      ( * old_last_salt ) = ( uint8_t ) (
+        (  data_salt bitand  0x3 ) xor ( * old_last_data ) ) ; }
     ( * old_last_data ) = ( * ide ) ;
     ++  id  ;
     ++  ide ;
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ; }  
   
-static inline void  shifr_decrypt_sole3 ( shifr_arrp const datap ,
+static inline void  shifr_decrypt_salt3 ( shifr_arrp const datap ,
   shifr_arrcp const tablep , shifr_arrp const decrp , size_t const data_size ,
-  uint8_t * const restrict old_last_sole , uint8_t * const restrict old_last_data ) {
+  uint8_t * const restrict old_last_salt , uint8_t * const restrict old_last_data ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
   uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
   do {
-    { uint8_t const data_sole = ( * tablep ) [ * id ] ;
-      ( * ide ) = ( data_sole >>  3 ) xor ( * old_last_sole ) ;
-      ( * old_last_sole ) = ( uint8_t ) (
-        ( data_sole bitand  0x7 ) xor ( * old_last_data ) ) ;
+    { uint8_t const data_salt = ( * tablep ) [ * id ] ;
+      ( * ide ) = ( data_salt >>  3 ) xor ( * old_last_salt ) ;
+      ( * old_last_salt ) = ( uint8_t ) (
+        ( data_salt bitand  0x7 ) xor ( * old_last_data ) ) ;
       ( * old_last_data ) = ( * ide ) ; }
     ++  id  ;
     ++  ide ;

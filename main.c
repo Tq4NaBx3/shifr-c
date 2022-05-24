@@ -13,7 +13,6 @@ typedef shifr_strcp strcp ;
 typedef shifr_arrcp arrcp ;
 # define  password_letters2size shifr_password_letters2size
 # define  password_letters3size shifr_password_letters3size
-# define  number_princ shifr_number_princ
 
 int main  ( int argc , char * argv [ ] ) {
   t_ns_shifr  main_shifr  ;
@@ -126,9 +125,11 @@ int main  ( int argc , char * argv [ ] ) {
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
       if ( main_shifr . use_version == 2 )
-        number_princ  ( v2 ) ( & main_shifr . raspr2  . pass . pub , stderr  ) ;
+        shifr_number_princ  ( v2 ) ( & main_shifr . raspr2  . pass . pub ,
+          stderr  ) ;
       else 
-        number_princ  ( v3 ) ( & main_shifr . raspr3  . pass . pub , stderr  ) ;
+        shifr_number_princ  ( v3 ) ( & main_shifr . raspr3  . pass . pub ,
+          stderr  ) ;
       fputs ( "\n" , stderr ) ;
       shifr_password_to_string  ( & main_shifr ) ;
       if ( main_shifr . use_version == 3 ) {

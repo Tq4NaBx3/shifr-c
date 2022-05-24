@@ -13,24 +13,24 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
   unsigned  int const fr , unsigned  int const to ) ;
 
 // data_size = 4
-void shifr_datasole2 ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrcp const secretdata , shifr_arrp const secretdatasole ,
-  size_t const data_size )  ;
+void shifr_datasalt2 ( t_ns_shifr * const ns_shifrp ,
+  shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
+  size_t const data_size ) ;
   
 // data_size = 1 .. 3
-void shifr_datasole3 ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrcp const secretdata , shifr_arrp const secretdatasole ,
-  size_t const data_size )  ;
+void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
+  shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
+  size_t const data_size ) ;
 
 // пишу по шесть бит
-// secretdatasolesize - количество шести-битных отделов (2 или 3)
+// secretdatasaltsize - количество шести-битных отделов (2 или 3)
 // encrypteddata - массив шести-битных чисел
 // I write in six bits
-// secretdatasolesize - the number of six-bit divisions (2 or 3)
+// secretdatasaltsize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
 void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
   shifr_t_streambuf * const me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
-  uint8_t const secretdatasolesize , bool const  flagtext ,
+  uint8_t const secretdatasaltsize , bool const  flagtext ,
   uint8_t * restrict * const output_bufferp , size_t * const writesp ,
   size_t  const outputs ) ;
 

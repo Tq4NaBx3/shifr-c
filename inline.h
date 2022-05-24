@@ -282,7 +282,7 @@ static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
     } while ( i <= 'z' ) ; }
   ns_shifrp ->  filebuffrom . file  = stdin ;
   ns_shifrp ->  filebufto . file  = stdout  ;
-  shifr_sole_init ( ns_shifrp ) ; }
+  shifr_salt_init ( ns_shifrp ) ; }
       
 # ifdef SHIFR_DEBUG
 

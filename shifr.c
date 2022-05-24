@@ -288,21 +288,22 @@ uint8_t shifr_streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
     ns_shifrp -> secretdata [ 0 ] = ns_shifrp -> secretdata [ 3 ] ;
   else
     ns_shifrp -> secretdata [ 0 ] = ns_shifrp -> secretdata [ 2 ] ;
-  shifr_datasole3 ( ns_shifrp , ( shifr_arrcp ) & ns_shifrp -> secretdata ,
-    & ns_shifrp -> secretdatasole , 1 )  ;
-  uint8_t secretdatasolesize  = 1 ;  
+  shifr_datasalt3 ( ns_shifrp , ( shifr_arrcp ) & ns_shifrp -> secretdata ,
+    & ns_shifrp -> secretdatasalt , 1 )  ;
+  uint8_t secretdatasaltsize  = 1 ;  
   // после подсоления, данные переворачиваем предыдущим xor-ом
   // after settling in, we turn the data over with the previous xor
-  data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
-    & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
+  data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_salt ,
+    & ns_shifrp -> secretdatasalt , secretdatasaltsize )  ;
   uint8_t encrypteddata [ 3 ] ;
-  shifr_crypt_decrypt ( & ns_shifrp -> secretdatasole ,
-    ( shifr_arrcp ) & ns_shifrp  -> shifr3 , & encrypteddata , secretdatasolesize ) ;
+  shifr_crypt_decrypt ( & ns_shifrp -> secretdatasalt ,
+    ( shifr_arrcp ) & ns_shifrp  -> shifr3 , & encrypteddata ,
+    secretdatasaltsize ) ;
   
   size_t  writes  = 0 ;
   shifr_streambuf_write3 ( ns_shifrp , & ns_shifrp -> filebufto ,
     ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
-    secretdatasolesize , ns_shifrp  -> flagtext , & output_buffer , & writes ,
+    secretdatasaltsize  , ns_shifrp  -> flagtext , & output_buffer , & writes ,
     arrpsp . s )  ;
   ++  result  ;
 
@@ -337,14 +338,14 @@ shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
     uint8_t const secretdata  [ 4 ] = { [ 0 ]  = buf  bitand 0x3 ,
       [ 1 ] = ( buf >>  2 ) bitand 0x3 , [ 2 ] = ( buf >>  4 ) bitand 0x3 ,
       [ 3 ] = ( buf >>  6 ) bitand 0x3 } ;
-    uint8_t secretdatasole  [ 4 ] ;
-    shifr_datasole2 ( ns_shifrp , & secretdata , & secretdatasole , 4 )  ;
+    uint8_t secretdatasalt  [ 4 ] ;
+    shifr_datasalt2 ( ns_shifrp , & secretdata , & secretdatasalt , 4 )  ;
     // после подсоления, данные переворачиваем предыдущим xor-ом
     // after settling in, we turn the data over with the previous xor
-    shifr_data_xor2 ( ns_shifrp , & secretdatasole , 4 )  ;
+    shifr_data_xor2 ( ns_shifrp , & secretdatasalt , 4 )  ;
     uint8_t encrypteddata [ 4 ] ;
-    shifr_crypt_decrypt ( & secretdatasole , ( shifr_arrcp ) & ns_shifrp  -> shifr2 ,
-      & encrypteddata , 4 ) ;
+    shifr_crypt_decrypt ( & secretdatasalt , ( shifr_arrcp ) & ns_shifrp  ->
+      shifr2 , & encrypteddata , 4 ) ;
 // 2^16 ^ 1/3 = 40.32
 // 2^16 % 40 = 0 .. 39
 // 2^16 / 40 = 1638.4
@@ -390,12 +391,12 @@ shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
 // returns size loads & writes
 shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps const input ,
   shifr_arrps const output  ) {
-  uint8_t secretdatasolesize  ;
+  uint8_t secretdatasaltsize  ;
   uint8_t encrypteddata [ 3 ] ;
   size_t  reads = 0 ;
   size_t  writes  = 0 ;
-  uint8_t const * restrict  input_buffer = &((* input . cp)[0]) ;
-  uint8_t * restrict  output_buffer = &((*  output  . p)[0]) ;
+  uint8_t const * restrict  input_buffer = &  ( ( * input . cp  ) [ 0 ] ) ;
+  uint8_t * restrict  output_buffer = & ( ( * output  . p ) [ 0 ] ) ;
   while ( reads < input . s and writes < output . s ) {
     unsigned  char buf = ( * input_buffer ) ;
     ++  input_buffer  ;
@@ -407,7 +408,7 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
         ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  3 ) bitand 0x7 ;
         ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  6 ;
         ns_shifrp -> bitscount  = 2 ; // 0 + 8 - 6
-        secretdatasolesize  = 2 ;
+        secretdatasaltsize  = 2 ;
         break ;
     case  1 : 
         // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
@@ -417,7 +418,7 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
         ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  2 ) bitand 0x7 ;
         ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  5 ;
         ns_shifrp -> bitscount  = 0 ;   // 1 + 8 - 9
-        secretdatasolesize  = 3 ;
+        secretdatasaltsize  = 3 ;
         break ;
     case  2 :
         // <= [ [0] [2 1 0] [2 1 0] [2] ] <= [ [1 0] ..
@@ -428,7 +429,7 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
         ( ns_shifrp -> secretdata ) [ 2 ] = ( buf >>  4 ) bitand 0x7 ;
         ( ns_shifrp -> secretdata ) [ 3 ] = buf >>  7 ;
         ns_shifrp -> bitscount  = 1 ; // 2 + 8 - 9
-        secretdatasolesize  = 3 ;
+        secretdatasaltsize  = 3 ;
         break ;
     default :
       fprintf ( stderr  , ( ns_shifrp -> localerus ?
@@ -437,18 +438,20 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp , shifr_arrcps cons
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
         ( shifr_strcp ) & u8"неожиданное значение bitscount" :
         ( shifr_strcp ) & "unexpected value bitscount" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; } // switch  ( ns_shifrp -> bitscount  )
-    shifr_datasole3 ( ns_shifrp , ( shifr_arrcp ) & ( ns_shifrp -> secretdata ) ,
-      & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; 
+      } // switch  ( ns_shifrp -> bitscount  )
+    shifr_datasalt3 ( ns_shifrp , ( shifr_arrcp ) & ( ns_shifrp -> secretdata ) ,
+      & ns_shifrp -> secretdatasalt , secretdatasaltsize )  ;
     // после подсоления, данные переворачиваем предыдущим ксором
-    // after settling in, we turn the data over with the previous xor
-    data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_sole ,
-      & ns_shifrp -> secretdatasole , secretdatasolesize )  ;
-    shifr_crypt_decrypt ( & ns_shifrp -> secretdatasole ,
-      ( shifr_arrcp ) & ns_shifrp  -> shifr3 , & encrypteddata , secretdatasolesize ) ;
+    // after salting in, we turn the data over with the previous xor
+    data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_salt ,
+      & ns_shifrp -> secretdatasalt , secretdatasaltsize ) ;
+    shifr_crypt_decrypt ( & ns_shifrp -> secretdatasalt ,
+      ( shifr_arrcp ) & ns_shifrp  -> shifr3 , & encrypteddata ,
+      secretdatasaltsize ) ;
     shifr_streambuf_write3 ( ns_shifrp , & ns_shifrp -> filebufto ,
       ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
-      secretdatasolesize , ns_shifrp  -> flagtext , & output_buffer , & writes ,
+      secretdatasaltsize , ns_shifrp  -> flagtext , & output_buffer , & writes ,
       output . s ) ; } // while
   return ( shifr_size_io ) { .i  = reads , .o  = writes  }  ; }
 
@@ -507,8 +510,8 @@ shifr_size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp , shifr_arrcps con
       [ 2 ] = buf [ 1 ] bitand  0xf ,
       [ 3 ] = ( buf [ 1 ] >>  4 ) bitand  0xf  } ;
     uint8_t decrypteddata [ 4 ] ;
-    shifr_decrypt_sole2 ( & secretdata , ( shifr_arrcp ) & ( ns_shifrp  -> deshi2 ) ,
-      & decrypteddata , 4 , & ns_shifrp  -> old_last_sole ,
+    shifr_decrypt_salt2 ( & secretdata , ( shifr_arrcp ) & ( ns_shifrp  ->
+        deshi2 ) , & decrypteddata , 4 , & ns_shifrp  -> old_last_salt ,
       & ns_shifrp  -> old_last_data ) ;
     ( * output_buffer ) = ( uint8_t ) ( ( decrypteddata [ 0 ] bitand 0x3  ) bitor
       ( ( decrypteddata [ 1 ] bitand 0x3  ) << 2  )
@@ -533,11 +536,11 @@ shifr_size_io shifr_decrypt3 ( t_ns_shifr * const ns_shifrp , shifr_arrcps const
       & ( secretdata [ 0 ] ) , & reads , & input_buffer , input . s ) )
       break ;
     uint8_t decrypteddata [ 1 ] ;
-    shifr_decrypt_sole3 ( & secretdata , ( shifr_arrcp ) & ns_shifrp  -> deshi3 , &
-      decrypteddata , 1 , & ns_shifrp  -> old_last_sole , & ns_shifrp  -> old_last_data
-      ) ;
-    shifr_streambuf_write3bits ( ns_shifrp , decrypteddata [ 0 ] , & output_buffer ,
-      & writes ) ; } // while
+    shifr_decrypt_salt3 ( & secretdata , ( shifr_arrcp ) & ns_shifrp  -> deshi3 ,
+      & decrypteddata , 1 , & ns_shifrp  -> old_last_salt ,
+      & ns_shifrp  -> old_last_data ) ;
+    shifr_streambuf_write3bits ( ns_shifrp , decrypteddata [ 0 ] , &
+      output_buffer , & writes ) ; } // while
   return  ( shifr_size_io ) { . i  = reads , .  o  = writes  } ; }
 
 // ! to remove , make random 0..16!-1
@@ -872,9 +875,9 @@ void  shifr_destr ( t_ns_shifr * const ns_shifrp ) {
   shifr_memsetv ( ns_shifrp ->  password_letters3 , shifr_memsetv_default_byte ,
     sizeof  ( ns_shifrp ->  password_letters3 ) ) ; }
 
-void  shifr_sole_init ( t_ns_shifr  * const ns_shifrp ) {
+void  shifr_salt_init ( t_ns_shifr  * const ns_shifrp ) {
   ns_shifrp ->  old_last_data = 0 ;
-  ns_shifrp ->  old_last_sole = 0 ;
+  ns_shifrp ->  old_last_salt = 0 ;
   ns_shifrp ->  filebuffrom . buf = 0 ;
   ns_shifrp ->  filebuffrom . bufbitsize  = 0 ;
   ns_shifrp ->  filebufto . buf = 0 ;
@@ -883,9 +886,9 @@ void  shifr_sole_init ( t_ns_shifr  * const ns_shifrp ) {
   ns_shifrp ->  buf2index = 0 ;
   ns_shifrp ->  bitscount = 0 ;
   ns_shifrp ->  charcount = 0 ;
-  for ( int i = 0 ; i < 3 ; ++ i )
-    ns_shifrp ->  secretdatasole  [ i ] = 0 ;
-  for ( int i = 0 ; i < 4 ; ++ i )
+  for ( int i = 0 ; i < 3 ; ++  i )
+    ns_shifrp ->  secretdatasalt  [ i ] = 0 ;
+  for ( int i = 0 ; i < 4 ; ++  i )
     ns_shifrp ->  secretdata  [ i ] = 0 ;
-  for ( int i = 0 ; i < 3 ; ++ i )
+  for ( int i = 0 ; i < 3 ; ++  i )
     ns_shifrp ->  buf2  [ i ] = 0 ; }
