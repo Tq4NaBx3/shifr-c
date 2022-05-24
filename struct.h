@@ -80,26 +80,26 @@ struct  s_ns_shifr  {
   jmp_buf jump ;
   shifr_strcp string_exception ;
 
-  // ver2
-  shifr_t_raspr2 raspr2 ;
-  // ver3
-  shifr_t_raspr3 raspr3 ;
+  union {
+    // ver2
+    shifr_t_raspr2 raspr2 ;
+    // ver3
+    shifr_t_raspr3 raspr3 ;
+    } ;
 
   //  2 or 3
   //  2 или 3
   int use_version ; 
-
-  bool  flagtext  ;
-
-  uint8_t shifr2 [ shifr_deshi_size2 ] ;
-  uint8_t shifr3 [ shifr_deshi_size3 ] ;
+  
+  // v2
   // secret code options for letters
   // варианты секретных кодов для буквы
   // 0 .. 3 - 0
   // 4 .. 7 - 1
   // 8 .. b - 2
   // c .. f - 3
-  uint8_t deshi2 [ shifr_deshi_size2 ] ;
+
+  // v3
   // secret code options for letters
   // варианты секретных кодов для буквы
   // 0 .. 7 -  0
@@ -110,14 +110,30 @@ struct  s_ns_shifr  {
   // 28 .. 2f -  5
   // 30 .. 37 -  6
   // 38 .. 3f -  7
-  uint8_t deshi3 [ shifr_deshi_size3 ] ;
+
+  bool  flagtext  ;
+
+  union {
+    uint8_t shifr2 [ shifr_deshi_size2 ] ;
+    uint8_t shifr3 [ shifr_deshi_size3 ] ;
+    } ;
+  
+  union {
+    uint8_t deshi2 [ shifr_deshi_size2 ] ;
+    uint8_t deshi3 [ shifr_deshi_size3 ] ;
+    } ;
+  
   // 62 or 95 or 26 or 10
   // алфавит пароля 62 или 95 или 26 или 10
   int password_alphabet ; 
-  // ver2
-  char  volatile  password_letters2 [ shifr_password_letters2size ] ;
-  // ver3
-  char  volatile  password_letters3 [ shifr_password_letters3size ] ;
+  
+  union {
+    // ver2
+    char  volatile  password_letters2 [ shifr_password_letters2size ] ;
+    // ver3
+    char  volatile  password_letters3 [ shifr_password_letters3size ] ;
+    } ;
+    
 // private :
   shifr_t_streambuf filebuffrom ;
   shifr_t_streambuf filebufto ;
