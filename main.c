@@ -121,32 +121,16 @@ int main  ( int argc , char * argv [ ] ) {
           ( strcp ) & u8"пароль уже задан" :
           ( strcp ) & "password already set" )  ;
         longjmp(main_shifr  . jump  , 1 ) ; }
-
-      if ( main_shifr . use_version == 2 ) {
-        strncpy ( ( char * ) main_shifr  . password_letters2 , argv  [ argj  ] ,
-          password_letters2size  ) ;
-        shifr_string_to_password  ( & main_shifr ) ;
+      shifr_password_set_by_string  ( & main_shifr , argv  [ argj  ] ) ;
 # ifdef SHIFR_DEBUG
       fputs ( ( main_shifr . localerus ?
         u8"из строки во внутренний пароль = " :
         "from string to internal password = " ) , stderr ) ;
-      number_princ  ( v2 ) ( & main_shifr . raspr2  . pass . pub , stderr  ) ;
+      if ( main_shifr . use_version == 2 )
+        number_princ  ( v2 ) ( & main_shifr . raspr2  . pass . pub , stderr  ) ;
+      else 
+        number_princ  ( v3 ) ( & main_shifr . raspr3  . pass . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
-# endif      
-        }
-      else {
-        strncpy ( ( char * ) main_shifr  . password_letters3 , argv  [ argj  ] ,
-          password_letters3size ) ; 
-        shifr_string_to_password  ( & main_shifr ) ;
-# ifdef SHIFR_DEBUG                           
-      fputs ( ( main_shifr . localerus ?
-        u8"из строки во внутренний пароль = " :
-        "from string to internal password = " ) , stderr ) ;
-      number_princ  ( v3 ) ( & main_shifr . raspr3  . pass . pub , stderr  ) ;
-      fputs ( "\n" , stderr ) ;
-# endif                    
-        }
-# ifdef SHIFR_DEBUG
       shifr_password_to_string  ( & main_shifr ) ;
       if ( main_shifr . use_version == 3 ) {
         if  ( strcmp ( ( char * ) main_shifr  . password_letters3 ,

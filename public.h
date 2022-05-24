@@ -19,6 +19,14 @@ void  shifr_printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize ,
 # endif // SHIFR_DEBUG
 
 /*
+copying the password string + 'password_letters' as string to 'raspr.pass' as big number
+ + tables shifr deshi
+копирование строки пароля + перевод  пароля буквами 'password_letters' в большое число 'raspr.pass'
+ + таблицы shifr deshi
+*/
+void  shifr_password_set_by_string ( t_ns_shifr * , char const * ) ;
+  
+/*
 'password_letters' as string to 'raspr.pass' as big number
  + tables shifr deshi
 Перевод  пароля буквами 'password_letters' в большое число 'raspr.pass'

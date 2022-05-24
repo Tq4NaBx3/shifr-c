@@ -160,7 +160,7 @@ void  shifr_printarr  ( shifr_strcp const  name , shifr_arrcp const p ,
   fprintf  ( f  , "%s = [ " , * name  ) ;
   uint8_t const * i = & ( ( * p ) [ 0 ] ) ;
   do {
-    fprintf  ( f  , "%x , " , ( int ) ( * i ) ) ; 
+    fprintf  ( f  , "%x " , ( int ) ( * i ) ) ; 
     ++  i ;
   } while ( i not_eq  & ( ( * p ) [ arrsize ] ) ) ;
   fputs ( "]\n" , f ) ; }
@@ -616,6 +616,37 @@ shifr_number_def_princ  ( v3 , shifr_number_size3 )
 
 # endif // SHIFR_DEBUG
 
+void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp , char const * const pswstr ) {
+  switch ( ns_shifrp -> use_version ) {
+  case  2 :
+    strncpy ( ( char * ) ns_shifrp  -> password_letters2 , pswstr ,
+      shifr_password_letters2size ) ;
+    if ( ns_shifrp  -> password_letters2 [ shifr_password_letters2size - 1 ] != '\00' ) {
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+        ( shifr_strcp ) & u8"shifr_password_set_string : пароль очень длинный" :
+        ( shifr_strcp ) & "shifr_password_set_string : the password is very long" ) ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    break ;
+  case  3 :
+    strncpy ( ( char * ) ns_shifrp  -> password_letters3 , pswstr ,
+      shifr_password_letters3size ) ;
+    if ( ns_shifrp  -> password_letters3 [ shifr_password_letters3size - 1 ] != '\00' ) {
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+        ( shifr_strcp ) & u8"shifr_password_set_string : пароль очень длинный" :
+        ( shifr_strcp ) & "shifr_password_set_string : the password is very long" ) ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    break ;
+  default :
+    fprintf ( stderr  , ( ns_shifrp -> localerus ?
+      u8"shifr_password_set_string : неизвестная версия %d\n" :
+      "shifr_password_set_string : unknown version %d\n" ) ,
+      ns_shifrp -> use_version )  ;
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
+      ( shifr_strcp ) & u8"shifr_password_set_string : неизвестная версия" :
+      ( shifr_strcp ) & "shifr_password_set_string : unknown version" ) ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+  shifr_string_to_password  ( ns_shifrp ) ; }
+
 /*
 transfer 'password_letters' as string to 'raspr.pass' as big number
  + create tables shifr deshi
@@ -691,7 +722,7 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
       u8"string_to_password : версия %d не поддерживается\n" :
-      "string_to_password : version %d is not supported" ) ,
+      "string_to_password : version %d is not supported\n" ) ,
       ns_shifrp -> use_version )  ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
       ( shifr_strcp ) & u8"string_to_password : версия не поддерживается" :
