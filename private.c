@@ -24,13 +24,16 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
     fprintf ( stderr  , "uirandfrto : fr >= to , fr = %u , to = %u\n"  ,
       fr , to ) ;
     ns_shifrp  -> string_exception  = ( shifr_strcp ) "uirandfrto : fr >= to" ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    longjmp ( ns_shifrp  -> jump  , 1 ) ;
+  }
   if ( fr + 0x100 <= to ) {
-    fprintf ( stderr  , "uirandfrto : fr + 0x100 <= to , fr = %u , to = %u\n"  ,
+    fprintf ( stderr  ,
+      "uirandfrto : fr + 0x100 <= to , fr = %u , to = %u\n"  ,
       fr , to ) ;
     ns_shifrp  -> string_exception  = ( shifr_strcp )
       "uirandfrto : fr + 0x100 <= to" ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+    longjmp ( ns_shifrp  -> jump  , 1 ) ;
+  }
 # endif
   uint8_t buf ;
   do {
@@ -45,16 +48,20 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
 # ifdef SHIFR_DEBUG
     if ( r == -1 ) {
       perror  ( "uirandfrto : getrandom" ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "uirandfrto : getrandom" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+      ns_shifrp  -> string_exception  = ( shifr_strcp )
+        "uirandfrto : getrandom" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ;
+    }
     if ( r not_eq 1 ) {
       fprintf ( stderr  , "uirandfrto : r = %ld not_eq 1\n"  , r ) ;
       ns_shifrp  -> string_exception  = ( shifr_strcp )
         "uirandfrto : r not_eq 1" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+      longjmp ( ns_shifrp  -> jump  , 1 ) ;
+    }
 # endif // SHIFR_DEBUG
   } while ( buf + 0x100 % ( to - fr + 1 ) >= 0x100 ) ;
-  return  fr + buf % ( to - fr + 1 ) ; }
+  return  fr + buf % ( to - fr + 1 ) ;
+}
 
 // data_size = 4
 void shifr_datasalt2 ( t_ns_shifr * const ns_shifrp ,
@@ -74,12 +81,16 @@ void shifr_datasalt2 ( t_ns_shifr * const ns_shifrp ,
 # ifdef SHIFR_DEBUG
     if ( r == -1 ) {
       perror  ( "datasalt2 : getrandom" ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "datasalt2 : getrandom" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+      ns_shifrp  -> string_exception  = ( shifr_strcp )
+        "datasalt2 : getrandom" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ;
+    }
     if ( r not_eq 1 ) {
       fprintf ( stderr  , "datasalt2 : r = %ld not_eq 1\n"  , r ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "datasalt2 : r not_eq 1" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+      ns_shifrp  -> string_exception  = ( shifr_strcp )
+        "datasalt2 : r not_eq 1" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ;
+    }
 # endif // SHIFR_DEBUG
   do {
     -- id ;
@@ -89,12 +100,14 @@ void shifr_datasalt2 ( t_ns_shifr * const ns_shifrp ,
     // в таблице всё рядом, 4 варианта равномерно распределены
     // the main thing is data , the tail is salt : 10 =>
     //   10_00 or 10_01 or 10_10 or 10_11
-    // in the table, everything is side by side, 4 options are evenly distributed
+    // in the table, everything is side by side, 4 options are evenly
+    // distributed
     ( * ids ) = ( uint8_t ) (
       ( ( * id  ) <<  2 ) bitor
       ( ran bitand  0x3 ) ) ;
     ran >>= 2 ;
-  } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
+  } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ;
+}
 
 // data_size = 1 .. 3
 void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
@@ -113,13 +126,16 @@ void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
 # endif
     if ( r == -1 ) {
       perror  ( "datasalt3 : getrandom" ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) "datasalt3 : getrandom" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+      ns_shifrp  -> string_exception  = ( shifr_strcp )
+        "datasalt3 : getrandom" ;
+      longjmp ( ns_shifrp  -> jump  , 1 ) ;
+    }
     if ( r not_eq arans ) {
       fprintf ( stderr  , "datasalt3 : r = %ld not_eq %d\n"  , r , arans ) ;
       ns_shifrp  -> string_exception  = ( shifr_strcp ) 
         "datasalt3 : r not_eq arans" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+      longjmp ( ns_shifrp  -> jump  , 1 ) ;
+    }
 # endif // SHIFR_DEBUG
   unsigned  int ran = ( ( unsigned  int ) ( aran [ 0 ] ) ) ;
   if ( arans == 2 )
@@ -132,12 +148,14 @@ void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
     // в таблице всё рядом, 8 вариантов равномерно распределены
     // the main thing is data , the tail is salt : 101 =>
     //   101_000 or 101_001 or ... or 101_111
-    // in the table, everything is side by side, 8 options are evenly distributed
+    // in the table, everything is side by side, 8 options are evenly
+    // distributed
     ( * ids ) = ( uint8_t )
       ( ( ( unsigned int ) ( ( * id  ) <<  3 ) ) bitor
       ( ran bitand  0x7 ) ) ;
     ran >>= 3 ;
-  } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ; }
+  } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ;
+}
   
 // пишу по шесть бит
 // secretdatasaltsize - количество шести-битных отделов (2 или 3)
@@ -146,7 +164,8 @@ void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
 // secretdatasaltsize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
 void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
-  shifr_t_streambuf * const me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
+  shifr_t_streambuf * const me  ,
+  uint8_t const (  * const encrypteddata ) [ 3 ] ,
   uint8_t const secretdatasaltsize , bool const  flagtext ,
   uint8_t * restrict * const output_bufferp , size_t * const writesp ,
   size_t  const outputs ) {
@@ -154,51 +173,63 @@ void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
     uint8_t i = 0 ;
     do {
       char  buf2  = bits6_to_letter ( ( * encrypteddata ) [ i ] ) ;
+      if ( ( * writesp ) >= outputs ) {
+        ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
+          ( shifr_strcp ) &
+          u8"streambuf_write3: переполнение буфера (flagtext)"  :
+          ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagtext)" ) ;
+        longjmp ( ns_shifrp  -> jump  , 1 ) ;
+      }
+      ( * * output_bufferp ) = ( uint8_t ) buf2 ;
+      ++  ( * output_bufferp )  ;
+      ++  ( * writesp ) ;
+      ++  ( ns_shifrp ->  bytecountw  ) ;
+      if  ( ( ns_shifrp ->  bytecountw  ) >=  60  ) {
         if ( ( * writesp ) >= outputs ) {
           ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-            ( shifr_strcp ) & u8"streambuf_write3: переполнение буфера (flagtext)"  :
-            ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagtext)" ) ;
-          longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-        ( * * output_bufferp ) = ( uint8_t ) buf2 ;
+            ( shifr_strcp ) &
+            u8"streambuf_write3: переполнение буфера для '\\n'"  :
+            ( shifr_strcp ) & "streambuf_write3: buffer overflow for '\\n'" ) ;
+          longjmp ( ns_shifrp  -> jump  , 1 ) ;
+        }
+        ( * * output_bufferp ) = '\n' ;
         ++  ( * output_bufferp )  ;
         ++  ( * writesp ) ;
-        ++  ( ns_shifrp ->  bytecountw  ) ;
-        if  ( ( ns_shifrp ->  bytecountw  ) >=  60  ) {
-          if ( ( * writesp ) >= outputs ) {
-            ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-              ( shifr_strcp ) & u8"streambuf_write3: переполнение буфера для '\\n'"  :
-              ( shifr_strcp ) & "streambuf_write3: buffer overflow for '\\n'" ) ;
-            longjmp ( ns_shifrp  -> jump  , 1 ) ; }
-          ( * * output_bufferp ) = '\n' ;
-          ++  ( * output_bufferp )  ;
-          ++  ( * writesp ) ;
-          ns_shifrp ->  bytecountw  = 0 ; }
+        ns_shifrp ->  bytecountw  = 0 ;
+      }
       ++  i ;
-    } while ( i < secretdatasaltsize ) ; }
-  else  {
+    } while ( i < secretdatasaltsize ) ;
+  } else  {
     uint8_t i = 0 ;
     do {
       if  ( ( me -> bufbitsize ) < 2 ) {
         me -> buf = ( me -> buf ) bitor
-          ( uint8_t ) ( ( ( * encrypteddata ) [ i ] ) << ( me -> bufbitsize ) ) ;
-        me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 6 ) ; }
-      else  {
-        uint8_t const to_write  = ( uint8_t ) ( ( ( ( * encrypteddata ) [ i ] ) <<
-          ( me -> bufbitsize  ) ) bitor ( me -> buf ) ) ;
+          ( uint8_t ) ( ( ( * encrypteddata ) [ i ] ) <<
+            ( me -> bufbitsize ) ) ;
+        me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 6 ) ;
+      } else  {
+        uint8_t const to_write  = ( uint8_t ) ( ( ( ( * encrypteddata ) [ i ]
+          ) << ( me -> bufbitsize  ) ) bitor ( me -> buf ) ) ;
         if ( ( * writesp ) >= outputs ) {
           ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-            ( shifr_strcp ) & u8"streambuf_write3: переполнение буфера (flagdigit)"  :
-            ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagdigit)" ) ;
-          longjmp ( ns_shifrp  -> jump  , 1 ) ; }
+            ( shifr_strcp ) & 
+            u8"streambuf_write3: переполнение буфера (flagdigit)"  :
+            ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagdigit)"
+            ) ;
+          longjmp ( ns_shifrp  -> jump  , 1 ) ;
+        }
         ( * * output_bufferp ) = to_write ;
         ++  ( * output_bufferp )  ;
         ++  ( * writesp ) ;
         // + 6 - 8
         me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) - 2U ) ;
         me -> buf = ( uint8_t ) ( ( ( * encrypteddata ) [ i ] ) >>
-          ( 6 - ( me -> bufbitsize ) ) ) ;  } 
-        ++  i ;
-      } while ( i < secretdatasaltsize ) ; } }
+          ( 6 - ( me -> bufbitsize ) ) ) ;
+      }
+      ++  i ;
+    } while ( i < secretdatasaltsize ) ;
+  }
+}
 
 // версия 3 пишу три бита для расшифровки
 // version 3 write three bits to decode
@@ -209,8 +240,8 @@ void  shifr_streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
   if  ( ( me -> bufbitsize ) < 5 ) {
     me -> buf = ( uint8_t ) ( ( me -> buf ) bitor
       ( encrypteddata <<  ( me -> bufbitsize ) ) ) ;
-    me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 3U ) ; }
-  else  {
+    me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 3U ) ;
+  } else  {
     uint8_t const to_write  = ( uint8_t ) ( ( encrypteddata   << (
       me -> bufbitsize ) ) bitor ( me -> buf ) ) ;
     ( * * output_bufferp ) = to_write  ;
@@ -219,5 +250,6 @@ void  shifr_streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
     // + 3 - 8
     me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) - 5U ) ;
     me -> buf =  ( uint8_t ) ( encrypteddata   >>
-      ( 3 - ( me -> bufbitsize ) ) ) ; } }
-      
+      ( 3 - ( me -> bufbitsize ) ) ) ;
+  }
+}     

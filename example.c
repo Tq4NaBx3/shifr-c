@@ -78,4 +78,5 @@ int main  ( int argc , char * argv [ ] ) {
   fputs ( (char *)decbuf2 , stdout ) ;
   fprintf ( stdout , "%s`\n" , decbuff ) ;
   
-  shifr_destr ( & shif ) ; }
+  shifr_destr ( & shif ) ;
+}

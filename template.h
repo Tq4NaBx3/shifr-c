@@ -6,14 +6,16 @@
 # define  shifr_number_def_set0( N , D ) \
   void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * const np ) { \
     memset  ( & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) , 0 ,  \
-      D ) ; }
+      D ) ; \
+  }
 
 # define  shifr_number_def_mul_byte(  N , D ) \
 void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
   uint8_t const byte ) {  \
   if ( byte == 0 ) {  \
     shifr_number_set0 ( N ) ( np ) ; \
-    return  ; } \
+    return  ; \
+  } \
   if ( byte == 1 )  \
     return ; \
   uint8_t per = 0 ; \
@@ -26,7 +28,9 @@ void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
         ( uint8_t ) ( x bitand 0xff ) ; \
       per = ( uint8_t ) ( x >>  8 ) ; \
       ++  i ; \
-    } while ( i < D ) ; } }
+    } while ( i < D ) ; \
+  } \
+}
     
 /*
 Translation of the big number 'raspr.pass' to string 'password_letters'
@@ -39,21 +43,24 @@ Translation of the big number 'raspr.pass' to string 'password_letters'
     
 # define  shifr_password_to_string_templ_def( N ) \
 void  shifr_password  ##  N ##  _to_string_templ ( \
-  shifr_number_type ( N ) const * const password0 , shifr_strvp const string , \
-  shifr_strp letters , uint8_t const letterscount  ) { \
+  shifr_number_type ( N ) const * const password0 , \
+  shifr_strvp const string , shifr_strp letters , \
+  uint8_t const letterscount ) { \
   char  volatile  * stringi = & ( ( * string )  [ 0 ] ) ; \
   if ( shifr_number_not_zero  ( N ) ( password0 ) ) { \
-    shifr_number_priv_type ( N ) password = * shifr_number_const_pub_to_priv ( N ) ( \
-      password0 ) ; \
-    do {  \
+    shifr_number_priv_type ( N ) password = \
+      * shifr_number_const_pub_to_priv ( N ) ( password0 ) ; \
+    do { \
       /* here the previous sizes took the place of passwords */ \
       /* здесь предыдущие размеры заняли место паролей */ \
-      shifr_number_dec ( N ) ( & password . pub ) ;  \
+      shifr_number_dec ( N ) ( & password . pub ) ; \
       ( * stringi ) = ( * letters ) [ \
-        shifr_number_div_mod ( N ) ( & password . pub , letterscount ) ] ;  \
+        shifr_number_div_mod ( N ) ( & password . pub , letterscount ) ] ; \
       ++  stringi ; \
-    } while ( shifr_number_not_zero ( N ) ( & password . pub ) ) ; }  \
-  ( * stringi ) = '\00' ; }
+    } while ( shifr_number_not_zero ( N ) ( & password . pub ) ) ; \
+  } \
+  ( * stringi ) = '\00' ; \
+}
 
 /*
 'string' as string to 'password' as big number
@@ -69,7 +76,8 @@ void  shifr_string_to_password  ##  N ##  _templ ( \
   char  volatile  const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
   if  ( ( * stringi ) == '\00' ) { \
     shifr_number_set0 ( N ) ( password ) ; \
-    goto  load  ; } \
+    goto  load  ; \
+  } \
   shifr_number_priv_type ( N ) pass ; \
   shifr_number_set0 ( N ) ( & pass . pub ) ; \
   shifr_number_priv_type ( N ) mult ; \
@@ -88,19 +96,21 @@ void  shifr_string_to_password  ##  N ##  _templ ( \
 found : ; \
     { shifr_number_priv_type ( N ) tmp = mult ; \
       shifr_number_mul_byte ( N ) ( & tmp . pub , ( uint8_t ) ( i + 1 ) ) ; \
-      shifr_number_add ( N ) ( &  pass . pub , & tmp . pub ) ; } \
+      shifr_number_add ( N ) ( &  pass . pub , & tmp . pub ) ; \
+    } \
     shifr_number_mul_byte ( N ) ( & mult . pub , letterscount ) ; \
     ++  stringi ; \
   } while ( ( * stringi ) not_eq '\00' ) ; \
   ( * shifr_number_pub_to_priv ( N ) ( password  ) ) = pass ; \
 load  : \
-  shifr_password_load_uni ( ns_shifrp ) ; }
+  shifr_password_load_uni ( ns_shifrp ) ; \
+}
 
 # ifdef SHIFR_DEBUG
 
 # define  shifr_number_def_princ( N , D ) \
-void  shifr_number  ##  N ##  _princ ( shifr_number_type ( N ) const * const np , \
-  FILE * const fs ) { \
+void  shifr_number  ##  N ##  _princ ( \
+  shifr_number_type ( N ) const * const np , FILE * const fs ) { \
   fputs ( "[ " , fs ) ; \
   uint8_t i = D - 1 ;  \
   do  { \
@@ -109,20 +119,23 @@ void  shifr_number  ##  N ##  _princ ( shifr_number_type ( N ) const * const np 
       break ; \
     --  i ; \
   } while ( true ) ; \
-  fputs ( "]" , fs ) ; }
+  fputs ( "]" , fs ) ; \
+}
 
 # endif // SHIFR_DEBUG
 
 # define  shifr_number_def_elt_copy( N ) \
 uint8_t shifr_number ## N ## _elt_copy  ( \
   shifr_number_type ( N ) const * const np  , uint8_t const i ) { \
-  return  shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ i ] ; }
+  return  shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ i ] ; \
+}
 
 # define  shifr_number_elt_copy( N ) shifr_number ## N ## _elt_copy
 
 # define  shifr_number_def_add(  N , D ) \
-void  shifr_number ## N ## _add  ( shifr_number_type ( N ) * const restrict  np  , \
-  shifr_number_type ( N ) const * const restrict  xp ) {  \
+void  shifr_number ## N ## _add  ( \
+  shifr_number_type ( N ) * const restrict  np  , \
+  shifr_number_type ( N ) const * const restrict  xp ) { \
   uint8_t per = 0 ; \
   uint8_t i = 0 ; \
   do  { \
@@ -131,26 +144,32 @@ void  shifr_number ## N ## _add  ( shifr_number_type ( N ) * const restrict  np 
       ( ( uint16_t  ) shifr_number_elt_copy ( N ) ( xp , i ) ) + \
       ( ( uint16_t  ) per ) ) ; \
     if ( s >= 0x100  ) {  \
-      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = ( uint8_t ) ( s - 0x100 ) ; \
-      per = 1 ; } \
-    else  { \
+      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = \
+        ( uint8_t ) ( s - 0x100 ) ; \
+      per = 1 ; \
+    } else  { \
       shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = ( uint8_t ) s  ;  \
-      per = 0 ;  }  \
+      per = 0 ; \
+    } \
     ++ i  ; \
-  } while ( i < D ) ; }
+  } while ( i < D ) ; \
+}
 
 # define  shifr_number_add( N ) shifr_number ## N ## _add
 
 # define  shifr_number_def_not_zero(  N , D ) \
 bool  shifr_number ## N ## _not_zero  ( \
   shifr_number_type ( N ) const * const np  ) { \
-  uint8_t const * i = & ( shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ D ] ) ; \
+  uint8_t const * i = \
+    & ( shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ D ] ) ; \
   do {  \
     --  i ; \
     if ( * i )  \
       return  true  ; \
-  } while ( i not_eq & ( shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ) ;  \
-  return  false ; }
+  } while ( i not_eq & ( \
+    shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ) ;  \
+  return  false ; \
+}
 
 # define  shifr_number_not_zero( N ) shifr_number ## N ## _not_zero
 
@@ -162,35 +181,42 @@ void  shifr_number ## N ## _dec ( shifr_number_type ( N ) * const np  ) { \
       ( * i ) = 0xffU ; \
     else  { \
       -- ( * i ) ;  \
-      break ; } \
+      break ; \
+    } \
     ++  i ; \
-  } while ( i not_eq & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ D ] ) ) ; }
+  } while ( i not_eq & ( \
+    shifr_number_pub_to_priv ( N ) ( np ) -> arr [ D ] ) ) ; \
+}
 
 # define  shifr_number_dec( N ) shifr_number ## N ## _dec
 
 # define  shifr_number_def_div_mod(  N , D ) \
 uint8_t shifr_number ## N ## _div_mod ( \
   shifr_number_type ( N ) * const np0 , uint8_t const div ) { \
-  shifr_number_priv_type ( N ) * const np = shifr_number_pub_to_priv ( N ) ( np0 ) ; \
+  shifr_number_priv_type ( N ) * const np = \
+    shifr_number_pub_to_priv ( N ) ( np0 ) ; \
   uint8_t modi  = 0 ; \
   uint8_t i = D ; \
   do {  \
     -- i ;  \
-    uint16_t const x = ( uint16_t  ) ( ( ( ( uint16_t  ) modi  ) <<  8 ) bitor  \
-      ( ( uint16_t  ) ( np -> arr [ i ] ) ) ) ; \
+    uint16_t const x = ( uint16_t  ) ( ( ( ( uint16_t  ) modi  ) <<  8 ) \
+      bitor ( ( uint16_t  ) ( np -> arr [ i ] ) ) ) ; \
     modi  = ( uint8_t ) ( x % div ) ; \
     np -> arr [ i ] = ( uint8_t ) ( x / div ) ; \
   } while ( i > 0 ) ; \
-  return  modi ; }
+  return  modi ; \
+}
 
 # define  shifr_number_div_mod( N ) shifr_number ## N ## _div_mod
 
 # define  shifr_number_def_set_byte(  N , D ) \
 void  shifr_number ## N ## _set_byte  ( shifr_number_type ( N ) * const np0 , \
   uint8_t const x ) { \
-  shifr_number_priv_type ( N ) * const np = shifr_number_pub_to_priv ( N ) ( np0 ) ; \
+  shifr_number_priv_type ( N ) * const np = \
+    shifr_number_pub_to_priv ( N ) ( np0 ) ; \
   memset  ( & ( np -> arr [ 1 ] ) , 0 , D - 1 ) ; \
-  np -> arr [ 0 ] = x ; }
+  np -> arr [ 0 ] = x ; \
+}
 
 # define  shifr_number_set_byte( N ) shifr_number ## N ## _set_byte
 
@@ -224,21 +250,26 @@ void  shifr_password_load ( N ) ( \
       --  arrj  ; \
       --  j ; \
       ( * arrj )  = j ; \
-    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; } \
+    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; \
+  } \
   uint8_t inde  = 0 ; \
-  shifr_number_priv_type ( N ) password = * shifr_number_const_pub_to_priv ( N ) ( \
-    password0 ) ; \
+  shifr_number_priv_type ( N ) password = \
+    * shifr_number_const_pub_to_priv ( N ) ( password0 ) ; \
   do { \
     { uint8_t const cindex = shifr_number_div_mod ( N ) ( & password . pub ,  \
         (  uint8_t ) ( SDS - inde  ) ) ; \
       uint8_t volatile  * const arrind_cindexp = & ( arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
-      memmove ( ( uint8_t * ) arrind_cindexp , ( uint8_t * ) arrind_cindexp + 1 , \
-        ( size_t  ) ( SDS  - inde  - cindex - 1 ) ) ; } \
+      memmove ( ( uint8_t * ) arrind_cindexp , \
+        ( uint8_t * ) arrind_cindexp + 1 , \
+        ( size_t  ) ( SDS  - inde  - cindex - 1 ) ) ; \
+    } \
     ++ inde  ; \
   } while ( inde < SDS ) ; \
-  shifr_memsetv ( arrind  , shifr_memsetv_default_byte , sizeof  ( arrind  ) ) ; }
+  shifr_memsetv ( arrind  , shifr_memsetv_default_byte , \
+    sizeof  ( arrind  ) ) ; \
+}
 
 /*
 пароль раскладываем в таблицу шифровки , дешифровки
@@ -270,7 +301,8 @@ void  shifr_password_from_dice  ( N ) ( \
       --  arrj  ; \
       --  j ; \
       ( * arrj )  = j ; \
-    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; } \
+    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; \
+  } \
   uint8_t inde  = 0 ; \
   do { \
     { uint8_t const cindex  = ( inde == SDS - 1 ? 0 : dice  [ inde  ] ) ; \
@@ -279,11 +311,13 @@ void  shifr_password_from_dice  ( N ) ( \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
       memmove ( ( uint8_t * ) arrind_cindexp , ( uint8_t * )  \
         arrind_cindexp + 1 , \
-        ( size_t  ) ( SDS  - inde  - cindex - 1 ) ) ; } \
+        ( size_t  ) ( SDS  - inde  - cindex - 1 ) ) ; \
+    } \
     ++ inde  ; \
   } while ( inde < SDS ) ; \
   shifr_memsetv ( arrind  , shifr_memsetv_default_byte ,  \
-    sizeof  ( arrind  ) ) ; }
+    sizeof  ( arrind  ) ) ; \
+}
   
 # define  shifr_number_def( N ) \
   struct  shifr_s_number ## N { \

@@ -9,18 +9,18 @@
 # include "template.h"
 
 // generate random number [ fr .. to ]
-unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
-  unsigned  int const fr , unsigned  int const to ) ;
+unsigned  int shifr_uirandfrto  ( t_ns_shifr * ns_shifrp ,
+  unsigned  int fr , unsigned  int to ) ;
 
 // data_size = 4
-void shifr_datasalt2 ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
-  size_t const data_size ) ;
+void shifr_datasalt2 ( t_ns_shifr * ns_shifrp ,
+  shifr_arrcp secretdata , shifr_arrp secretdatasalt ,
+  size_t data_size ) ;
   
 // data_size = 1 .. 3
-void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
-  size_t const data_size ) ;
+void shifr_datasalt3 ( t_ns_shifr * ns_shifrp ,
+  shifr_arrcp secretdata , shifr_arrp secretdatasalt ,
+  size_t data_size ) ;
 
 // пишу по шесть бит
 // secretdatasaltsize - количество шести-битных отделов (2 или 3)
@@ -28,17 +28,17 @@ void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
 // I write in six bits
 // secretdatasaltsize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
-void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
-  shifr_t_streambuf * const me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
-  uint8_t const secretdatasaltsize , bool const  flagtext ,
-  uint8_t * restrict * const output_bufferp , size_t * const writesp ,
-  size_t  const outputs ) ;
+void  shifr_streambuf_write3 ( t_ns_shifr * ns_shifrp ,
+  shifr_t_streambuf * me  , uint8_t const (  * encrypteddata ) [ 3 ] ,
+  uint8_t secretdatasaltsize , bool flagtext ,
+  uint8_t * restrict * output_bufferp , size_t * writesp ,
+  size_t  outputs ) ;
 
 // версия 3 пишу три бита для расшифровки
 // version 3 write three bits to decode
-void  shifr_streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
-  uint8_t const encrypteddata , uint8_t * restrict * const output_bufferp ,
-  size_t * const writesp )  ;
+void  shifr_streambuf_write3bits ( t_ns_shifr * ns_shifrp ,
+  uint8_t encrypteddata , uint8_t * restrict * output_bufferp ,
+  size_t * writesp )  ;
 
 // ! to remove , make random 0..16!-1
 // generate array raspr2.dice
@@ -53,15 +53,19 @@ void  shifr_generate_dices3 ( t_ns_shifr * ) ;
 // ! to remove , make random 0..16!-1
 // convert raspr2.dice as array to big number raspr2.pass
 //  + create tables shifr deshi
-// [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
-// = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 0 .. 16!-1
+// [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] =
+// [ x , y , z , ... , u , v ] =
+// = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 
+// 0 .. 16!-1
 void  shifr_dices_to_number2 ( t_ns_shifr * ) ;
 
 // ! to remove , make random 0..64!-1
 // convert raspr3.dice as array to big number raspr3.pass
 //  + create tables shifr deshi
-// [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ] =
-// = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 0 .. 64!-1
+// [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = 
+// [ x , y , z , ... , u , v ] =
+// = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 
+// 0 .. 64!-1
 void  shifr_dices_to_number3 ( t_ns_shifr * ) ;
 
 /*
@@ -74,8 +78,10 @@ returns the size of read and written data
 записывает в 'output.p' размера 'output.s' байт ,
 возвращает размер считаных и записаных данных
 */
-shifr_size_io shifr_encrypt2  ( t_ns_shifr * , shifr_arrcps input , shifr_arrps output )  ;
-shifr_size_io shifr_encrypt3  ( t_ns_shifr * , shifr_arrcps input , shifr_arrps output )  ;
+shifr_size_io shifr_encrypt2  ( t_ns_shifr * , shifr_arrcps input ,
+  shifr_arrps output )  ;
+shifr_size_io shifr_encrypt3  ( t_ns_shifr * , shifr_arrcps input ,
+  shifr_arrps output )  ;
 
 /*
 Finished buffer encryption, returns output_buffer size written
@@ -93,13 +99,15 @@ returns the size of read and written data
 записывает в 'output.p' размера 'output.s' байт ,
 возвращает размер считаных и записаных данных
 */
-shifr_size_io  shifr_decrypt2 ( t_ns_shifr * , shifr_arrcps input , shifr_arrps output ) ;
+shifr_size_io  shifr_decrypt2 ( t_ns_shifr * , shifr_arrcps input ,
+  shifr_arrps output ) ;
   
 /*
 Decryption
 Расшифровка
 */
-shifr_size_io  shifr_decrypt3 ( t_ns_shifr * , shifr_arrcps input , shifr_arrps output ) ;
+shifr_size_io  shifr_decrypt3 ( t_ns_shifr * , shifr_arrcps input ,
+  shifr_arrps output ) ;
 
 uint8_t  shifr_streambuf_writeflushzero3 ( t_ns_shifr * , shifr_arrps ) ;
 
