@@ -15,6 +15,7 @@
 # include "inline-pri.h"
 # include "template.h"
 # include "private.h"
+# include "cast.h"
 
 static  inline  shifr_number_def_elt_copy ( v2 )
 static  inline  shifr_number_def_elt_copy ( v3 )

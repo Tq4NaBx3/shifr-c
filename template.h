@@ -21,12 +21,12 @@ void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
   uint8_t per = 0 ; \
   { uint8_t i = 0 ; \
     do { \
-      uint16_t const x = ( uint16_t ) ( ( ( uint16_t  ) ( \
-        shifr_number_elt_copy ( N ) ( np , i ) ) ) * \
-        ( ( uint16_t  ) byte  ) + ( ( uint16_t  ) per ) ) ; \
+      uint16_t const x = int_cast_uint16 ( uint8_cast_uint16 ( \
+        shifr_number_elt_copy ( N ) ( np , i ) ) * \
+        uint8_cast_uint16 ( byte ) + uint8_cast_uint16 ( per ) ) ; \
       shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] =  \
-        ( uint8_t ) ( x bitand 0xff ) ; \
-      per = ( uint8_t ) ( x >>  8 ) ; \
+        int_cast_uint8 ( x bitand 0xff ) ; \
+      per = int_cast_uint8 ( x >>  8 ) ; \
       ++  i ; \
     } while ( i < D ) ; \
   } \
@@ -95,7 +95,7 @@ void  shifr_string_to_password  ##  N ##  _templ ( \
     longjmp ( ns_shifrp  -> jump  , 1 ) ; \
 found : ; \
     { shifr_number_priv_type ( N ) tmp = mult ; \
-      shifr_number_mul_byte ( N ) ( & tmp . pub , ( uint8_t ) ( i + 1 ) ) ; \
+      shifr_number_mul_byte ( N ) ( & tmp . pub , int_cast_uint8 ( i + 1 ) ) ; \
       shifr_number_add ( N ) ( &  pass . pub , & tmp . pub ) ; \
     } \
     shifr_number_mul_byte ( N ) ( & mult . pub , letterscount ) ; \
@@ -139,10 +139,10 @@ void  shifr_number ## N ## _add  ( \
   uint8_t per = 0 ; \
   uint8_t i = 0 ; \
   do  { \
-    uint16_t const s = ( uint16_t  ) ( ( ( uint16_t  ) (  \
-      shifr_number_elt_copy ( N ) ( np , i ) ) ) + \
-      ( ( uint16_t  ) shifr_number_elt_copy ( N ) ( xp , i ) ) + \
-      ( ( uint16_t  ) per ) ) ; \
+    uint16_t const s = int_cast_uint16 ( \
+      uint8_cast_uint16 ( shifr_number_elt_copy ( N ) ( np , i ) ) + \
+      uint8_cast_uint16 ( shifr_number_elt_copy ( N ) ( xp , i ) ) + \
+      uint8_cast_uint16 ( per ) ) ; \
     if ( s >= 0x100  ) {  \
       shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = \
         ( uint8_t ) ( s - 0x100 ) ; \
@@ -199,10 +199,10 @@ uint8_t shifr_number ## N ## _div_mod ( \
   uint8_t i = D ; \
   do {  \
     -- i ;  \
-    uint16_t const x = ( uint16_t  ) ( ( ( ( uint16_t  ) modi  ) <<  8 ) \
-      bitor ( ( uint16_t  ) ( np -> arr [ i ] ) ) ) ; \
-    modi  = ( uint8_t ) ( x % div ) ; \
-    np -> arr [ i ] = ( uint8_t ) ( x / div ) ; \
+    uint16_t const x = int_cast_uint16 ( ( uint8_cast_uint16 ( modi ) <<  8 ) \
+      bitor uint8_cast_uint16 ( np -> arr [ i ] ) ) ; \
+    modi  = int_cast_uint8 ( x % div ) ; \
+    np -> arr [ i ] = int_cast_uint8 ( x / div ) ; \
   } while ( i > 0 ) ; \
   return  modi ; \
 }
@@ -257,13 +257,13 @@ void  shifr_password_load ( N ) ( \
     * shifr_number_const_pub_to_priv ( N ) ( password0 ) ; \
   do { \
     { uint8_t const cindex = shifr_number_div_mod ( N ) ( & password . pub ,  \
-        (  uint8_t ) ( SDS - inde  ) ) ; \
+        int_cast_uint8 ( SDS - inde  ) ) ; \
       uint8_t volatile  * const arrind_cindexp = & ( arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
       memmove ( ( uint8_t * ) arrind_cindexp , \
-        ( uint8_t * ) arrind_cindexp + 1 , \
-        ( size_t  ) ( SDS  - inde  - cindex - 1 ) ) ; \
+        ( ( uint8_t * ) arrind_cindexp ) + 1 , \
+        int_cast_size ( SDS  - inde  - cindex - 1 ) ) ; \
     } \
     ++ inde  ; \
   } while ( inde < SDS ) ; \
@@ -309,9 +309,9 @@ void  shifr_password_from_dice  ( N ) ( \
       uint8_t volatile  * const arrind_cindexp = & ( arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
-      memmove ( ( uint8_t * ) arrind_cindexp , ( uint8_t * )  \
-        arrind_cindexp + 1 , \
-        ( size_t  ) ( SDS  - inde  - cindex - 1 ) ) ; \
+      memmove ( ( uint8_t * ) arrind_cindexp , ( ( uint8_t * )  \
+        arrind_cindexp ) + 1 , \
+        int_cast_size ( SDS  - inde  - cindex - 1 ) ) ; \
     } \
     ++ inde  ; \
   } while ( inde < SDS ) ; \

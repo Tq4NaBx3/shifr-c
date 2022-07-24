@@ -21,8 +21,8 @@ DEPENDprivatec = private.c $(DEPENDprivateh) $(DEPENDstructh) define.h \
 DEPENDstructh = struct.h $(DEPENDtypeh) $(DEPENDtemplateh) template-pri.h
 DEPENDpublich = public.h $(DEPENDtypeh) define.h
 DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh) \
- $(DEPENDinlineprih) $(DEPENDtemplateh) $(DEPENDprivateh)
-DEPENDinlineprih = inline-pri.h template-pri.h
+ $(DEPENDinlineprih) $(DEPENDtemplateh) $(DEPENDprivateh) cast.h
+DEPENDinlineprih = inline-pri.h template-pri.h cast.h
 DEPENDmainc = main.c define.h $(DEPENDinlineh)
 DEPENDshifrc = shifr.c define.h $(DEPENDinlineh) $(DEPENDtemplateh)
 DEPENDexample = example.c define.h $(DEPENDinlineh)
