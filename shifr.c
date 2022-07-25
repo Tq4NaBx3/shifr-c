@@ -165,7 +165,7 @@ void  shifr_printarr  ( shifr_strcp const  name , shifr_arrcp const p ,
   fprintf  ( f  , "%s = [ " , * name  ) ;
   uint8_t const * i = & ( ( * p ) [ 0 ] ) ;
   do {
-    fprintf  ( f  , "%x " , ( int ) ( * i ) ) ; 
+    fprintf  ( f  , "%hhx " , * i ) ; 
     ++  i ;
   } while ( i not_eq  & ( ( * p ) [ arrsize ] ) ) ;
   fputs ( "]\n" , f ) ;
@@ -186,11 +186,11 @@ void  shifr_set_keypress  ( t_ns_shifr * const ns_shifrp ) {
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
       u8"ошибка чтения tcgetattr : %s\n" :
       "error read tcgetattr : %s\n" ) , se ) ;
-    ns_shifrp  -> string_exception  = ( shifr_strcp ) se ;
+    ns_shifrp  -> string_exception  = charconstp_cast_stringconstp ( se ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
   struct termios new_termios = ns_shifrp -> stored_termios  ;
-  new_termios.c_lflag  and_eq ( unsigned int ) ( ~ ( ECHO bitor ICANON ) ) ;
+  new_termios.c_lflag  and_eq int_cast_uint ( ~ ( ECHO bitor ICANON ) ) ;
   new_termios.c_cc  [ VMIN  ] = 1 ;  
   new_termios.c_cc  [ VTIME ] = 0 ; 
   if  ( tcsetattr ( 0 , TCSANOW , & new_termios ) ) {
@@ -198,7 +198,7 @@ void  shifr_set_keypress  ( t_ns_shifr * const ns_shifrp ) {
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
       u8"ошибка записи tcsetattr : %s\n" :
       "error write tcsetattr : %s\n"  ) , se  ) ;
-    ns_shifrp  -> string_exception  = ( shifr_strcp ) se ;
+    ns_shifrp  -> string_exception  = charconstp_cast_stringconstp  ( se ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
 }
@@ -211,14 +211,14 @@ void  shifr_reset_keypress  ( t_ns_shifr * const ns_shifrp ) {
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
       u8"ошибка записи tcsetattr : %s\n" :
       "error write tcsetattr : %s\n"  ) , se  ) ;
-    ns_shifrp  -> string_exception  = ( shifr_strcp ) se ;
+    ns_shifrp  -> string_exception  = charconstp_cast_stringconstp ( se ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
 }
 
 // читаю 6 бит
 // 6 bits reads
-bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
+static  inline  bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   uint8_t * const encrypteddata , size_t * const  readsp ,
   uint8_t const * restrict * const input_bufferp , size_t const inputs ) {
   shifr_t_streambuf * const restrict me = & ns_shifrp -> filebuffrom ;
@@ -232,13 +232,13 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
       ++  ( * readsp ) ;
       // читаем одну букву ';'-'z' -> декодируем в шесть бит
       // reads one letter ';'-'z' -> decode to six bits
-    } while ( ( buf < ( ( uint8_t ) ';' ) ) or
-      ( buf > ( ( uint8_t ) 'z' ) ) ) ;
-    ( * encrypteddata ) = letter_to_bits6 ( ( char ) buf ) ;
+    } while ( ( buf < char_cast_uint8 ( ';' ) ) or
+      ( buf > char_cast_uint8 ( 'z' ) ) ) ;
+    ( * encrypteddata ) = letter_to_bits6 ( uint8_cast_char ( buf ) ) ;
     return  false ;
   }
   if  ( ( me -> bufbitsize ) >= 6 ) {
-    me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) - 6U ) ;
+    me -> bufbitsize = uint_cast_uint8 ( ( me -> bufbitsize ) - 6U ) ;
     ( * encrypteddata ) = ( me -> buf ) bitand ( 0x40 - 1 ) ;
     ( me -> buf ) >>= 6 ;
     return  false ;
@@ -248,9 +248,9 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   ++  ( * input_bufferp  ) ;
   ( * encrypteddata ) = ( ( me -> buf ) bitor 
     ( buf <<  ( me -> bufbitsize ) ) ) bitand ( 0x40 - 1 )  ;
-  me -> buf = ( uint8_t ) ( buf >> ( 6 - ( me -> bufbitsize ) ) ) ;
+  me -> buf = int_cast_uint8 ( buf >> ( 6 - ( me -> bufbitsize ) ) ) ;
   // + 8 - 6
-  me -> bufbitsize = ( uint8_t ) ( ( me -> bufbitsize ) + 2 ) ;
+  me -> bufbitsize = int_cast_uint8 ( ( me -> bufbitsize ) + 2 ) ;
   return  false ;
 }
 
@@ -266,8 +266,7 @@ uint8_t shifr_flush ( t_ns_shifr  * const ns_shifrp ,
     fprintf ( stderr , ( ns_shifrp  -> localerus ? 
       u8"shifr_flush : неизвестная версия %d\n" :
       "shifr_flush : unknown version %d\n" ) , ns_shifrp ->  use_version ) ;
-    ns_shifrp ->  string_exception  = ( shifr_strcp ) &
-      "shifr_flush : unknown version" ;
+    ns_shifrp ->  string_exception  = & "shifr_flush : unknown version" ;
     longjmp ( ns_shifrp ->  jump  , 1 ) ;
 # else
     return  0 ;
@@ -283,8 +282,7 @@ uint8_t shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
   shifr_arrps const output ) {
 # ifdef SHIFR_DEBUG
   if ( output . s == 0 ) {
-    ns_shifrp ->  string_exception  = ( shifr_strcp ) &
-      "shifr_encrypt2_flush:output . s == 0" ;
+    ns_shifrp ->  string_exception  = & "shifr_encrypt2_flush:output . s == 0" ;
     longjmp ( ns_shifrp ->  jump  , 1 ) ;
   }
 # endif // SHIFR_DEBUG

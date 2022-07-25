@@ -10,8 +10,12 @@ CSTANDARD = -std=c11
 SHIFR_OBJECTS = shifr.o private.o
 SHIFR_ASM = shifr.s main.s private.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
-SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion \
- -Wno-clobbered -Wpedantic $(CSTANDARD) -Os
+SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion -Wsign-conversion -Wuninitialized \
+ -Wno-clobbered -Wpedantic -Wmissing-include-dirs -Wswitch-default -Wswitch-enum -Wunused \
+ -Wfloat-equal -Wcast-align -Wlogical-op -Wmissing-declarations -Wredundant-decls -Wsign-compare \
+ -Werror=return-local-addr -Wbad-function-cast -Wmissing-parameter-type -Wmissing-prototypes \
+ -Wnested-externs -Winit-self -Wold-style-declaration -Wold-style-definition -Wstrict-prototypes \
+ -Wpointer-sign $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDtypeh = type.h define.h
 DEPENDtemplateh = template.h define.h
