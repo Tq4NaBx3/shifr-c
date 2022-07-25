@@ -9,6 +9,11 @@ static  inline  uint16_t  uint8_cast_uint16 ( uint8_t const u ) {
   return  ( uint16_t  ) u ;
 }
 
+# define  uint8_cast_uint shifr_uint8_cast_uint
+static  inline  unsigned int  uint8_cast_uint ( uint8_t const u ) {
+  return  ( unsigned int  ) u ;
+}
+
 # define  uint16_cast_uint8 shifr_uint16_cast_uint8
 static  inline  uint8_t  uint16_cast_uint8 ( uint16_t const u ) {
   return  ( uint8_t  ) u ;
@@ -27,6 +32,11 @@ static  inline  uint8_t  uint_cast_uint8 ( unsigned  int const u ) {
 # define  int_cast_uint16 shifr_int_cast_uint16
 static  inline  uint16_t  int_cast_uint16 ( int const i ) {
   return  ( uint16_t  ) i ;
+}
+
+# define  uint_cast_uint16 shifr_uint_cast_uint16
+static  inline  uint16_t  uint_cast_uint16 ( unsigned int const u ) {
+  return  ( uint16_t  ) u ;
 }
 
 # define  int_cast_size shifr_int_cast_size
@@ -49,13 +59,24 @@ static  inline  char  uint8_cast_char ( uint8_t const u ) {
   return  ( char ) u ;
 }
 
+# define  uint16_cast_char shifr_uint16_cast_char
+static  inline  char  uint16_cast_char ( uint16_t const u ) {
+  return  ( char ) u ;
+}
+
 # define  int_cast_char shifr_int_cast_char
 static  inline  char  int_cast_char ( int const i ) {
   return  ( char ) i ;
 }
 
+# define  charvolatilep_cast_charp shifr_charvolatilep_cast_charp
+static  inline  char * charvolatilep_cast_charp ( char volatile * const cv ) {
+  return  ( char * ) cv ;
+}
+
 # define  charconstp_cast_stringconstp shifr_charconstp_cast_stringconstp
-static  inline  shifr_strcp charconstp_cast_stringconstp ( char const * const c ) {
+static  inline  shifr_strcp charconstp_cast_stringconstp (
+  char const * const c ) {
   return  ( shifr_strcp ) c ;
 }
 

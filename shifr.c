@@ -266,7 +266,8 @@ uint8_t shifr_flush ( t_ns_shifr  * const ns_shifrp ,
     fprintf ( stderr , ( ns_shifrp  -> localerus ? 
       u8"shifr_flush : неизвестная версия %d\n" :
       "shifr_flush : unknown version %d\n" ) , ns_shifrp ->  use_version ) ;
-    ns_shifrp ->  string_exception  = & "shifr_flush : unknown version" ;
+    ns_shifrp ->  string_exception  = ( shifr_strcp ) &
+      "shifr_flush : unknown version" ;
     longjmp ( ns_shifrp ->  jump  , 1 ) ;
 # else
     return  0 ;
@@ -282,7 +283,8 @@ uint8_t shifr_encrypt2_flush  ( t_ns_shifr * const ns_shifrp ,
   shifr_arrps const output ) {
 # ifdef SHIFR_DEBUG
   if ( output . s == 0 ) {
-    ns_shifrp ->  string_exception  = & "shifr_encrypt2_flush:output . s == 0" ;
+    ns_shifrp ->  string_exception  = ( shifr_strcp ) &
+      "shifr_encrypt2_flush:output . s == 0" ;
     longjmp ( ns_shifrp ->  jump  , 1 ) ;
   }
 # endif // SHIFR_DEBUG
@@ -347,12 +349,12 @@ lbreak  : ;
 // returns size loads & writes
 shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp ,
   shifr_arrcps const input , shifr_arrps const output  ) {
-  uint8_t const * restrict  input_buffer = &  ( ( * input . cp  ) [ 0 ] ) ;
+  uint8_t const * restrict  input_buffer = & ( ( * input . cp  ) [ 0 ] ) ;
   uint8_t * restrict  output_buffer = & ( ( * output  . p ) [ 0 ] ) ;
   size_t  reads = 0 ;
   size_t  writes  = 0 ;
   while ( reads < input . s and writes + 4 <= output . s ) {
-    char const  buf = ( char ) ( * input_buffer ) ;
+    char const  buf = uint8_cast_char ( * input_buffer ) ;
     ++  input_buffer  ;
     ++  reads ;
     uint8_t const secretdata  [ 4 ] = { [ 0 ]  = buf  bitand 0x3 ,
@@ -375,17 +377,17 @@ shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp ,
 // делаем make [0] % 40 , [1] % 40 , [2] % 41
 // 'R' = 82 .. 'z' = 122
     if  ( ns_shifrp  -> flagtext  ) {
-      uint16_t  buf16 = ( uint16_t  ) (
-        ( ( uint16_t  ) ( encrypteddata [ 0 ] bitand  0xf ) ) bitor
-        ( ((uint16_t)( encrypteddata [ 1 ] bitand 0xf )) << 4  )  bitor
-        ( ((uint16_t)( encrypteddata [ 2 ] bitand 0xf )) << 8  )  bitor
-        ( ((uint16_t)( encrypteddata [ 3 ] bitand 0xf )) << 12  )) ;
+      uint16_t  buf16 = int_cast_uint16 (
+        ( int_cast_uint16 ( encrypteddata [ 0 ] bitand  0xf ) ) bitor
+        ( (int_cast_uint16( encrypteddata [ 1 ] bitand 0xf )) << 4  )  bitor
+        ( (int_cast_uint16( encrypteddata [ 2 ] bitand 0xf )) << 8  )  bitor
+        ( (int_cast_uint16( encrypteddata [ 3 ] bitand 0xf )) << 12  )) ;
       char buf3 [ 4 ] ;
-      buf3 [ 0 ] = (  char  ) ( 'R' + ( buf16 % 40 ) ) ;
+      buf3 [ 0 ] = int_cast_char ( 'R' + ( buf16 % 40 ) ) ;
       buf16 /= 40 ;
-      buf3 [ 1 ] = (  char  ) ( 'R' + ( buf16 % 40 ) ) ;
+      buf3 [ 1 ] = int_cast_char ( 'R' + ( buf16 % 40 ) ) ;
       buf16 /= 40 ;
-      buf3 [ 2 ] = (  char  ) ( 'R' + buf16 ) ;
+      buf3 [ 2 ] = int_cast_char ( 'R' + buf16 ) ;
       ns_shifrp  -> charcount += 3 ;
       if ( ns_shifrp  -> charcount == 60 )  {
         ns_shifrp  -> charcount = 0 ;
@@ -400,10 +402,12 @@ shifr_size_io shifr_encrypt2  ( t_ns_shifr * const ns_shifrp ,
       }
     } else {
       char buf2 [ 2 ] = {
-        [ 0 ] = ( char  ) ( ( ( uint16_t  ) ( encrypteddata [ 0 ] & 0xf ))
-          bitor ( ((uint16_t)( encrypteddata [ 1 ] & 0xf )) << 4  ) ) ,
-        [ 1 ] = ( char  ) ( ( ( uint16_t)( encrypteddata [ 2 ] & 0xf )) bitor
-          ( ((uint16_t)( encrypteddata [ 3 ] & 0xf )) << 4 )  ) } ;
+        [ 0 ] = int_cast_char ( ( int_cast_uint16 ( encrypteddata [ 0 ] &
+          0xf ) )
+          bitor ( (int_cast_uint16( encrypteddata [ 1 ] & 0xf )) << 4  ) ) ,
+        [ 1 ] = int_cast_char ( ( int_cast_uint16( encrypteddata [ 2 ] & 0xf
+          ) ) bitor
+          ( ( int_cast_uint16 ( encrypteddata [ 3 ] & 0xf )) << 4 ) ) } ;
       memcpy  ( output_buffer , & ( buf2 [ 0 ] )  , 2 ) ;
       writes  +=  2 ;
       output_buffer +=  2 ;
@@ -436,9 +440,9 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp ,
       break ;
     case  1 : 
       // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
-      ( ns_shifrp -> secretdata ) [ 0 ] = ( uint8_t ) (
+      ( ns_shifrp -> secretdata ) [ 0 ] = int_cast_uint8 (
         ( ns_shifrp -> secretdata ) [ 3 ] bitor
-        (( buf  bitand 0x3 )<<1)) ;
+        ( ( buf  bitand 0x3 ) <<  1 ) ) ;
       ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  2 ) bitand 0x7 ;
       ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  5 ;
       ns_shifrp -> bitscount  = 0 ;   // 1 + 8 - 9
@@ -446,9 +450,9 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp ,
       break ;
     case  2 :
       // <= [ [0] [2 1 0] [2 1 0] [2] ] <= [ [1 0] ..
-      ( ns_shifrp -> secretdata ) [ 0 ] = ( uint8_t ) (
+      ( ns_shifrp -> secretdata ) [ 0 ] = int_cast_uint8 (
         ( ns_shifrp -> secretdata ) [ 2 ] bitor
-        (( buf  bitand 0x1 )<<2) ) ;
+        ( ( buf  bitand 0x1 ) <<  2 ) ) ;
       ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  1 ) bitand 0x7 ;
       ( ns_shifrp -> secretdata ) [ 2 ] = ( buf >>  4 ) bitand 0x7 ;
       ( ns_shifrp -> secretdata ) [ 3 ] = buf >>  7 ;
@@ -485,8 +489,8 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp ,
 // returns size loads & writes
 shifr_size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp ,
   shifr_arrcps const input , shifr_arrps const output  ) {
-  uint8_t const * restrict  input_buffer = &((* input . cp)[0]) ;
-  uint8_t * restrict  output_buffer = &((*  output  . p)[0]) ;
+  uint8_t const * restrict  input_buffer = &  ( ( * input . cp  ) [ 0 ] ) ;
+  uint8_t * restrict  output_buffer = & ( ( * output  . p ) [ 0 ] ) ;
   size_t  reads = 0 ;
   size_t  writes  = 0 ;
   while ( reads < input . s and writes < output . s ) {
@@ -507,7 +511,7 @@ shifr_size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp ,
           if ( reads >= input . s or writes >= output . s )
             goto Exit ;
           ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ] =
-            (  char  ) ( * input_buffer ) ;
+            uint8_cast_char ( * input_buffer ) ;
           ++  input_buffer  ;
           ++  reads ;
         } while ( ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ] < 'R' or
@@ -517,19 +521,19 @@ shifr_size_io  shifr_decrypt2  ( t_ns_shifr * const ns_shifrp ,
       // next letters begins with zero index
       // следующие буквы начинают с нулевого индекса
       ns_shifrp  -> buf2index = 0 ;
-      uint16_t u16 = ( uint16_t ) (
-        ( ( uint16_t  ) ( ( ns_shifrp  -> buf2 ) [ 0 ] - 'R' ) ) +
-        40U * ( ( ( uint16_t  ) ( ( ns_shifrp  -> buf2 ) [ 1 ] - 'R' ) ) +
-        40U * ( ( uint16_t  ) ( ( ns_shifrp  -> buf2 ) [ 2 ] - 'R' ) ) ) ) ;
-      buf [ 0 ] = ( char ) ( u16 bitand 0xff ) ;
-      buf [ 1 ] = ( char  ) ( u16 >> 8  ) ;
+      uint16_t u16 = uint_cast_uint16 (
+        ( int_cast_uint16 ( ( ns_shifrp  -> buf2 ) [ 0 ] - 'R' ) ) +
+        40U * ( ( int_cast_uint16 ( ( ns_shifrp  -> buf2 ) [ 1 ] - 'R' ) ) +
+        40U * ( int_cast_uint16 ( ( ns_shifrp  -> buf2 ) [ 2 ] - 'R' ) ) ) ) ;
+      buf [ 0 ] = uint16_cast_char ( u16 bitand 0xff ) ;
+      buf [ 1 ] = uint16_cast_char ( u16 >> 8  ) ;
     } else {  // flagtext
       if ( reads + 1 >= input . s )
         goto Exit ;
-      buf [ 0 ] = ( char  ) ( * input_buffer ) ;
+      buf [ 0 ] = uint8_cast_char ( * input_buffer ) ;
       ++  input_buffer  ;
       ++  reads ;
-      buf [ 1 ] = ( char  ) ( * input_buffer ) ;
+      buf [ 1 ] = uint8_cast_char ( * input_buffer ) ;
       ++  input_buffer  ;
       ++  reads ;
     } // flag digit
@@ -582,7 +586,7 @@ void  shifr_generate_dices2 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t * j = & ( ns_shifrp -> raspr2  . dice [ 0 ] ) ;
   uint8_t i  = 0x10 - 1 ; // 15
   do {
-    ( * j ) = ( uint8_t ) shifr_uirandfrto  ( ns_shifrp , 0 , i ) ;
+    ( * j ) = uint_cast_uint8 ( shifr_uirandfrto  ( ns_shifrp , 0 , i ) ) ;
     --  i ;
     ++  j ;
   } while ( i >= 1 ) ;
@@ -595,7 +599,7 @@ void  shifr_generate_dices3 ( t_ns_shifr * const ns_shifrp ) {
   uint8_t * j = & ( ns_shifrp -> raspr3  . dice [ 0 ] ) ;
   uint8_t i  = 0x40 - 1 ; // 63
   do {
-    ( * j ) = ( uint8_t ) shifr_uirandfrto  ( ns_shifrp , 0 , i ) ;
+    ( * j ) = uint_cast_uint8 ( shifr_uirandfrto  ( ns_shifrp , 0 , i ) ) ;
     -- i  ;
     ++ j  ;
   } while ( i >= 1 ) ;
@@ -620,7 +624,8 @@ void  shifr_dices_to_number2 ( t_ns_shifr * const ns_shifrp ) {
         & mux . pub ) ;
     }
     //$mu *=  16 - $in ;
-    shifr_number_mul_byte ( v2 ) ( & mu . pub , ( uint8_t ) ( 0x10 - in ) ) ;
+    shifr_number_mul_byte ( v2 ) ( & mu . pub ,
+      int_cast_uint8 ( 0x10 - in ) ) ;
     ++  in ;
   } while ( in < 0x10 - 1 ) ;
   shifr_password_from_dice_uni  ( ns_shifrp ) ;
@@ -645,7 +650,8 @@ void  shifr_dices_to_number3 ( t_ns_shifr * const ns_shifrp ) {
         & mux . pub ) ;
     }
     //$mu *=  64 - $in ;
-    shifr_number_mul_byte ( v3 ) ( & mu . pub , ( uint8_t ) ( 0x40 - in ) ) ;
+    shifr_number_mul_byte ( v3 ) ( & mu . pub ,
+      int_cast_uint8 ( 0x40 - in ) ) ;
     ++  in ;
   } while ( in < 0x40 - 1 ) ;
   // reverse math .. dice [ i ] == cindex in _load
@@ -663,7 +669,8 @@ void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp ,
   char const * const pswstr ) {
   switch ( ns_shifrp -> use_version ) {
   case  2 :
-    strncpy ( ( char * ) ns_shifrp  -> password_letters2 , pswstr ,
+    strncpy ( charvolatilep_cast_charp ( &
+      ns_shifrp  -> password_letters2 [ 0 ] ) , pswstr ,
       shifr_password_letters2size ) ;
     if ( ns_shifrp  -> password_letters2 [ shifr_password_letters2size - 1 ]
       != '\00' ) {
@@ -676,7 +683,8 @@ void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp ,
     }
     break ;
   case  3 :
-    strncpy ( ( char * ) ns_shifrp  -> password_letters3 , pswstr ,
+    strncpy ( charvolatilep_cast_charp ( &
+      ns_shifrp  -> password_letters3 [ 0 ] ) , pswstr ,
       shifr_password_letters3size ) ;
     if ( ns_shifrp  -> password_letters3 [ shifr_password_letters3size - 1 ]
       != '\00' ) {

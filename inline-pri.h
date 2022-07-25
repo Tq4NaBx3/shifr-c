@@ -15,7 +15,8 @@ static  inline  shifr_number_const_pub_to_priv_def  ( v2 )
 static  inline  shifr_number_const_pub_to_priv_def  ( v3 )
 
 static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
-  return  int_cast_uint8 ( char_cast_uint8 ( letter ) - char_cast_uint8 ( ';' ) ) ;
+  return  int_cast_uint8 ( char_cast_uint8 ( letter ) -
+    char_cast_uint8 ( ';' ) ) ;
 }
 
 // ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
@@ -38,7 +39,8 @@ static inline void  data_xor3  ( uint8_t * const restrict  old_last_data ,
     //   101_000 or 101_001 or ... or 101_111
     // in the table, everything is side by side, 8 options are evenly
     // distributed the data is a rash of the previous salt
-    ( * ids ) = int_cast_uint8 ( ( * ids ) xor  ( ( * old_last_salt ) << 3  ) ) ;
+    ( * ids ) = int_cast_uint8 ( ( * ids ) xor
+      ( ( * old_last_salt ) << 3  ) ) ;
     ( * ids ) xor_eq  ( * old_last_data ) ;
     // берю свежую соль
     // I take fresh salt

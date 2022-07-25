@@ -11,8 +11,10 @@ typedef shifr_timestamp_t timestamp_t ;
 # endif
 typedef shifr_strcp strcp ;
 typedef shifr_arrcp arrcp ;
-# define  password_letters2size shifr_password_letters2size
-# define  password_letters3size shifr_password_letters3size
+enum  {
+  password_letters2size = shifr_password_letters2size ,
+  password_letters3size = shifr_password_letters3size ,
+} ;
 
 int main  ( int argc , char * argv [ ] ) {
   t_ns_shifr  main_shifr  ;
@@ -86,12 +88,12 @@ int main  ( int argc , char * argv [ ] ) {
       size_t  ns  ;
       if ( main_shifr . use_version == 2 ) {
         ns  = password_letters2size ;
-        nr = fread  ( ( char * ) & main_shifr  . password_letters2 , 1 , ns ,
-          f ) ;
+        nr = fread  ( charvolatilep_cast_charp (
+          & main_shifr  . password_letters2 [ 0 ] ) , 1 , ns , f ) ;
       } else {
         ns  = password_letters3size ;
-        nr = fread  ( ( char * ) & main_shifr  . password_letters3 , 1 , ns ,
-          f ) ;
+        nr = fread  ( charvolatilep_cast_charp (
+          & main_shifr  . password_letters3 [ 0 ] ) , 1 , ns , f ) ;
       }
       if ( nr >= ns ) {
         main_shifr  . string_exception  = ( main_shifr . localerus ?
@@ -110,7 +112,7 @@ int main  ( int argc , char * argv [ ] ) {
       }
       shifr_test_password ( & main_shifr  , nr  ) ;
       shifr_string_to_password  ( & main_shifr  ) ;
-      if ( fclose  ( f ) )  {
+      if ( fclose  ( f ) ) {
         int e = errno ; 
         fprintf ( stderr  , ( main_shifr . localerus ?
           u8"Ошибка закрытия файла \"%s\" : %s\n" :
@@ -168,18 +170,18 @@ int main  ( int argc , char * argv [ ] ) {
         flagreadpasswd = false  ;
       } else
         if ( flagreadinput ) {
-          inputfilename = ( char const (  * ) [ ] ) ( argv  [ argj  ] ) ;
+          inputfilename = charconstp_cast_stringconstp ( argv  [ argj  ] ) ;
           flaginputfromfile = true ;
           flagreadinput = false ;
         } else
          if ( flagreadoutput ) {
-          outputfilename = (  char const (  * ) [ ] ) ( argv  [ argj  ] ) ;
+          outputfilename = charconstp_cast_stringconstp ( argv  [ argj  ] ) ;
           flagoutputtofile = true ;
           flagreadoutput = false ;
         } else 
         if (  ( strcmp ( argv [ argj  ] , u8"--ген-пар" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--gen-pas" ) ==  0  ) ) 
-        flaggenpasswd = true  ; 
+          flaggenpasswd = true  ; 
         else  {
           if (  ( strcmp ( argv [ argj  ] , u8"--зашифр" ) ==  0 ) or
             ( strcmp ( argv [ argj  ] , "--encrypt" ) ==  0 ) ) {
