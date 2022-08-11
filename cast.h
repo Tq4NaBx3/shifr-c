@@ -74,6 +74,12 @@ static  inline  char * charvolatilep_cast_charp ( char volatile * const cv ) {
   return  ( char * ) cv ;
 }
 
+# define  uint8volatilep_cast_unt8p shifr_uint8volatilep_cast_unt8p
+static  inline  uint8_t * uint8volatilep_cast_unt8p (
+  uint8_t volatile * const bv ) {
+  return  ( uint8_t * ) bv ;
+}
+
 # define  charconstp_cast_stringconstp shifr_charconstp_cast_stringconstp
 static  inline  shifr_strcp charconstp_cast_stringconstp (
   char const * const c ) {

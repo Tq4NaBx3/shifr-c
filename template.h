@@ -145,10 +145,11 @@ void  shifr_number ## N ## _add  ( \
       uint8_cast_uint16 ( per ) ) ; \
     if ( s >= 0x100  ) {  \
       shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = \
-        ( uint8_t ) ( s - 0x100 ) ; \
+        int_cast_uint8 ( s - 0x100 ) ; \
       per = 1 ; \
     } else  { \
-      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = ( uint8_t ) s  ;  \
+      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = \
+        uint16_cast_uint8 ( s )  ;  \
       per = 0 ; \
     } \
     ++ i  ; \
@@ -261,8 +262,8 @@ void  shifr_password_load ( N ) ( \
       uint8_t volatile  * const arrind_cindexp = & ( arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
-      memmove ( ( uint8_t * ) arrind_cindexp , \
-        ( ( uint8_t * ) arrind_cindexp ) + 1 , \
+      memmove ( uint8volatilep_cast_unt8p ( arrind_cindexp ) , \
+        uint8volatilep_cast_unt8p ( arrind_cindexp ) + 1 , \
         int_cast_size ( SDS  - inde  - cindex - 1 ) ) ; \
     } \
     ++ inde  ; \
@@ -305,12 +306,15 @@ void  shifr_password_from_dice  ( N ) ( \
   } \
   uint8_t inde  = 0 ; \
   do { \
-    { uint8_t const cindex  = ( inde == SDS - 1 ? 0 : dice  [ inde  ] ) ; \
+    { uint8_t const cindex  = \
+        ( inde == SDS - 1 ? \
+          0 : \
+          dice  [ inde  ] ) ; \
       uint8_t volatile  * const arrind_cindexp = & ( arrind [ cindex ] ) ; \
       ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
       ( * deship ) [ * arrind_cindexp ] = inde ;  \
-      memmove ( ( uint8_t * ) arrind_cindexp , ( ( uint8_t * )  \
-        arrind_cindexp ) + 1 , \
+      memmove ( uint8volatilep_cast_unt8p ( arrind_cindexp ) ,  \
+        uint8volatilep_cast_unt8p ( arrind_cindexp ) + 1 , \
         int_cast_size ( SDS  - inde  - cindex - 1 ) ) ; \
     } \
     ++ inde  ; \
