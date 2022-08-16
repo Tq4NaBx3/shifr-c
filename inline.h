@@ -259,9 +259,9 @@ static  inline  void  shifr_enter_password ( t_ns_shifr * const ns_shifrp ) {
   shifr_password_load_uni ( ns_shifrp ) ;
 }
 
-static inline void  shifr_init ( t_ns_shifr * const ns_shifrp ) {
-  ns_shifrp ->  use_version  = 3  ;
-  ns_shifrp ->  flagtext = false  ;
+static  inline  void  shifr_init  ( t_ns_shifr  * const ns_shifrp ) {
+  ns_shifrp ->  use_version = 2 ;
+  ns_shifrp ->  flagtext  = false ;
   ns_shifrp ->  password_alphabet = 62  ;
   { char * j = & ( ns_shifrp -> letters [ 0 ] ) ;
     uint8_t i = ' ' ;
