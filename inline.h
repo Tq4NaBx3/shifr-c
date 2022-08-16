@@ -377,13 +377,13 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     "  --text\tencrypted file written in ascii text" ) ;
   puts  ( localerus ? 
     u8"  --2\tиспользовать двух битное шифрование, ключ = 45 бит ( "
-    u8"6 - 14 букв )." :
-    "  --2\tusing two bit encryption, key = 45 bits ( 6 - 14 letters )." ) ;
+    u8"6 - 14 букв ). ( по-умолчанию )" :
+    "  --2\tusing two bit encryption, key = 45 bits ( 6 - 14 letters )." 
+    " ( by default )" ) ;
   puts  ( localerus ?
     u8"  --3\tиспользовать трёх битное шифрование, ключ = 296 бит ( "
-    u8"45 - 90 букв ). ( по-умолчанию )" :
-    "  --3\tusing three bit encryption, key = 296 bits ( 45 - 90 letters )."
-    " ( by default )" ) ;
+    u8"45 - 90 букв )." :
+    "  --3\tusing three bit encryption, key = 296 bits ( 45 - 90 letters )."  ) ;
   puts  ( u8"  --rus или\n  --рус\tрусский язык"  ) ;
   puts  ( u8"  --анг or\n  --eng\tenglish language" ) ;
   fputs  ( localerus ?  
