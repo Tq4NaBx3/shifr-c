@@ -86,4 +86,17 @@ static  inline  shifr_strcp charconstp_cast_stringconstp (
   return  ( shifr_strcp ) c ;
 }
 
+# define  lint_cast_ulint shifr_lint_cast_ulint
+static  inline  unsigned  long  int lint_cast_ulint ( long  int const li  ) {
+  return  ( unsigned  long  int ) li ;
+}
+# define  ulint_cast_uint shifr_ulint_cast_uint
+static  inline  unsigned int ulint_cast_uint ( unsigned long  int const uli  ) {
+  return  ( unsigned  int ) uli ;
+}
+# define  ulint_cast_lint shifr_ulint_cast_lint
+static  inline  long int ulint_cast_lint ( unsigned long  int const uli  ) {
+  return  ( long  int ) uli ;
+}
+
 # endif // SHIFR_CAST_H  

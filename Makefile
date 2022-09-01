@@ -11,12 +11,12 @@ SHIFR_OBJECTS = shifr.o private.o
 SHIFR_ASM = shifr.s main.s private.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
 SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion \
- -Wno-clobbered -Wpedantic \
+ -Wno-clobbered -Wpedantic -Werror=implicit-function-declaration \
  -Wmissing-include-dirs -Wswitch-default -Wswitch-enum -Wfloat-equal \
  -Wcast-align -Wlogical-op -Wmissing-declarations -Wredundant-decls \
  -Werror=return-local-addr -Wbad-function-cast \
- -Wmissing-prototypes -Wnested-externs \
- -Wold-style-definition -Wstrict-prototypes \
+ -Werror=missing-prototypes -Wnested-externs -Werror=incompatible-pointer-types \
+ -Wold-style-definition -Wstrict-prototypes -Werror=discarded-qualifiers \
  $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDtypeh = type.h define.h
@@ -33,13 +33,14 @@ DEPENDmainc = main.c define.h $(DEPENDinlineh)
 DEPENDshifrc = shifr.c define.h $(DEPENDinlineh) $(DEPENDtemplateh)
 DEPENDexample = example.c define.h $(DEPENDinlineh)
 EXAMPLE_OBJECTS = example.o
+USE_GNU_SOURCE = -D'_GNU_SOURCE'
 shifr: $(SHIFR_OBJECTS) main.o
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) main.o -o shifr
 	@chmod 0555 shifr
 shifr.o: $(DEPENDshifrc)
 	@$(SHIFR_COMPILE) shifr.c
 private.o: $(DEPENDprivatec)
-	@$(SHIFR_COMPILE) private.c
+	@$(SHIFR_COMPILE) $(USE_GNU_SOURCE) private.c
 main.o: $(DEPENDmainc)
 	@$(SHIFR_COMPILE) main.c
 clean:

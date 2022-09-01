@@ -3,18 +3,60 @@
 
 # include <stdio.h>
 # include <sys/types.h> // ssize_t
-
-# ifdef SHIFR_SYSCALL_RANDOM
-# include <sys/syscall.h>
-# else
-# include <sys/random.h>
-# endif
-
 # include <iso646.h> // not_eq
 # include "define.h"
 # include "private.h"
 # include "struct.h"
 # include "inline-pri.h"
+
+# ifdef  SHIFR_RANDOM_rand
+# include <stdint.h>
+# include <stdlib.h>
+# include <time.h>
+
+static  ssize_t shifr_getrandom  ( void  * const buf ,
+  size_t  const len ) {
+  static  bool  first = true  ;
+  if ( first  ) {
+    if  ( sizeof  ( unsigned  int ) ==  4 )
+      srand ( lint_cast_ulint ( time  ( 0 ) ) % 0x100000000UL ) ;
+    else  if  ( sizeof  ( unsigned  int ) ==  2 )
+      srand ( lint_cast_ulint ( time  ( 0 ) ) % 0x10000UL ) ;
+    else
+      srand ( ulint_cast_uint ( lint_cast_ulint ( time  ( 0 ) ) ) ) ;
+    first = false ;
+  }
+  uint8_t * p = buf ;
+  size_t j = len ;
+  while ( j ) {
+    -- j ;
+    * p = int_cast_uint8 ( rand  ( ) bitand  0xff ) ;    
+    ++ p ;
+  }
+  return ulint_cast_lint ( len ) ;
+}
+# else
+# ifdef  SHIFR_RANDOM_getrandom
+# include <sys/random.h> // getrandom
+// OR
+// # include <linux/random.h> // getrandom
+static  inline  ssize_t shifr_getrandom  ( void  * const buf ,
+  size_t  const len ) {
+  return getrandom ( buf , len , 0 ) ;
+}
+# else
+# ifdef  SHIFR_RANDOM_syscall
+# include <unistd.h>
+# include <sys/syscall.h> // syscall getrandom
+static  inline  ssize_t shifr_getrandom  ( void  * const buf ,
+  size_t  const len ) {
+  return  syscall ( SYS_getrandom , buf , len , 0 ) ;
+}
+# else
+# error SHIFR_RANDOM no rand no getrandom no syscall
+# endif
+# endif
+# endif
 
 // generate random number [ fr .. to ]
 unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
@@ -40,11 +82,7 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
 # ifdef SHIFR_DEBUG
     ssize_t const r = 
 # endif
-# ifdef SHIFR_SYSCALL_RANDOM
-      syscall ( SYS_getrandom , & buf , 1 , 0 ) ;
-# else
-      getrandom ( & buf , 1 , 0 ) ;
-# endif
+      shifr_getrandom ( & buf , 1 ) ;
 # ifdef SHIFR_DEBUG
     if ( r == -1 ) {
       perror  ( "uirandfrto : getrandom" ) ;
@@ -73,11 +111,7 @@ void shifr_datasalt2 ( t_ns_shifr * const ns_shifrp ,
 # ifdef SHIFR_DEBUG
   ssize_t const r =
 # endif
-# ifdef SHIFR_SYSCALL_RANDOM
-    syscall ( SYS_getrandom , & ran , 1 , 0 ) ;
-# else
-    getrandom ( & ran , 1 , 0 ) ;
-# endif
+    shifr_getrandom ( & ran , 1 ) ;
 # ifdef SHIFR_DEBUG
     if ( r == -1 ) {
       perror  ( "datasalt2 : getrandom" ) ;
@@ -102,8 +136,7 @@ void shifr_datasalt2 ( t_ns_shifr * const ns_shifrp ,
     //   10_00 or 10_01 or 10_10 or 10_11
     // in the table, everything is side by side, 4 options are evenly
     // distributed
-    ( * ids ) = ( uint8_t ) (
-      ( ( * id  ) <<  2 ) bitor
+    ( * ids ) = int_cast_uint8 ( ( ( * id  ) <<  2 ) bitor
       ( ran bitand  0x3 ) ) ;
     ran >>= 2 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ;
@@ -115,27 +148,22 @@ void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasalt  ) [ data_size ] ) ;
-  int const arans = ( ( data_size == 3 ) ? 2 : 1 ) ;
+  unsigned  int const arans = ( ( data_size == 3U ) ? 2U : 1U ) ;
   uint8_t aran [ arans ] ;
 # ifdef SHIFR_DEBUG
-  ssize_t const r = 
-# ifdef SHIFR_SYSCALL_RANDOM
-    syscall ( SYS_getrandom , & ( aran [ 0 ] ) , arans , 0 ) ;
-# else
-    getrandom ( & ( aran [ 0 ] ) , ( size_t ) arans , 0 ) ;
-# endif
-    if ( r == -1 ) {
-      perror  ( "datasalt3 : getrandom" ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp )
-        & "datasalt3 : getrandom" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ;
-    }
-    if ( r not_eq arans ) {
-      fprintf ( stderr  , "datasalt3 : r = %ld not_eq %d\n"  , r , arans ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp ) 
-        & "datasalt3 : r not_eq arans" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ;
-    }
+  ssize_t const r = shifr_getrandom ( & ( aran [ 0 ] ) , arans ) ;
+  if ( r == -1 ) {
+    perror  ( "datasalt3 : getrandom" ) ;
+    ns_shifrp  -> string_exception  = ( shifr_strcp )
+      & "datasalt3 : getrandom" ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ;
+  }
+  if ( r not_eq arans ) {
+    fprintf ( stderr  , "datasalt3 : r = %ld not_eq %d\n"  , r , arans ) ;
+    ns_shifrp  -> string_exception  = ( shifr_strcp ) 
+      & "datasalt3 : r not_eq arans" ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ;
+  }
 # endif // SHIFR_DEBUG
   unsigned  int ran = aran [ 0 ] ;
   if ( arans == 2 )
