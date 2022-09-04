@@ -4,7 +4,8 @@
 int main  ( int argc , char * argv [ ] ) {
   t_ns_shifr  shif ;
   shifr_init  ( & shif ) ;
-  shif . flagtext = true  ;
+  shif  . use_version = 3 ;
+  shif  . flagtext = true  ;
   shifr_password_set_by_string  ( & shif , "qwerty" ) ;
   enum { inbufsize = 0x100 } ;
   uint8_t inbuf [ inbufsize ] = "Lambda" ;
