@@ -441,20 +441,20 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     "  $ ./shifr --gen-pas > psw"  ) ;
   puts  ( 
     "  $ cat psw\n"
-    "  n3LTQH4eIicGDNaF8CDVRGdaCEVXxPPgikJ9lbQKW4zs8StkhD"  ) ;
+    "  EvLjLsc"  ) ;
   puts  ( localerus ?
     u8"  $ ./shifr --пар-путь 'psw' > test.shi --текст"  :
     "  $ ./shifr --pas-path 'psw' > test.shi --text"  ) ;
-  puts( localerus ?
-    u8"  2+2 (Нажимаем Enter,Ctrl+D)" :
-    "  2+2 (Press Enter,Ctrl+D)" ) ;
+  puts  ( localerus ?
+    u8"  2+2=5 (Нажимаем Enter,Ctrl+D)" :
+    "  2+2=5 (Press Enter,Ctrl+D)" ) ;
   puts  ( 
     "  $ cat test.shi\n"
-    "  ylQ?ncm;ags" ) ;
+    "  wr[\\XkaZsUfS^Uaktq" ) ;
   puts( localerus ?
     u8"  $ ./shifr --пар-путь 'psw' < test.shi --текст --расшифр" :
     "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;
-  puts  ( "  2+2" ) ;
+  puts  ( "  2+2=5" ) ;
   return 0 ;
 }      
 
