@@ -90,7 +90,7 @@ void  shifr_string_to_password  ##  N ##  _templ ( \
         goto found ; \
     } while ( i ) ; \
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
-      ( shifr_strcp ) & u8"неправильная буква в пароле" : \
+      ( shifr_strcp ) & "неправильная буква в пароле" : \
       ( shifr_strcp ) & "wrong letter in password" ) ; \
     longjmp ( ns_shifrp  -> jump  , 1 ) ; \
 found : ; \

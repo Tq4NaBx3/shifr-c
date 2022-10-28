@@ -14,8 +14,7 @@
 # include <stdlib.h>
 # include <time.h>
 
-static  ssize_t shifr_getrandom  ( void  * const buf ,
-  size_t  const len ) {
+static  ssize_t shifr_getrandom  ( void  * const buf , size_t  const len ) {
   static  bool  first = true  ;
   if ( first  ) {
     if  ( sizeof  ( unsigned  int ) ==  4 )
@@ -204,7 +203,7 @@ void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
       if ( ( * writesp ) >= outputs ) {
         ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
           ( shifr_strcp ) &
-          u8"streambuf_write3: переполнение буфера (flagtext)"  :
+          "streambuf_write3: переполнение буфера (flagtext)"  :
           ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagtext)" ) ;
         longjmp ( ns_shifrp  -> jump  , 1 ) ;
       }
@@ -216,7 +215,7 @@ void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
         if ( ( * writesp ) >= outputs ) {
           ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
             ( shifr_strcp ) &
-            u8"streambuf_write3: переполнение буфера для '\\n'"  :
+            "streambuf_write3: переполнение буфера для '\\n'"  :
             ( shifr_strcp ) & "streambuf_write3: buffer overflow for '\\n'" ) ;
           longjmp ( ns_shifrp  -> jump  , 1 ) ;
         }
@@ -241,7 +240,7 @@ void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
         if ( ( * writesp ) >= outputs ) {
           ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
             ( shifr_strcp ) & 
-            u8"streambuf_write3: переполнение буфера (flagdigit)"  :
+            "streambuf_write3: переполнение буфера (flagdigit)"  :
             ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagdigit)"
             ) ;
           longjmp ( ns_shifrp  -> jump  , 1 ) ;

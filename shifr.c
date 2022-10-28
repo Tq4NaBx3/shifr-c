@@ -184,7 +184,7 @@ void  shifr_set_keypress  ( t_ns_shifr * const ns_shifrp ) {
   if  ( tcgetattr ( 0 , & ns_shifrp  -> stored_termios  ) ) {
     char const * const se = strerror ( errno ) ;
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-      u8"ошибка чтения tcgetattr : %s\n" :
+      "ошибка чтения tcgetattr : %s\n" :
       "error read tcgetattr : %s\n" ) , se ) ;
     ns_shifrp  -> string_exception  = charconstp_cast_stringconstp ( se ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
@@ -196,7 +196,7 @@ void  shifr_set_keypress  ( t_ns_shifr * const ns_shifrp ) {
   if  ( tcsetattr ( 0 , TCSANOW , & new_termios ) ) {
     char const * const se = strerror ( errno ) ;
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-      u8"ошибка записи tcsetattr : %s\n" :
+      "ошибка записи tcsetattr : %s\n" :
       "error write tcsetattr : %s\n"  ) , se  ) ;
     ns_shifrp  -> string_exception  = charconstp_cast_stringconstp  ( se ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
@@ -209,7 +209,7 @@ void  shifr_reset_keypress  ( t_ns_shifr * const ns_shifrp ) {
   if  ( tcsetattr ( 0 , TCSANOW , & ns_shifrp -> stored_termios ) ) {
     char const * const se = strerror ( errno ) ;
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-      u8"ошибка записи tcsetattr : %s\n" :
+      "ошибка записи tcsetattr : %s\n" :
       "error write tcsetattr : %s\n"  ) , se  ) ;
     ns_shifrp  -> string_exception  = charconstp_cast_stringconstp ( se ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
@@ -264,7 +264,7 @@ uint8_t shifr_flush ( t_ns_shifr  * const ns_shifrp ,
   default :
 # ifdef SHIFR_DEBUG
     fprintf ( stderr , ( ns_shifrp  -> localerus ? 
-      u8"shifr_flush : неизвестная версия %d\n" :
+      "shifr_flush : неизвестная версия %d\n" :
       "shifr_flush : unknown version %d\n" ) , ns_shifrp ->  use_version ) ;
     ns_shifrp ->  string_exception  = ( shifr_strcp ) &
       "shifr_flush : unknown version" ;
@@ -461,10 +461,10 @@ shifr_size_io shifr_encrypt3  ( t_ns_shifr * const ns_shifrp ,
       break ;
     default :
       fprintf ( stderr  , ( ns_shifrp -> localerus ?
-        u8"неожиданное значение bitscount = %d\n":
+        "неожиданное значение bitscount = %d\n":
         "unexpected value bitscount = %d\n" ) , ns_shifrp -> bitscount ) ;
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? 
-        ( shifr_strcp ) & u8"неожиданное значение bitscount" :
+        ( shifr_strcp ) & "неожиданное значение bitscount" :
         ( shifr_strcp ) & "unexpected value bitscount" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ; 
     } // switch  ( ns_shifrp -> bitscount  )
@@ -676,7 +676,7 @@ void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp ,
       != '\00' ) {
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( shifr_strcp ) &
-        u8"shifr_password_set_string : пароль очень длинный" :
+        "shifr_password_set_string : пароль очень длинный" :
         ( shifr_strcp ) & 
         "shifr_password_set_string : the password is very long" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ;
@@ -690,7 +690,7 @@ void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp ,
       != '\00' ) {
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( shifr_strcp ) & 
-        u8"shifr_password_set_string : пароль очень длинный" :
+        "shifr_password_set_string : пароль очень длинный" :
         ( shifr_strcp ) & 
         "shifr_password_set_string : the password is very long" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ;
@@ -698,11 +698,11 @@ void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp ,
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-      u8"shifr_password_set_string : неизвестная версия %d\n" :
+      "shifr_password_set_string : неизвестная версия %d\n" :
       "shifr_password_set_string : unknown version %d\n" ) ,
       ns_shifrp -> use_version )  ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & u8"shifr_password_set_string : неизвестная версия" :
+      ( shifr_strcp ) & "shifr_password_set_string : неизвестная версия" :
       ( shifr_strcp ) & "shifr_password_set_string : unknown version" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
@@ -746,7 +746,7 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( shifr_strcp ) &
-        u8"string_to_password : версия алфавита не известна" :
+        "string_to_password : версия алфавита не известна" :
         ( shifr_strcp ) & 
         "string_to_password : alphabet version is not known" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ;
@@ -781,7 +781,7 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( shifr_strcp ) & 
-        u8"string_to_password : версия алфавита не известна" :
+        "string_to_password : версия алфавита не известна" :
         ( shifr_strcp ) & 
         "string_to_password : alphabet version is not known" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ;
@@ -789,11 +789,11 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-      u8"string_to_password : версия %d не поддерживается\n" :
+      "string_to_password : версия %d не поддерживается\n" :
       "string_to_password : version %d is not supported\n" ) ,
       ns_shifrp -> use_version )  ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & u8"string_to_password : версия не поддерживается" :
+      ( shifr_strcp ) & "string_to_password : версия не поддерживается" :
       ( shifr_strcp ) & "string_to_password : version is not supported" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
@@ -817,11 +817,11 @@ void  shifr_password_load_uni ( t_ns_shifr * const ns_shifrp ) {
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-      u8"password_load:версия %d не поддерживается\n" :
+      "password_load:версия %d не поддерживается\n" :
       "password_load:version %d is not supported" ) ,
       ns_shifrp -> use_version )  ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & u8"password_load:версия не поддерживается" :
+      ( shifr_strcp ) & "password_load:версия не поддерживается" :
       ( shifr_strcp ) & "password_load:version is not supported" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
@@ -845,11 +845,11 @@ void  shifr_password_from_dice_uni ( t_ns_shifr * const ns_shifrp ) {
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-      u8"password_from_dice:версия %d не поддерживается\n" :
+      "password_from_dice:версия %d не поддерживается\n" :
       "password_from_dice:version %d is not supported" ) ,
       ns_shifrp -> use_version )  ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & u8"password_from_dice:версия не поддерживается" :
+      ( shifr_strcp ) & "password_from_dice:версия не поддерживается" :
       ( shifr_strcp ) & "password_from_dice:version is not supported" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
@@ -893,7 +893,7 @@ void  shifr_password_to_string  ( t_ns_shifr * const ns_shifrp ) {
       break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-        ( shifr_strcp ) & u8"password_to_string:версия алфавита не известна" :
+        ( shifr_strcp ) & "password_to_string:версия алфавита не известна" :
         ( shifr_strcp ) & 
         "password_to_string:alphabet version is not known" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ;
@@ -927,7 +927,7 @@ void  shifr_password_to_string  ( t_ns_shifr * const ns_shifrp ) {
       break ;
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-        ( shifr_strcp ) & u8"password_to_string:версия алфавита не известна" :
+        ( shifr_strcp ) & "password_to_string:версия алфавита не известна" :
         ( shifr_strcp ) & 
         "password_to_string:alphabet version is not known" ) ;
       longjmp ( ns_shifrp  -> jump  , 1 ) ;
@@ -935,11 +935,11 @@ void  shifr_password_to_string  ( t_ns_shifr * const ns_shifrp ) {
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
-      u8"password_to_string:версия %d не поддерживается\n" :
+      "password_to_string:версия %d не поддерживается\n" :
       "password_to_string:version %d is not supported" ) ,
       ns_shifrp -> use_version )  ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & u8"password_to_string:версия не поддерживается" :
+      ( shifr_strcp ) & "password_to_string:версия не поддерживается" :
       ( shifr_strcp ) & "password_to_string:version is not supported" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }

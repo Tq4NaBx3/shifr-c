@@ -23,7 +23,7 @@ int main  ( int argc , char * argv [ ] ) {
   main_shifr . localerus = ( strcmp  ( locale  , "ru_RU.UTF-8" ) ==  0 ) ;
   int exc = setjmp  ( main_shifr  . jump  ) ;
   if ( exc ) {
-    fprintf ( stderr  , ( main_shifr . localerus ? u8"Исключение : %s\n" :
+    fprintf ( stderr  , ( main_shifr . localerus ? "Исключение : %s\n" :
       "Exception : %s\n" ) ,
       & ( ( *  main_shifr  . string_exception ) [ 0 ] ) ) ;
     shifr_destr ( & main_shifr ) ;
@@ -35,12 +35,12 @@ int main  ( int argc , char * argv [ ] ) {
       showhelp  = true  ;
     else
       if ( argc  ==  2 ) {
-        if ( ( strcmp ( argv [ 1 ] , u8"--рус" ) ==  0 ) or
+        if ( ( strcmp ( argv [ 1 ] , "--рус" ) ==  0 ) or
           ( strcmp ( argv [ 1 ] , "--rus" ) ==  0 ) ) {
           main_shifr . localerus = true ;
           showhelp  = true  ;
         } else
-          if ( ( strcmp ( argv [ 1 ] , u8"--анг" ) ==  0 ) or
+          if ( ( strcmp ( argv [ 1 ] , "--анг" ) ==  0 ) or
             ( strcmp ( argv [ 1 ] , "--eng" ) ==  0 ) ) {
             main_shifr . localerus = false  ;
             showhelp  = true  ;
@@ -75,11 +75,11 @@ int main  ( int argc , char * argv [ ] ) {
       if  ( not f ) {
         int const e = errno ; 
         fprintf ( stderr  , ( main_shifr . localerus ?
-          u8"Ошибка открытия файла \"%s\" : %s\n" :
+          "Ошибка открытия файла \"%s\" : %s\n" :
           "Error opening file \"%s\" : %s\n" ) , argv  [ argj  ] ,
             strerror  ( e ) ) ;
         main_shifr  . string_exception  = ( main_shifr . localerus ?
-          ( strcp ) & u8"Ошибка открытия файла" :
+          ( strcp ) & "Ошибка открытия файла" :
           ( strcp ) & "Error opening file" ) ;
         longjmp ( main_shifr  . jump  , 1 ) ;
       }
@@ -97,16 +97,16 @@ int main  ( int argc , char * argv [ ] ) {
       }
       if ( nr >= ns ) {
         main_shifr  . string_exception  = ( main_shifr . localerus ?
-          ( strcp ) & u8"Файл пароля очень большой" :
+          ( strcp ) & "Файл пароля очень большой" :
           ( strcp ) & "Password file is very large" ) ;
         longjmp ( main_shifr  . jump  , 1 ) ;
       }
       if ( ( not feof ( f ) ) and ferror ( f ) ) {
         fprintf ( stderr  , ( main_shifr . localerus ?
-          u8"Ошибка чтения файла \"%s\" \n" :
+          "Ошибка чтения файла \"%s\" \n" :
           "Error reading file \"%s\" \n" ) , argv  [ argj  ] ) ;
         main_shifr  . string_exception  = ( main_shifr . localerus ?
-          ( strcp ) & u8"Ошибка чтения файла" :
+          ( strcp ) & "Ошибка чтения файла" :
           ( strcp ) & "Error reading file" ) ;
         longjmp ( main_shifr  . jump  , 1 ) ;
       }
@@ -115,11 +115,11 @@ int main  ( int argc , char * argv [ ] ) {
       if ( fclose  ( f ) ) {
         int e = errno ; 
         fprintf ( stderr  , ( main_shifr . localerus ?
-          u8"Ошибка закрытия файла \"%s\" : %s\n" :
+          "Ошибка закрытия файла \"%s\" : %s\n" :
           "Error closing file \"%s\" : %s\n" ) , argv  [ argj  ] ,
             strerror  ( e ) ) ;
         main_shifr  . string_exception  = ( main_shifr . localerus ?
-          ( strcp ) & u8"Ошибка закрытия файла" :
+          ( strcp ) & "Ошибка закрытия файла" :
           ( strcp ) & "Error closing file" ) ;
         longjmp ( main_shifr  . jump  , 1 ) ;
       }
@@ -129,14 +129,14 @@ int main  ( int argc , char * argv [ ] ) {
       if  ( flagreadpasswd  ) {
         if  ( flagpasswd  ) {
           main_shifr  . string_exception  = ( main_shifr . localerus ?
-            ( strcp ) & u8"пароль уже задан" :
+            ( strcp ) & "пароль уже задан" :
             ( strcp ) & "password already set" )  ;
           longjmp(main_shifr  . jump  , 1 ) ;
         }
         shifr_password_set_by_string  ( & main_shifr , argv  [ argj  ] ) ;
 # ifdef SHIFR_DEBUG
         fputs ( ( main_shifr . localerus ?
-          u8"из строки во внутренний пароль = " :
+          "из строки во внутренний пароль = " :
           "from string to internal password = " ) , stderr ) ;
         if ( main_shifr . use_version == 2 )
           shifr_number_princ  ( v2 ) ( & main_shifr . raspr2  . pass . pub ,
@@ -150,8 +150,8 @@ int main  ( int argc , char * argv [ ] ) {
           if  ( strcmp ( ( char * ) main_shifr  . password_letters3 ,
               argv  [ argj  ] ) )
             fprintf  ( stderr , main_shifr . localerus ?
-              u8"Предупреждение! Пароль \'%s\' очень большой. "
-              u8"Аналогичен \'%s\'\n" :
+              "Предупреждение! Пароль \'%s\' очень большой. "
+              "Аналогичен \'%s\'\n" :
               "Warning! Password \'%s\' is very large. Same as \'%s\'\n"
               , argv  [ argj  ] ,
               & ( main_shifr  . password_letters3  [ 0 ] ) ) ;
@@ -159,8 +159,8 @@ int main  ( int argc , char * argv [ ] ) {
           if  ( strcmp ( ( char * ) main_shifr  . password_letters2 ,
               argv  [ argj  ] ) )  
             fprintf  ( stderr , main_shifr . localerus ?
-              u8"Предупреждение! Пароль \'%s\' очень большой. "
-              u8"Аналогичен \'%s\'\n" :
+              "Предупреждение! Пароль \'%s\' очень большой. "
+              "Аналогичен \'%s\'\n" :
               "Warning! Password \'%s\' is very large. Same as \'%s\'\n"
               , argv  [ argj  ] ,
               & ( main_shifr  . password_letters2  [ 0 ] ) ) ;
@@ -179,75 +179,75 @@ int main  ( int argc , char * argv [ ] ) {
           flagoutputtofile = true ;
           flagreadoutput = false ;
         } else 
-        if (  ( strcmp ( argv [ argj  ] , u8"--ген-пар" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--ген-пар" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--gen-pas" ) ==  0  ) ) 
           flaggenpasswd = true  ; 
         else  {
-          if (  ( strcmp ( argv [ argj  ] , u8"--зашифр" ) ==  0 ) or
+          if (  ( strcmp ( argv [ argj  ] , "--зашифр" ) ==  0 ) or
             ( strcmp ( argv [ argj  ] , "--encrypt" ) ==  0 ) ) {
             flagenc = true ;
             flagdec = false ;
           } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--расшифр" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--расшифр" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--decrypt" ) ==  0 ) ) { 
           flagdec = true ;
           flagenc = false ;
         }  else
-        if (  ( strcmp ( argv [ argj  ] , u8"--пар" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--пар" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--pas" ) ==  0 ) ) { 
           flagreadpasswd  = true  ;
         }  else
-        if (  ( strcmp ( argv [ argj  ] , u8"--пар-путь" ) ==  0 )  or
+        if (  ( strcmp ( argv [ argj  ] , "--пар-путь" ) ==  0 )  or
           ( strcmp ( argv [ argj  ] , "--pas-path" ) ==  0 )  ) { 
           flagreadpasswdfromfile  = true  ;
         } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--вход" ) ==  0 )  or
+        if (  ( strcmp ( argv [ argj  ] , "--вход" ) ==  0 )  or
           ( strcmp ( argv [ argj  ] , "--input" ) ==  0 ) ) { 
           flagreadinput  = true  ;
         } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--выход" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--выход" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--output" ) ==  0 )  ) { 
           flagreadoutput  = true  ;
         } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--текст" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--текст" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--text" ) ==  0 ) ) { 
           main_shifr  . flagtext = true  ;
         } else
-        if ( strcmp ( argv  [ argj  ] , u8"--3" ) ==  0 )  { 
+        if ( strcmp ( argv  [ argj  ] , "--3" ) ==  0 )  {
           main_shifr . use_version = 3 ;
         } else
-        if ( strcmp ( argv  [ argj  ] , u8"--2" ) ==  0 )  { 
+        if ( strcmp ( argv  [ argj  ] , "--2" ) ==  0 )  {
           main_shifr . use_version = 2 ;
         } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--а95" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--а95" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--a95" ) ==  0 ) ) { 
           main_shifr . password_alphabet = 95 ;
         } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--а62" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--а62" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--a62" ) ==  0 ) ) { 
           main_shifr . password_alphabet = 62 ;
         } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--а26" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--а26" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--a26" ) ==  0 ) ) { 
           main_shifr . password_alphabet = 26 ;
         } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--а10" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--а10" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--a10" ) ==  0 ) ) { 
           main_shifr . password_alphabet = 10 ;
         } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--рус" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--рус" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--rus" ) ==  0 ) ) {
           main_shifr . localerus = true ;
         } else
-        if (  ( strcmp ( argv [ argj  ] , u8"--анг" ) ==  0 ) or
+        if (  ( strcmp ( argv [ argj  ] , "--анг" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--eng" ) ==  0 ) ) {
           main_shifr . localerus = false  ;
         } else {
           fprintf ( stderr , ( main_shifr . localerus ?
-            u8"неопознанная опция : \'%s\'\n" :
+            "неопознанная опция : \'%s\'\n" :
             "unrecognized option : \'%s\'\n" ) , argv [ argj ] ) ;
           main_shifr  . string_exception  = ( main_shifr . localerus ?
-            ( strcp ) & u8"неопознанная опция" :
+            ( strcp ) & "неопознанная опция" :
             ( strcp ) & "unrecognized option" ) ;
           longjmp ( main_shifr  . jump  , 1 ) ;
         }
@@ -262,7 +262,7 @@ int main  ( int argc , char * argv [ ] ) {
 # ifdef SHIFR_DEBUG
   if  ( flagenc and flagdec ) {
     main_shifr  . string_exception  = ( main_shifr . localerus ?
-      ( strcp ) & u8"так зашифровывать или расшифровывать ?" :
+      ( strcp ) & "так зашифровывать или расшифровывать ?" :
       ( strcp ) & "so encrypt or decrypt ?" ) ;
     longjmp ( main_shifr  . jump  , 1 ) ;
   }
@@ -275,7 +275,7 @@ int main  ( int argc , char * argv [ ] ) {
   if ( not flagdec  )
     flagenc = true  ;
   if ( not flagpasswd ) {
-    fputs ( ( main_shifr . localerus ? u8"введите пароль = " :
+    fputs ( ( main_shifr . localerus ? "введите пароль = " :
       "enter the password = " ) , stdout  ) ;
     shifr_enter_password  ( & main_shifr ) ;
   }
@@ -285,12 +285,12 @@ int main  ( int argc , char * argv [ ] ) {
     if  ( f == NULL ) {
       int const e = errno ; 
       fprintf ( stderr  , ( main_shifr . localerus ?
-        u8"Ошибка чтения файла \"%s\" : %s\n" :
+        "Ошибка чтения файла \"%s\" : %s\n" :
         "Error reading file \"%s\" : %s\n" ) ,
         & ( ( * inputfilename ) [ 0 ] ) ,
         strerror  ( e ) ) ;
       main_shifr  . string_exception  = ( main_shifr . localerus ?
-        ( strcp ) & u8"Ошибка чтения файла" :
+        ( strcp ) & "Ошибка чтения файла" :
         ( strcp ) & "Error reading file" ) ;
       longjmp ( main_shifr  . jump  , 1 ) ;
     }
@@ -303,12 +303,12 @@ int main  ( int argc , char * argv [ ] ) {
     if  ( f == NULL ) {
       int const e = errno ; 
       fprintf ( stderr  , ( main_shifr . localerus ?
-        u8"Ошибка записи файла \"%s\" : %s\n" :
+        "Ошибка записи файла \"%s\" : %s\n" :
         "Error writing file \"%s\" : %s\n"  ) ,
         & ( ( * outputfilename  ) [ 0 ] ) ,
         strerror  ( e ) ) ;
       main_shifr  . string_exception  = ( main_shifr . localerus ?
-        ( strcp ) & u8"Ошибка записи файла" :
+        ( strcp ) & "Ошибка записи файла" :
         ( strcp ) & "Error writing file" ) ;
       longjmp(main_shifr  . jump  , 1 ) ;
     }
@@ -354,7 +354,7 @@ int main  ( int argc , char * argv [ ] ) {
     if  ( fclose  ( main_shifr  . filebufto . file ) ) {
       int const e = errno ;
       fprintf  (  stderr, ( main_shifr . localerus ?
-        u8"Ошибка закрытия файла записи \"%s\" : %s\n" :
+        "Ошибка закрытия файла записи \"%s\" : %s\n" :
         "Error closing file to writing \"%s\" : %s\n" ) ,
         & ( ( * outputfilename ) [ 0 ] ) , strerror  ( e ) ) ;
       resulterror = 1 ;
@@ -365,7 +365,7 @@ int main  ( int argc , char * argv [ ] ) {
       fclose  ( main_shifr  . filebuffrom . file ) ) {
       int const e = errno ; 
       fprintf ( stderr  , ( main_shifr . localerus ?
-        u8"Ошибка закрытия файла чтения \"%s\" : %s\n" :
+        "Ошибка закрытия файла чтения \"%s\" : %s\n" :
         "Error closing file of reading \"%s\" : %s\n" ) ,
         & ( ( * inputfilename ) [ 0 ] ) , strerror  ( e ) ) ;
       resulterror = 2 ;
@@ -374,7 +374,7 @@ int main  ( int argc , char * argv [ ] ) {
 # ifdef SHIFR_DEBUG
     timestamp_t const t1 = get_timestamp  ( ) ;
     long  double const  secs = ( t1 - t0 ) / 1000000.0L  ;      
-  fprintf ( stderr  , ( main_shifr . localerus ?  u8"время = %Lf сек\n" :
+  fprintf ( stderr  , ( main_shifr . localerus ?  "время = %Lf сек\n" :
     "time = %Lf sec\n" ) , secs  ) ;
 # endif // SHIFR_DEBUG
   shifr_destr ( & main_shifr ) ;
