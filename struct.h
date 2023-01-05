@@ -12,7 +12,6 @@
 # include <stdbool.h>
 # include "type.h"
 # include "template.h"
-# include "template-pri.h"
   
 shifr_number_def  ( v2 )  
 shifr_number_def  ( v3 )

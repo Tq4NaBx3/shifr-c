@@ -1,6 +1,6 @@
 #
-# Шифр ©2020-2 Глебов А.Н.
-# Shifr ©2020-2 Glebe A.N.
+# Шифр ©2020-3 Глебов А.Н.
+# Shifr ©2020-3 Glebe A.N.
 #
 GCC = gcc
 #GCC = gcc-8
@@ -20,18 +20,17 @@ SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion \
  $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 DEPENDtypeh = type.h define.h
-DEPENDtemplateh = template.h define.h
+DEPENDtemplateh = template.h define.h $(DEPENDtypeh)
 DEPENDprivateh = private.h $(DEPENDtypeh) $(DEPENDtemplateh)
 DEPENDprivatec = private.c $(DEPENDprivateh) $(DEPENDstructh) define.h \
  $(DEPENDinlineprih)
-DEPENDstructh = struct.h $(DEPENDtypeh) $(DEPENDtemplateh) template-pri.h
+DEPENDstructh = struct.h $(DEPENDtypeh) $(DEPENDtemplateh) template-pri-body.h
 DEPENDpublich = public.h $(DEPENDtypeh) define.h
-DEPENDinlineh = inline.h define.h $(DEPENDpublich) $(DEPENDstructh) \
- $(DEPENDinlineprih) $(DEPENDtemplateh) $(DEPENDprivateh) cast.h
-DEPENDinlineprih = inline-pri.h template-pri.h cast.h
+DEPENDinlineh = inline.h $(DEPENDtemplateh) define.h $(DEPENDinlineprih) $(DEPENDpublich) $(DEPENDprivateh)
+DEPENDinlineprih = inline-pri.h cast.h $(DEPENDstructh) template-pri-body.h
 DEPENDmainc = main.c define.h $(DEPENDinlineh)
 DEPENDshifrc = shifr.c define.h $(DEPENDinlineh) $(DEPENDtemplateh)
-DEPENDexample = example.c define.h $(DEPENDinlineh)
+DEPENDexample = example.c $(DEPENDinlineh)
 EXAMPLE_OBJECTS = example.o
 USE_GNU_SOURCE = -D'_GNU_SOURCE'
 shifr: $(SHIFR_OBJECTS) main.o

@@ -1,6 +1,8 @@
 // Шифр ©2020-3 Глебов А.Н. Template Private Body
 // Shifr ©2020-3 Glebe A.N.
 
+# include <stddef.h> // offsetof
+
 # define  shifr_number_pub_to_priv_def( N ) \
 shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
   shifr_number_type  ( N ) * const n ) { \
