@@ -1,5 +1,5 @@
-// Шифр ©2020-2 Глебов А.Н.
-// Shifr ©2020-2 Glebe A.N.
+// Шифр ©2020-3 Глебов А.Н.
+// Shifr ©2020-3 Glebe A.N.
 
 # ifndef  SHIFR_PUBLIC_H
 # define  SHIFR_PUBLIC_H

@@ -1,5 +1,5 @@
-// Шифр ©2020-2 Глебов А.Н.
-// Shifr ©2020-2 Glebe A.N.
+// Шифр ©2020-3 Глебов А.Н.
+// Shifr ©2020-3 Glebe A.N.
 
 # include "define.h"
 
@@ -124,16 +124,27 @@ void  shifr_number  ##  N ##  _princ ( \
 
 # endif // SHIFR_DEBUG
 
+# include <stdint.h>
+# include "type.h"
+
+# define  shifr_number_dec_elt_copy(  N ) \
+uint8_t shifr_number_elt_copy ( N ) ( \
+  shifr_number_type ( N ) const * np  , uint8_t i ) ;
+
 # define  shifr_number_def_elt_copy( N ) \
-uint8_t shifr_number ## N ## _elt_copy  ( \
+uint8_t shifr_number_elt_copy ( N ) ( \
   shifr_number_type ( N ) const * const np  , uint8_t const i ) { \
   return  shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ i ] ; \
 }
 
 # define  shifr_number_elt_copy( N ) shifr_number ## N ## _elt_copy
 
+# define  shifr_number_dec_add( N ) \
+  void  shifr_number_add  ( N ) ( shifr_number_type ( N ) * np  , \
+    shifr_number_type ( N ) const * xp  ) ;
+
 # define  shifr_number_def_add(  N , D ) \
-void  shifr_number ## N ## _add  ( \
+void  shifr_number_add  ( N ) ( \
   shifr_number_type ( N ) * const restrict  np  , \
   shifr_number_type ( N ) const * const restrict  xp ) { \
   uint8_t per = 0 ; \
@@ -158,8 +169,13 @@ void  shifr_number ## N ## _add  ( \
 
 # define  shifr_number_add( N ) shifr_number ## N ## _add
 
+# include <stdbool.h>
+
+# define  shifr_number_dec_not_zero(  N ) \
+bool  shifr_number_not_zero ( N ) ( shifr_number_type ( N ) const * np  ) ;
+
 # define  shifr_number_def_not_zero(  N , D ) \
-bool  shifr_number ## N ## _not_zero  ( \
+bool  shifr_number_not_zero ( N ) ( \
   shifr_number_type ( N ) const * const np  ) { \
   uint8_t const * i = \
     & ( shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ D ] ) ; \
@@ -174,8 +190,11 @@ bool  shifr_number ## N ## _not_zero  ( \
 
 # define  shifr_number_not_zero( N ) shifr_number ## N ## _not_zero
 
+# define  shifr_number_dec_dec(  N ) \
+void  shifr_number_dec  ( N ) ( shifr_number_type ( N ) * np  ) ;
+
 # define  shifr_number_def_dec(  N , D ) \
-void  shifr_number ## N ## _dec ( shifr_number_type ( N ) * const np  ) { \
+void  shifr_number_dec  ( N ) ( shifr_number_type ( N ) * const np  ) { \
   uint8_t  * i = & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ; \
   do {  \
     if ( ( * i ) == 0 ) \
@@ -191,8 +210,11 @@ void  shifr_number ## N ## _dec ( shifr_number_type ( N ) * const np  ) { \
 
 # define  shifr_number_dec( N ) shifr_number ## N ## _dec
 
+# define  shifr_number_dec_div_mod(  N ) \
+  uint8_t shifr_number_div_mod  ( N ) ( shifr_number_type ( N ) * np0 , uint8_t div ) ;
+
 # define  shifr_number_def_div_mod(  N , D ) \
-uint8_t shifr_number ## N ## _div_mod ( \
+uint8_t shifr_number_div_mod  ( N ) ( \
   shifr_number_type ( N ) * const np0 , uint8_t const div ) { \
   shifr_number_priv_type ( N ) * const np = \
     shifr_number_pub_to_priv ( N ) ( np0 ) ; \
@@ -210,8 +232,13 @@ uint8_t shifr_number ## N ## _div_mod ( \
 
 # define  shifr_number_div_mod( N ) shifr_number ## N ## _div_mod
 
+# define  shifr_number_dec_set_byte(  N ) \
+void  shifr_number_set_byte ( N ) ( shifr_number_type ( N ) * np0 , uint8_t x ) ;
+
+# include <string.h> // memset
+
 # define  shifr_number_def_set_byte(  N , D ) \
-void  shifr_number ## N ## _set_byte  ( shifr_number_type ( N ) * const np0 , \
+void  shifr_number_set_byte ( N ) ( shifr_number_type ( N ) * const np0 , \
   uint8_t const x ) { \
   shifr_number_priv_type ( N ) * const np = \
     shifr_number_pub_to_priv ( N ) ( np0 ) ; \
@@ -237,6 +264,11 @@ password % 0xf = 0xa is the sequence number for the remaining NOT occupied from
 deshi needs salt
 */
 # define  shifr_password_load( N ) shifr_password_  ##  N ##  _load
+
+
+# define  shifr_password_load_dec(  N ) \
+void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * password0 , \
+  shifr_arrp shifrp , shifr_arrp deship ) ;
 
 # define  shifr_password_load_def(  N , SDS ) \
 void  shifr_password_load ( N ) ( \
@@ -288,6 +320,10 @@ password % 0xf = 0xa is the sequence number for the remaining NOT occupied from
 deshi needs salt
 */
 # define  shifr_password_from_dice( N ) shifr_password_  ##  N ##  _from_dice
+
+# define  shifr_password_from_dice_dec(  N ) \
+void  shifr_password_from_dice  ( N ) ( uint8_t const * dice  , \
+  shifr_arrp shifrp , shifr_arrp deship ) ;
 
 # define  shifr_password_from_dice_def(  N , SDS ) \
 void  shifr_password_from_dice  ( N ) ( \

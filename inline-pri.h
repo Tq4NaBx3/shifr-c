@@ -1,18 +1,44 @@
-// Шифр ©2020-2 Глебов А.Н.
-// Shifr ©2020-2 Glebe A.N.
+// Шифр ©2020-3 Глебов А.Н.
+// Shifr ©2020-3 Glebe A.N.
 
 # ifndef  SHIFR_INLINE_PRI_H
 # define  SHIFR_INLINE_PRI_H
 
-# include <stddef.h> // offsetof
 # include "template-pri.h"
-# include "cast.h"
+
+static  shifr_number_pub_to_priv_dec  ( v2  )
+static  shifr_number_pub_to_priv_dec  ( v3  )
+static  shifr_number_const_pub_to_priv_dec  ( v2  )
+# include <stddef.h> // offsetof
+static  shifr_number_const_pub_to_priv_dec  ( v3  )
+static  uint8_t letter_to_bits6 ( char  letter  ) ;
+// ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
+static  char  bits6_to_letter ( uint8_t bits6 ) ;
+static  void  data_xor3  ( uint8_t * old_last_data , uint8_t * old_last_salt ,
+  shifr_arrp  secretdatasalt  , size_t  data_size ) ;
+static  void  shifr_crypt_decrypt ( shifr_arrp  datap ,
+  shifr_arrcp tablep  , shifr_arrp  encrp , size_t  data_size ) ;
+static  void  shifr_data_xor2 ( t_ns_shifr  * ns_shifrp ,
+  shifr_arrp  secretdatasalt  , size_t  data_size ) ;
+static  void  shifr_decrypt_salt2 ( shifr_arrp  datap ,
+  shifr_arrcp tablep  , shifr_arrp  decrp , size_t  data_size ,
+  uint8_t * old_last_salt , uint8_t * old_last_data ) ;
+static  void  shifr_decrypt_salt3 ( shifr_arrp  datap ,
+  shifr_arrcp tablep  , shifr_arrp  decrp , size_t  data_size ,
+  uint8_t * old_last_salt , uint8_t * old_last_data ) ;
+static  void  shifr_initarr ( shifr_arrp  p ,
+  uint8_t codefree  , size_t  loc_shifr_deshi_size  ) ;
+
+# include "template-pri-body.h"
+# include "struct.h"
 
 static  inline  shifr_number_pub_to_priv_def  ( v2 )
 static  inline  shifr_number_pub_to_priv_def  ( v3 )
     
 static  inline  shifr_number_const_pub_to_priv_def  ( v2 )
 static  inline  shifr_number_const_pub_to_priv_def  ( v3 )
+
+# include "cast.h"
 
 static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
   return  int_cast_uint8 ( char_cast_uint8 ( letter ) -
@@ -23,10 +49,11 @@ static  inline  uint8_t letter_to_bits6 ( char  const letter  ) {
 static  inline  char  bits6_to_letter ( uint8_t const bits6 ) {
   return  int_cast_char ( char_cast_uint8  ( ';' ) + bits6 ) ;
 }
-  
-static inline void  data_xor3  ( uint8_t * const restrict  old_last_data ,
-  uint8_t * const restrict  old_last_salt ,
-  shifr_arrp  const secretdatasalt  , size_t  const data_size ) {
+
+# include <iso646.h> // bitand
+
+static  inline  void  data_xor3 ( uint8_t * const restrict  old_last_data ,
+  uint8_t * const restrict  old_last_salt , shifr_arrp  const secretdatasalt  , size_t  const data_size ) {
   uint8_t * restrict  ids = & ( ( * secretdatasalt  ) [ 0 ] ) ;
   do {
     uint8_t const cur_data = ( * ids ) >> 3 ;

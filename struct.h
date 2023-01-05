@@ -1,5 +1,5 @@
-// Шифр ©2020-2 Глебов А.Н.
-// Shifr ©2020-2 Glebe A.N.
+// Шифр ©2020-3 Глебов А.Н.
+// Shifr ©2020-3 Glebe A.N.
 
 # ifndef  SHIFR_STRUCT_H
 # define  SHIFR_STRUCT_H
@@ -16,6 +16,8 @@
   
 shifr_number_def  ( v2 )  
 shifr_number_def  ( v3 )
+
+# include "template-pri-body.h"
 
 shifr_number_priv_def ( v2 , shifr_number_size2 )
 
