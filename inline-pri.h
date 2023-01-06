@@ -9,36 +9,50 @@
 # define  shifr_number_pub_to_priv_dec( N ) \
 shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( shifr_number_type  ( N ) * )  ;
 
-static  shifr_number_pub_to_priv_dec  ( v2  )
-static  shifr_number_pub_to_priv_dec  ( v3  )
+static  inline  shifr_number_pub_to_priv_dec  ( v2  )
+static  inline  shifr_number_pub_to_priv_dec  ( v3  )
 
 # define  shifr_number_const_pub_to_priv( N ) shifr_number_const_pub_to_priv_ ## N
 
 # define  shifr_number_const_pub_to_priv_dec( N ) \
 shifr_number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) ( shifr_number_type  ( N ) const * ) ;
 
-static  shifr_number_const_pub_to_priv_dec  ( v2  )
-static  shifr_number_const_pub_to_priv_dec  ( v3  )
-static  uint8_t letter_to_bits6 ( char  letter  ) ;
+static  inline  shifr_number_const_pub_to_priv_dec  ( v2  )
+static  inline  shifr_number_const_pub_to_priv_dec  ( v3  )
+static  inline  uint8_t letter_to_bits6 ( char  letter  ) ;
 // ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
-static  char  bits6_to_letter ( uint8_t bits6 ) ;
-static  void  data_xor3  ( uint8_t * old_last_data , uint8_t * old_last_salt ,
+static  inline  char  bits6_to_letter ( uint8_t bits6 ) ;
+static  inline  void  data_xor3  ( uint8_t * old_last_data , uint8_t * old_last_salt ,
   shifr_arrp  secretdatasalt  , size_t  data_size ) ;
-static  void  shifr_crypt_decrypt ( shifr_arrp  datap ,
+static  inline  void  shifr_crypt_decrypt ( shifr_arrp  datap ,
   shifr_arrcp tablep  , shifr_arrp  encrp , size_t  data_size ) ;
-static  void  shifr_data_xor2 ( t_ns_shifr  * ns_shifrp ,
+static  inline  void  shifr_data_xor2 ( t_ns_shifr  * ns_shifrp ,
   shifr_arrp  secretdatasalt  , size_t  data_size ) ;
-static  void  shifr_decrypt_salt2 ( shifr_arrp  datap ,
+static  inline  void  shifr_decrypt_salt2 ( shifr_arrp  datap ,
   shifr_arrcp tablep  , shifr_arrp  decrp , size_t  data_size ,
   uint8_t * old_last_salt , uint8_t * old_last_data ) ;
-static  void  shifr_decrypt_salt3 ( shifr_arrp  datap ,
+static  inline  void  shifr_decrypt_salt3 ( shifr_arrp  datap ,
   shifr_arrcp tablep  , shifr_arrp  decrp , size_t  data_size ,
   uint8_t * old_last_salt , uint8_t * old_last_data ) ;
-static  void  shifr_initarr ( shifr_arrp  p ,
+static  inline  void  shifr_initarr ( shifr_arrp  p ,
   uint8_t codefree  , size_t  loc_shifr_deshi_size  ) ;
 
-# include "template-pri-body.h"
 # include "struct.h"
+# include <stddef.h> // offsetof
+
+# define  shifr_number_pub_to_priv_def( N ) \
+shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
+  shifr_number_type  ( N ) * const n ) { \
+  return  ( shifr_number_priv_type  ( N ) * ) ( \
+    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; \
+}
+
+# define  shifr_number_const_pub_to_priv_def( N ) \
+shifr_number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) (  \
+  shifr_number_type  ( N ) const * const n ) { \
+  return  ( shifr_number_priv_type  ( N ) const * ) ( \
+    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; \
+}
 
 static  inline  shifr_number_pub_to_priv_def  ( v2 )
 static  inline  shifr_number_pub_to_priv_def  ( v3 )

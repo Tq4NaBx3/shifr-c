@@ -2,142 +2,19 @@
 // Shifr ©2020-3 Glebe A.N.
 
 # include "define.h"
-
-# define  shifr_number_def_set0( N , D ) \
-  void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * const np ) { \
-    memset  ( & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) , 0 ,  \
-      D ) ; \
-  }
-
-# define  shifr_number_def_mul_byte(  N , D ) \
-void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
-  uint8_t const byte ) {  \
-  if ( byte == 0 ) {  \
-    shifr_number_set0 ( N ) ( np ) ; \
-    return  ; \
-  } \
-  if ( byte == 1 )  \
-    return ; \
-  uint8_t per = 0 ; \
-  { uint8_t i = 0 ; \
-    do { \
-      uint16_t const x = int_cast_uint16 ( uint8_cast_uint16 ( \
-        shifr_number_elt_copy ( N ) ( np , i ) ) * \
-        uint8_cast_uint16 ( byte ) + uint8_cast_uint16 ( per ) ) ; \
-      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] =  \
-        int_cast_uint8 ( x bitand 0xff ) ; \
-      per = int_cast_uint8 ( x >>  8 ) ; \
-      ++  i ; \
-    } while ( i < D ) ; \
-  } \
-}
-    
-/*
-Translation of the big number 'raspr.pass' to string 'password_letters'
-Перевод большого числа 'raspr.pass ' в строку 'password_letters'
-
- 0 - ''
- 1 - '0' , 2 - '1'
- 3 - '00' , 4 - '01' , 5 - '10' , 6 - '11'
-*/
-    
-# define  shifr_password_to_string_templ_def( N ) \
-void  shifr_password  ##  N ##  _to_string_templ ( \
-  shifr_number_type ( N ) const * const password0 , \
-  shifr_strvp const string , shifr_strp letters , \
-  uint8_t const letterscount ) { \
-  char  volatile  * stringi = & ( ( * string )  [ 0 ] ) ; \
-  if ( shifr_number_not_zero  ( N ) ( password0 ) ) { \
-    shifr_number_priv_type ( N ) password = \
-      * shifr_number_const_pub_to_priv ( N ) ( password0 ) ; \
-    do { \
-      /* here the previous sizes took the place of passwords */ \
-      /* здесь предыдущие размеры заняли место паролей */ \
-      shifr_number_dec ( N ) ( & password . pub ) ; \
-      ( * stringi ) = ( * letters ) [ \
-        shifr_number_div_mod ( N ) ( & password . pub , letterscount ) ] ; \
-      ++  stringi ; \
-    } while ( shifr_number_not_zero ( N ) ( & password . pub ) ) ; \
-  } \
-  ( * stringi ) = '\00' ; \
-}
-
-/*
-'string' as string to 'password' as big number
- + create tables shifr deshi
-Перевод  пароля буквами 'string' в большое число 'password'
- + создаём таблицы shifr deshi
-*/
-# define  shifr_string_to_password_templ_def( N ) \
-void  shifr_string_to_password  ##  N ##  _templ ( \
-  t_ns_shifr * const ns_shifrp , shifr_strvcp  const string , \
-  shifr_number_type ( N ) * const password , shifr_strcp const letters , \
-  uint8_t const letterscount  ) { \
-  char  volatile  const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
-  if  ( ( * stringi ) == '\00' ) { \
-    shifr_number_set0 ( N ) ( password ) ; \
-    goto  load  ; \
-  } \
-  shifr_number_priv_type ( N ) pass ; \
-  shifr_number_set0 ( N ) ( & pass . pub ) ; \
-  shifr_number_priv_type ( N ) mult ; \
-  shifr_number_set_byte ( N ) ( & mult . pub , 1 ) ; \
-  do  { \
-    uint8_t i = letterscount ; \
-    do { \
-      -- i ; \
-      if ( ( * stringi ) == ( * letters ) [ i ] ) \
-        goto found ; \
-    } while ( i ) ; \
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
-      ( shifr_strcp ) & "неправильная буква в пароле" : \
-      ( shifr_strcp ) & "wrong letter in password" ) ; \
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
-found : ; \
-    { shifr_number_priv_type ( N ) tmp = mult ; \
-      shifr_number_mul_byte ( N ) ( & tmp . pub , int_cast_uint8 ( i + 1 ) ) ; \
-      shifr_number_add ( N ) ( &  pass . pub , & tmp . pub ) ; \
-    } \
-    shifr_number_mul_byte ( N ) ( & mult . pub , letterscount ) ; \
-    ++  stringi ; \
-  } while ( ( * stringi ) not_eq '\00' ) ; \
-  ( * shifr_number_pub_to_priv ( N ) ( password  ) ) = pass ; \
-load  : \
-  shifr_password_load_uni ( ns_shifrp ) ; \
-}
-
-# ifdef SHIFR_DEBUG
-
-# define  shifr_number_def_princ( N , D ) \
-void  shifr_number  ##  N ##  _princ ( \
-  shifr_number_type ( N ) const * const np , FILE * const fs ) { \
-  fputs ( "[ " , fs ) ; \
-  uint8_t i = D - 1 ;  \
-  do  { \
-    fprintf ( fs  , "%x " , shifr_number_elt_copy ( N ) ( np , i ) ) ; \
-    if ( ! i ) \
-      break ; \
-    --  i ; \
-  } while ( true ) ; \
-  fputs ( "]" , fs ) ; \
-}
-
-# endif // SHIFR_DEBUG
-
 # include <stdint.h>
 # include "type.h"
 
+# define  shifr_number_elt_copy( N ) shifr_number ## N ## _elt_copy
+
 # define  shifr_number_dec_elt_copy(  N ) \
-uint8_t shifr_number_elt_copy ( N ) ( \
-  shifr_number_type ( N ) const * np  , uint8_t i ) ;
+uint8_t shifr_number_elt_copy ( N ) ( shifr_number_type ( N ) const * np  , uint8_t i ) ;
 
 # define  shifr_number_def_elt_copy( N ) \
 uint8_t shifr_number_elt_copy ( N ) ( \
   shifr_number_type ( N ) const * const np  , uint8_t const i ) { \
   return  shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ i ] ; \
 }
-
-# define  shifr_number_elt_copy( N ) shifr_number ## N ## _elt_copy
 
 # define  shifr_number_dec_add( N ) \
   void  shifr_number_add  ( N ) ( shifr_number_type ( N ) * np  , \

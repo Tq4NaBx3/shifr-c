@@ -7,8 +7,8 @@ GCC = gcc
 #GCC = gcc-9
 CSTANDARD = -std=c11
 #CSTANDARD = -std=c18
-SHIFR_OBJECTS = shifr.o private.o
-SHIFR_ASM = shifr.s main.s private.s
+SHIFR_OBJECTS = o/shifr.o o/private.o
+SHIFR_ASM = s/shifr.s s/main.s s/private.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
 SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion \
  -Wno-clobbered -Wpedantic -Werror=implicit-function-declaration \
@@ -19,44 +19,33 @@ SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion \
  -Wold-style-definition -Wstrict-prototypes -Werror=discarded-qualifiers \
  $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
-DEPENDtypeh = type.h define.h
-DEPENDtemplateh = template.h define.h $(DEPENDtypeh)
-DEPENDprivateh = private.h $(DEPENDtypeh) $(DEPENDtemplateh)
-DEPENDprivatec = private.c $(DEPENDprivateh) $(DEPENDstructh) define.h \
- $(DEPENDinlineprih)
-DEPENDstructh = struct.h $(DEPENDtypeh) $(DEPENDtemplateh) template-pri-body.h
-DEPENDpublich = public.h $(DEPENDtypeh) define.h
-DEPENDinlineh = inline.h $(DEPENDtemplateh) define.h $(DEPENDinlineprih) $(DEPENDpublich) $(DEPENDprivateh)
-DEPENDinlineprih = inline-pri.h cast.h $(DEPENDstructh) template-pri-body.h
-DEPENDmainc = main.c define.h $(DEPENDinlineh)
-DEPENDshifrc = shifr.c define.h $(DEPENDinlineh) $(DEPENDtemplateh)
-DEPENDexample = example.c $(DEPENDinlineh)
-EXAMPLE_OBJECTS = example.o
-USE_GNU_SOURCE = -D'_GNU_SOURCE'
-shifr: $(SHIFR_OBJECTS) main.o
-	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) main.o -o shifr
+EXAMPLE_OBJECTS = o/example.o $(SHIFR_OBJECTS)
+EXAMPLE_ASM = s/example.s
+OGCC = $(GCC) $(2) -I . -MM $(1).c -MT o/$(1).o > d/$(1).d && \
+ $(SHIFR_COMPILE) $(2) -o o/$(1).o $(1).c
+SGCC = $(GCC) $(2) -I . -MM $(1).c -MT s/$(1).s > s/$(1).d && \
+ $(SHIFR_COMPILE) $(SHIFR_ASM_OPTIONS) $(2) -o s/$(1).s $(1).c
+shifr: $(SHIFR_OBJECTS) o/main.o
+	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) o/main.o -o shifr
 	@chmod 0555 shifr
-shifr.o: $(DEPENDshifrc)
-	@$(SHIFR_COMPILE) shifr.c
-private.o: $(DEPENDprivatec)
-	@$(SHIFR_COMPILE) $(USE_GNU_SOURCE) private.c
-main.o: $(DEPENDmainc)
-	@$(SHIFR_COMPILE) main.c
+o/shifr.o:
+	@$(call OGCC,shifr)
+o/private.o:
+	@$(call OGCC,private)
+o/main.o:
+	@$(call OGCC,main)
 clean:
 	@rm -f shifr
-	@rm -f $(SHIFR_OBJECTS)
-	@rm -f main.o
-	@rm -f $(SHIFR_ASM)
 	@rm -f libshifr.so
 	@rm -f example
-	@rm -f example.s
+	@rm -f d/*.d s/*.d s/*.s o/*.o
 asm: $(SHIFR_ASM)
-shifr.s: $(DEPENDshifrc)
-	@$(SHIFR_GCCRUN) shifr.c $(SHIFR_ASM_OPTIONS)
-main.s: $(DEPENDmainc)
-	@$(SHIFR_GCCRUN) main.c $(SHIFR_ASM_OPTIONS)
-private.s: $(DEPENDprivatec)
-	@$(SHIFR_GCCRUN) private.c $(SHIFR_ASM_OPTIONS)
+s/shifr.s:
+	@$(call SGCC,shifr)
+s/private.s:
+	@$(call SGCC,private)
+s/main.s:
+	@$(call SGCC,main)
 lib: SHIFR_COMPILE += -mtune=native -fPIC
 lib: $(SHIFR_OBJECTS)
 	@$(GCC) -shared -fPIC $(SHIFR_OBJECTS) -o libshifr.so
@@ -65,9 +54,13 @@ lib: $(SHIFR_OBJECTS)
 	@sudo cp *.h /usr/local/include/shifr
 	@sudo cp libshifr.so /usr/local/lib
 	@sudo ldconfig /usr/local/lib
-example: $(EXAMPLE_OBJECTS) shifr.o private.o
-	@$(SHIFR_GCCRUN) $(EXAMPLE_OBJECTS) shifr.o private.o -o example
-example.o: $(DEPENDexample)
-	@$(SHIFR_COMPILE) example.c
-example.s: $(DEPENDexample)
-	@$(SHIFR_GCCRUN) example.c $(SHIFR_ASM_OPTIONS)
+example_asm: $(EXAMPLE_ASM)
+example: $(EXAMPLE_OBJECTS)
+	@$(SHIFR_GCCRUN) $(EXAMPLE_OBJECTS) -o example
+o/example.o:
+	@$(call OGCC,example)
+s/example.s:
+	@$(call SGCC,example)
+
+-include d/*.d
+-include s/*.d

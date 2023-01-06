@@ -1,5 +1,5 @@
-// Шифр ©2020-2 Глебов А.Н.
-// Shifr ©2020-2 Glebe A.N.
+// Шифр ©2020-3 Глебов А.Н.
+// Shifr ©2020-3 Glebe A.N.
 
 // Version 2
 
@@ -153,8 +153,37 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 # include "inline.h"
 # include "template.h"
 
+# define  shifr_number_def_set0( N , D ) \
+  void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * const np ) { \
+    memset  ( & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) , 0 ,  \
+      D ) ; \
+  }
+
 shifr_number_def_set0 ( v2 , shifr_number_size2 )
 shifr_number_def_set0 ( v3 , shifr_number_size3 )
+
+# define  shifr_number_def_mul_byte(  N , D ) \
+void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
+  uint8_t const byte ) {  \
+  if ( byte == 0 ) {  \
+    shifr_number_set0 ( N ) ( np ) ; \
+    return  ; \
+  } \
+  if ( byte == 1 )  \
+    return ; \
+  uint8_t per = 0 ; \
+  { uint8_t i = 0 ; \
+    do { \
+      uint16_t const x = int_cast_uint16 ( uint8_cast_uint16 ( \
+        shifr_number_elt_copy ( N ) ( np , i ) ) * \
+        uint8_cast_uint16 ( byte ) + uint8_cast_uint16 ( per ) ) ; \
+      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] =  \
+        int_cast_uint8 ( x bitand 0xff ) ; \
+      per = int_cast_uint8 ( x >>  8 ) ; \
+      ++  i ; \
+    } while ( i < D ) ; \
+  } \
+}
 
 shifr_number_def_mul_byte ( v2 , shifr_number_size2 )
 shifr_number_def_mul_byte ( v3 , shifr_number_size3 )
@@ -172,8 +201,82 @@ void  shifr_printarr  ( shifr_strcp const  name , shifr_arrcp const p ,
 }
 # endif
 
+/*
+Translation of the big number 'raspr.pass' to string 'password_letters'
+Перевод большого числа 'raspr.pass ' в строку 'password_letters'
+
+ 0 - ''
+ 1 - '0' , 2 - '1'
+ 3 - '00' , 4 - '01' , 5 - '10' , 6 - '11'
+*/
+
+# define  shifr_password_to_string_templ_def( N ) \
+void  shifr_password  ##  N ##  _to_string_templ ( \
+  shifr_number_type ( N ) const * const password0 , \
+  shifr_strvp const string , shifr_strp letters , \
+  uint8_t const letterscount ) { \
+  char  volatile  * stringi = & ( ( * string )  [ 0 ] ) ; \
+  if ( shifr_number_not_zero  ( N ) ( password0 ) ) { \
+    shifr_number_priv_type ( N ) password = \
+      * shifr_number_const_pub_to_priv ( N ) ( password0 ) ; \
+    do { \
+      /* here the previous sizes took the place of passwords */ \
+      /* здесь предыдущие размеры заняли место паролей */ \
+      shifr_number_dec ( N ) ( & password . pub ) ; \
+      ( * stringi ) = ( * letters ) [ \
+        shifr_number_div_mod ( N ) ( & password . pub , letterscount ) ] ; \
+      ++  stringi ; \
+    } while ( shifr_number_not_zero ( N ) ( & password . pub ) ) ; \
+  } \
+  ( * stringi ) = '\00' ; \
+}
+
 shifr_password_to_string_templ_def  ( v2 )
 shifr_password_to_string_templ_def  ( v3 )
+
+/*
+'string' as string to 'password' as big number
+ + create tables shifr deshi
+Перевод  пароля буквами 'string' в большое число 'password'
+ + создаём таблицы shifr deshi
+*/
+# define  shifr_string_to_password_templ_def( N ) \
+void  shifr_string_to_password  ##  N ##  _templ ( \
+  t_ns_shifr * const ns_shifrp , shifr_strvcp  const string , \
+  shifr_number_type ( N ) * const password , shifr_strcp const letters , \
+  uint8_t const letterscount  ) { \
+  char  volatile  const * restrict stringi = & ( ( * string )  [ 0 ] ) ; \
+  if  ( ( * stringi ) == '\00' ) { \
+    shifr_number_set0 ( N ) ( password ) ; \
+    goto  load  ; \
+  } \
+  shifr_number_priv_type ( N ) pass ; \
+  shifr_number_set0 ( N ) ( & pass . pub ) ; \
+  shifr_number_priv_type ( N ) mult ; \
+  shifr_number_set_byte ( N ) ( & mult . pub , 1 ) ; \
+  do  { \
+    uint8_t i = letterscount ; \
+    do { \
+      -- i ; \
+      if ( ( * stringi ) == ( * letters ) [ i ] ) \
+        goto found ; \
+    } while ( i ) ; \
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
+      ( shifr_strcp ) & "неправильная буква в пароле" : \
+      ( shifr_strcp ) & "wrong letter in password" ) ; \
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
+found : ; \
+    { shifr_number_priv_type ( N ) tmp = mult ; \
+      shifr_number_mul_byte ( N ) ( & tmp . pub , int_cast_uint8 ( i + 1 ) ) ; \
+      shifr_number_add ( N ) ( &  pass . pub , & tmp . pub ) ; \
+    } \
+    shifr_number_mul_byte ( N ) ( & mult . pub , letterscount ) ; \
+    ++  stringi ; \
+  } while ( ( * stringi ) not_eq '\00' ) ; \
+  ( * shifr_number_pub_to_priv ( N ) ( password  ) ) = pass ; \
+load  : \
+  shifr_password_load_uni ( ns_shifrp ) ; \
+}
 
 shifr_string_to_password_templ_def  ( v2 )
 shifr_string_to_password_templ_def  ( v3 )
@@ -659,6 +762,20 @@ void  shifr_dices_to_number3 ( t_ns_shifr * const ns_shifrp ) {
 }
 
 # ifdef SHIFR_DEBUG
+
+# define  shifr_number_def_princ( N , D ) \
+void  shifr_number  ##  N ##  _princ ( \
+  shifr_number_type ( N ) const * const np , FILE * const fs ) { \
+  fputs ( "[ " , fs ) ; \
+  uint8_t i = D - 1 ;  \
+  do  { \
+    fprintf ( fs  , "%x " , shifr_number_elt_copy ( N ) ( np , i ) ) ; \
+    if ( ! i ) \
+      break ; \
+    --  i ; \
+  } while ( true ) ; \
+  fputs ( "]" , fs ) ; \
+}
 
 shifr_number_def_princ  ( v2 , shifr_number_size2 )
 shifr_number_def_princ  ( v3 , shifr_number_size3 )

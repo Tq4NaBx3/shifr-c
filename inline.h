@@ -6,52 +6,52 @@
 
 # include "template.h"
 
-static  shifr_number_dec_elt_copy ( v2  )
-static  shifr_number_dec_elt_copy ( v3  )
-static  shifr_number_dec_add  ( v2  )
-static  shifr_number_dec_add  ( v3  )
-static  shifr_number_dec_not_zero ( v2  )
-static  shifr_number_dec_not_zero ( v3  )
-static  shifr_number_dec_dec  ( v2  )
-static  shifr_number_dec_dec  ( v3  )
-static  shifr_number_dec_div_mod  ( v2  )
-static  shifr_number_dec_div_mod  ( v3  )
-static  shifr_number_dec_set_byte ( v2  )
-static  shifr_number_dec_set_byte ( v3  )
+static  inline  shifr_number_dec_elt_copy ( v2  )
+static  inline  shifr_number_dec_elt_copy ( v3  )
+static  inline  shifr_number_dec_add  ( v2  )
+static  inline  shifr_number_dec_add  ( v3  )
+static  inline  shifr_number_dec_not_zero ( v2  )
+static  inline  shifr_number_dec_not_zero ( v3  )
+static  inline  shifr_number_dec_dec  ( v2  )
+static  inline  shifr_number_dec_dec  ( v3  )
+static  inline  shifr_number_dec_div_mod  ( v2  )
+static  inline  shifr_number_dec_div_mod  ( v3  )
+static  inline  shifr_number_dec_set_byte ( v2  )
+static  inline  shifr_number_dec_set_byte ( v3  )
 // generate big number as password to raspr.pass
 //  + create tables shifr deshi
-static  void  shifr_generate_password ( t_ns_shifr * )  ;
+static  inline  void  shifr_generate_password ( t_ns_shifr * )  ;
 // from stdin get password string -> make big number
-static  void  shifr_enter_password2 ( t_ns_shifr * )  ;
-static  void  shifr_enter_password3 ( t_ns_shifr * )  ;
+static  inline  void  shifr_enter_password2 ( t_ns_shifr * )  ;
+static  inline  void  shifr_enter_password3 ( t_ns_shifr * )  ;
 // from stdin get password string -> make big number -> tables shifr deshi
-static  void  shifr_enter_password ( t_ns_shifr * ) ;
-static  void  shifr_init  ( t_ns_shifr  * ) ;
+static  inline  void  shifr_enter_password ( t_ns_shifr * ) ;
+static  inline  void  shifr_init  ( t_ns_shifr  * ) ;
 # include "define.h"
 # ifdef SHIFR_DEBUG
-static  shifr_timestamp_t get_timestamp ( void )  ;
+static  inline  shifr_timestamp_t get_timestamp ( void )  ;
 # endif
-static  int shifr_show_help ( t_ns_shifr  const * ) ;
+static  inline  int shifr_show_help ( t_ns_shifr  const * ) ;
 // generate big number as password, convert to string and puts
 // in debug mode creates tables shifr deshi many times
-static  void  shifr_main_genpsw ( t_ns_shifr  * ) ;
-static  void  shifr_test_password ( t_ns_shifr  * , size_t nr  ) ;
-static  void  shifr_encode_file_v3  ( t_ns_shifr  * ,
+static  inline  void  shifr_main_genpsw ( t_ns_shifr  * ) ;
+static  inline  void  shifr_test_password ( t_ns_shifr  * , size_t nr  ) ;
+static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * ,
   uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
   uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
-static  void  shifr_encode_file_v2 ( t_ns_shifr  * ,
+static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * ,
   uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
   uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
-static  void  shifr_decode_file_v2 ( t_ns_shifr  * ,
+static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * ,
   uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
   uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
-static  void  shifr_decode_file_v3 ( t_ns_shifr  * ,
+static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * ,
   uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
   uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
-static  shifr_password_load_dec ( v2  )
-static  shifr_password_load_dec ( v3  )
-static  shifr_password_from_dice_dec (  v2  )
-static  shifr_password_from_dice_dec (  v3  )
+static  inline  shifr_password_load_dec ( v2  )
+static  inline  shifr_password_load_dec ( v3  )
+static  inline  shifr_password_from_dice_dec (  v2  )
+static  inline  shifr_password_from_dice_dec (  v3  )
 
 # include "inline-pri.h"
 
@@ -371,7 +371,7 @@ static inline shifr_timestamp_t get_timestamp ( void ) {
 static  inline  int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
   bool  const localerus = main_shifrp -> localerus ;
   puts ( localerus ?
-    "Шифр ©2020-2 Глебов А.Н.\n"
+    "Шифр ©2020-3 Глебов А.Н.\n"
     "Симметричное поточное шифрование с 'солью'.\n"
     "'Соль' генерируется постоянно, что даёт хорошую стойкость.\n"
     "Размер данных увеличивается в два раза. "
