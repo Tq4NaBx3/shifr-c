@@ -10,7 +10,7 @@ CSTANDARD = -std=c11
 SHIFR_OBJECTS = o/shifr.o o/private.o
 SHIFR_ASM = s/shifr.s s/main.s s/private.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
-SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion \
+SHIFR_GCCRUN = $(GCC) -Ih -Wall -Wextra -Winline -Wshadow -Wconversion \
  -Wno-clobbered -Wpedantic -Werror=implicit-function-declaration \
  -Wmissing-include-dirs -Wswitch-default -Wswitch-enum -Wfloat-equal \
  -Wcast-align -Wlogical-op -Wmissing-declarations -Wredundant-decls \
@@ -21,10 +21,10 @@ SHIFR_GCCRUN = $(GCC) -Wall -Wextra -Winline -Wshadow -Wconversion \
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 EXAMPLE_OBJECTS = o/example.o $(SHIFR_OBJECTS)
 EXAMPLE_ASM = s/example.s
-OGCC = $(GCC) $(2) -I . -MM $(1).c -MT o/$(1).o > d/$(1).d && \
- $(SHIFR_COMPILE) $(2) -o o/$(1).o $(1).c
-SGCC = $(GCC) $(2) -I . -MM $(1).c -MT s/$(1).s > s/$(1).d && \
- $(SHIFR_COMPILE) $(SHIFR_ASM_OPTIONS) $(2) -o s/$(1).s $(1).c
+OGCC = $(GCC) $(2) -Ih -MM c/$(1).c -MT o/$(1).o > d/$(1).d && \
+ $(SHIFR_COMPILE) $(2) -o o/$(1).o c/$(1).c
+SGCC = $(GCC) $(2) -Ih -MM c/$(1).c -MT s/$(1).s > s/$(1).d && \
+ $(SHIFR_COMPILE) $(SHIFR_ASM_OPTIONS) $(2) -o s/$(1).s c/$(1).c
 shifr: $(SHIFR_OBJECTS) o/main.o
 	@$(SHIFR_GCCRUN) $(SHIFR_OBJECTS) o/main.o -o shifr
 	@chmod 0555 shifr

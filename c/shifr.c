@@ -150,8 +150,8 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 
 # include <errno.h>
 # include "define.h"
-# include "inline.h"
-# include "template.h"
+# include "../h/inline.h"
+# include "../h/template.h"
 
 # define  shifr_number_def_set0( N , D ) \
   void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * const np ) { \
