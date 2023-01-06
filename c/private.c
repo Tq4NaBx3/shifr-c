@@ -150,7 +150,10 @@ void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
   unsigned  int const arans = ( ( data_size == 3U ) ? 2U : 1U ) ;
   uint8_t aran [ arans ] ;
 # ifdef SHIFR_DEBUG
-  ssize_t const r = shifr_getrandom ( & ( aran [ 0 ] ) , arans ) ;
+  ssize_t const r =
+# endif
+    shifr_getrandom ( & ( aran [ 0 ] ) , arans ) ;
+# ifdef SHIFR_DEBUG
   if ( r == -1 ) {
     perror  ( "datasalt3 : getrandom" ) ;
     ns_shifrp  -> string_exception  = ( shifr_strcp )
