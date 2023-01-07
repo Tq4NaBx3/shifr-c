@@ -118,166 +118,106 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
 
 // from stdin get password string -> make big number
 //  + create tables shifr deshi
-static  inline  void  shifr_enter_password2 ( t_ns_shifr * const ns_shifrp ) {
-  char  volatile  p40 [ shifr_password_letters2size ] ;
-  shifr_set_keypress  ( ns_shifrp ) ;
-  fgets ( ( char  * ) & ( p40 [ 0 ] ) , shifr_password_letters2size , stdin ) ;
-  shifr_reset_keypress ( ns_shifrp ) ;
-  char volatile * j = & ( p40 [ 0 ] ) ;
-  while ( ( ( * j ) not_eq '\n' ) and
-    ( ( * j ) not_eq '\00' ) and
-    ( j < ( & ( p40 [ shifr_password_letters2size ] ) ) ) )
-    ++ j ;
-  if ( j < ( & ( p40 [ shifr_password_letters2size ] ) ) )
-    ( * j ) = '\00' ;
-  else  {
-    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ;
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & "в пароле нет конца строки" :
-      ( shifr_strcp ) & "there is no end of line in the password" ) ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ;
-  }
-  switch ( ns_shifrp -> password_alphabet ) {
-  case  shifr_letters_count  :
-    shifr_string_to_password_templ  ( v2 ) ( ns_shifrp ,
-      ( shifr_strvcp ) & p40 , & ns_shifrp -> raspr2  . pass . pub ,
-      ( shifr_strcp ) & ns_shifrp -> letters , shifr_letters_count ) ;
-    break ;
-  case  shifr_letters_count2  :
-    shifr_string_to_password_templ  ( v2 ) ( ns_shifrp ,
-      ( shifr_strvcp ) & p40 , & ns_shifrp -> raspr2  . pass . pub ,
-      ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
-    break ;
-  case  shifr_letters_count3  :
-    shifr_string_to_password_templ  ( v2 ) ( ns_shifrp ,
-      ( shifr_strvcp ) & p40 , & ns_shifrp -> raspr2  . pass . pub , 
-      ( shifr_strcp ) & ns_shifrp -> letters3 , shifr_letters_count3 ) ;
-    break ;
-  case  shifr_letters_count4  :
-    shifr_string_to_password_templ  ( v2 ) ( ns_shifrp , 
-      ( shifr_strvcp ) & p40 , & ns_shifrp -> raspr2  . pass . pub , 
-      ( shifr_strcp ) & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
-    break ;
-  default :
-    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ;
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & "неизвестный алфавит пароля" :
-      ( shifr_strcp ) & "unknown password alphabet" ) ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; 
-  }
-  char  volatile  password_letters [ shifr_password_letters2size ] ;
-  switch  ( ns_shifrp -> password_alphabet  ) {
-  case  shifr_letters_count :
-    shifr_password_to_string_templ  ( v2 ) (
-      & ns_shifrp -> raspr2  . pass . pub , & password_letters ,
-      & ns_shifrp -> letters , shifr_letters_count ) ;
-    break ;
-  case  shifr_letters_count2  :
-    shifr_password_to_string_templ  ( v2 ) (
-      & ns_shifrp -> raspr2  . pass . pub , & password_letters ,
-      & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
-    break ;
-  case  shifr_letters_count3  :
-    shifr_password_to_string_templ  ( v2 ) (
-      & ns_shifrp -> raspr2  . pass . pub , & password_letters ,
-      & ns_shifrp -> letters3 , shifr_letters_count3 ) ;
-    break ;
-  case  shifr_letters_count4  :
-    shifr_password_to_string_templ  ( v2 ) (
-      & ns_shifrp -> raspr2  . pass . pub , & password_letters ,
-      & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
-    break ;
-  default :
-    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ;
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & "неизвестный алфавит пароля" :
-      ( shifr_strcp ) & "unknown password alphabet" ) ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ;
-  }
-  if  ( strcmp ( ( char * ) & ( password_letters  [ 0 ] ) ,
-    ( char * ) & ( p40 [ 0 ] ) ) )
-    fprintf  ( stderr , ( ns_shifrp -> localerus ?
-      "Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" :
-      "Warning! Password \'%s\' is very large. Same as \'%s\'\n" )
-      , & ( p40 [ 0 ] ) , & ( password_letters [ 0 ] ) ) ;
-  shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ;
-  shifr_memsetv ( password_letters  , shifr_memsetv_default_byte ,
-    sizeof  ( password_letters  ) ) ;
+
+# define  shifr_enter_password_templ( funname , letters_size , ver , rasprname ) \
+void  funname ( t_ns_shifr * const ns_shifrp ) { \
+  char  volatile  p40 [ letters_size ] ; \
+  shifr_set_keypress  ( ns_shifrp ) ; \
+  if ( ! fgets ( ( char  * ) & ( p40 [ 0 ] ) , letters_size , stdin ) ) { \
+    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ; \
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
+      ( shifr_strcp ) & # funname " : ошибка чтения входящего потока" : \
+      ( shifr_strcp ) & # funname " : error reading input stream" ) ; \
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
+  } \
+  shifr_reset_keypress ( ns_shifrp ) ; \
+  char volatile * j = & ( p40 [ 0 ] ) ; \
+  while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and \
+    ( j < ( & ( p40 [ letters_size ] ) ) ) ) \
+    ++ j ; \
+  if ( j < ( & ( p40 [ letters_size ] ) ) ) \
+    ( * j ) = '\00' ; \
+  else  { \
+    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ; \
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
+      ( shifr_strcp ) & # funname " : в пароле нет конца строки" : \
+      ( shifr_strcp ) & # funname " : there is no end of line in the password" ) ; \
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
+  } \
+  switch ( ns_shifrp -> password_alphabet ) { \
+  case  shifr_letters_count  : \
+    shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
+      ( shifr_strvcp ) & p40 , & ns_shifrp -> rasprname  . pass . pub , \
+      ( shifr_strcp ) & ns_shifrp -> letters , shifr_letters_count ) ; \
+    break ; \
+  case  shifr_letters_count2  : \
+    shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
+      ( shifr_strvcp ) & p40 , & ns_shifrp -> rasprname  . pass . pub , \
+      ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ; \
+    break ; \
+  case  shifr_letters_count3  : \
+    shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
+      ( shifr_strvcp ) & p40 , & ns_shifrp -> rasprname  . pass . pub , \
+      ( shifr_strcp ) & ns_shifrp -> letters3 , shifr_letters_count3 ) ; \
+    break ; \
+  case  shifr_letters_count4  : \
+    shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
+      ( shifr_strvcp ) & p40 , & ns_shifrp -> rasprname  . pass . pub , \
+      ( shifr_strcp ) & ns_shifrp -> letters4 , shifr_letters_count4 ) ; \
+    break ; \
+  default : \
+    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ; \
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
+      ( shifr_strcp ) & # funname " : неизвестный алфавит пароля" : \
+      ( shifr_strcp ) & # funname " : unknown password alphabet" ) ; \
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
+  } \
+  char  volatile  password_letters [ letters_size ] ; \
+  switch  ( ns_shifrp -> password_alphabet  ) { \
+  case  shifr_letters_count : \
+    shifr_password_to_string_templ  ( ver ) ( \
+      & ns_shifrp -> rasprname  . pass . pub , & password_letters , \
+      & ns_shifrp -> letters , shifr_letters_count ) ; \
+    break ; \
+  case  shifr_letters_count2  : \
+    shifr_password_to_string_templ  ( ver ) ( \
+      & ns_shifrp -> rasprname  . pass . pub , & password_letters , \
+      & ns_shifrp -> letters2 , shifr_letters_count2 ) ; \
+    break ; \
+  case  shifr_letters_count3  : \
+    shifr_password_to_string_templ  ( ver ) ( \
+      & ns_shifrp -> rasprname  . pass . pub , & password_letters , \
+      & ns_shifrp -> letters3 , shifr_letters_count3 ) ; \
+    break ; \
+  case  shifr_letters_count4  : \
+    shifr_password_to_string_templ  ( ver ) ( \
+      & ns_shifrp -> rasprname  . pass . pub , & password_letters , \
+      & ns_shifrp -> letters4 , shifr_letters_count4 ) ; \
+    break ; \
+  default : \
+    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ; \
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
+      ( shifr_strcp ) & # funname " : неизвестный алфавит пароля" : \
+      ( shifr_strcp ) & # funname " : unknown password alphabet" ) ; \
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
+  } \
+  if  ( strcmp ( ( char * ) & ( password_letters  [ 0 ] ) , \
+    ( char * ) & ( p40 [ 0 ] ) ) ) \
+    fprintf  ( stderr , ( ns_shifrp -> localerus ? \
+      # funname " : Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'\n" : \
+      # funname " : Warning! Password \'%s\' is very large. Same as \'%s\'\n" ) \
+      , & ( p40 [ 0 ] ) , & ( password_letters [ 0 ] ) ) ; \
+  shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ; \
+  shifr_memsetv ( password_letters  , shifr_memsetv_default_byte , \
+    sizeof  ( password_letters  ) ) ; \
 }
 
-// from stdin get password string -> make big number
-//  + create tables shifr deshi
-static  inline  void  shifr_enter_password3 ( t_ns_shifr * const ns_shifrp ) {
-  char  volatile  p60 [ shifr_password_letters3size ] ;
-  shifr_set_keypress  ( ns_shifrp ) ;
-  fgets ( ( char  * ) & ( p60 [ 0 ] ) , shifr_password_letters3size , stdin ) ;
-  shifr_reset_keypress ( ns_shifrp ) ;
-  char  volatile  * j = & ( p60 [ 0 ] ) ;
-  while ( ( ( * j ) not_eq '\n' ) and
-    ( ( * j ) not_eq '\00' ) and
-    ( j < ( & ( p60 [ shifr_password_letters3size ] ) ) ) )
-    ++ j ;  
-  if ( j < ( & ( p60 [ shifr_password_letters3size ] ) ) )
-    ( * j ) = '\00' ;
-  else  {
-    shifr_memsetv ( p60 , shifr_memsetv_default_byte , sizeof  ( p60 ) ) ;
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & "в пароле нет конца строки" :
-      ( shifr_strcp ) & "there is no end of line in the password" ) ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ;
-  }
-  char  volatile  password_letters6 [ shifr_password_letters3size ] ;
-  switch  ( ns_shifrp -> password_alphabet  ) {
-  case  shifr_letters_count :
-    shifr_string_to_password_templ  ( v3 ) ( ns_shifrp ,
-      ( shifr_strvcp ) & p60 , & ns_shifrp -> raspr3  . pass . pub ,
-      ( shifr_strcp ) & ns_shifrp -> letters ,  shifr_letters_count ) ;
-    shifr_password_to_string_templ  ( v3 ) (
-      & ns_shifrp -> raspr3  . pass . pub , & password_letters6 ,
-      & ns_shifrp -> letters , shifr_letters_count ) ;
-    break ;
-  case  shifr_letters_count2  :
-    shifr_string_to_password_templ  ( v3 ) ( ns_shifrp ,
-      ( shifr_strvcp ) & p60 , & ns_shifrp -> raspr3  . pass . pub ,
-      ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
-    shifr_password_to_string_templ  ( v3 ) (
-      & ns_shifrp -> raspr3  . pass . pub , & password_letters6 ,
-      & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
-    break ;
-  case  shifr_letters_count3  :
-    shifr_string_to_password_templ  ( v3 ) ( ns_shifrp ,
-      ( shifr_strvcp ) & p60 , & ns_shifrp -> raspr3  . pass . pub ,
-      ( shifr_strcp ) & ns_shifrp -> letters3 ,  shifr_letters_count3 ) ;
-    shifr_password_to_string_templ  ( v3 ) (
-      & ns_shifrp -> raspr3  . pass . pub , & password_letters6 ,
-      & ns_shifrp -> letters3 , shifr_letters_count3 ) ;
-    break ;
-  case  shifr_letters_count4  :
-    shifr_string_to_password_templ  ( v3 ) ( ns_shifrp ,
-      ( shifr_strvcp ) & p60 , & ns_shifrp -> raspr3  . pass . pub ,
-      ( shifr_strcp ) & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
-    shifr_password_to_string_templ  ( v3 ) (
-      & ns_shifrp -> raspr3  . pass . pub , & password_letters6 ,
-      & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
-    break ;
-  default :
-    shifr_memsetv ( p60 , shifr_memsetv_default_byte , sizeof  ( p60 ) ) ;
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & "неизвестный алфавит пароля" :
-      ( shifr_strcp ) & "unknown password alphabet" ) ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ;
-  }
-  if  ( strcmp ( ( char * ) & ( password_letters6 [ 0 ] ) ,
-    ( char * ) & ( p60 [ 0 ] ) ) )
-    fprintf  ( stderr , ( ns_shifrp -> localerus ?
-      "Предупреждение! Пароль \'%s\' очень большой. Аналогичен \'%s\'.\n" :
-      "Warning! Password \'%s\' is very large. Same as \'%s\'.\n" )
-      , & ( p60 [ 0 ] ) , & ( password_letters6  [ 0 ] ) ) ;
-  shifr_memsetv ( p60 , shifr_memsetv_default_byte , sizeof  ( p60 ) ) ;
-  shifr_memsetv ( password_letters6 , shifr_memsetv_default_byte ,
-    sizeof  ( password_letters6 ) ) ;
-}
-      
+static  inline  shifr_enter_password_templ  ( shifr_enter_password2 ,
+  shifr_password_letters2size , v2 , raspr2 )
+
+static  inline  shifr_enter_password_templ  ( shifr_enter_password3 ,
+  shifr_password_letters3size , v3 , raspr3 )
+
 // from stdin get password string -> make big number -> tables shifr deshi
 static  inline  void  shifr_enter_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
