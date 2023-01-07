@@ -1,12 +1,11 @@
-// Шифр ©2020-2 Глебов А.Н.
-// Shifr ©2020-2 Glebe A.N.
+// Шифр ©2020-3 Глебов А.Н.
+// Shifr ©2020-3 Glebe A.N.
 
 # ifndef  SHIFR_PRIVATE_H
 # define  SHIFR_PRIVATE_H
 
 # include <stdbool.h>
 # include "type.h"
-# include "template.h"
 
 // generate random number [ fr .. to ]
 unsigned  int shifr_uirandfrto  ( t_ns_shifr * ns_shifrp ,
@@ -123,14 +122,40 @@ void shifr_reset_keypress ( t_ns_shifr * ) ;
 // Отключить эхо-вывод и буферизацию ввода
 void shifr_set_keypress ( t_ns_shifr * ) ;
 
+# define  shifr_password_to_string_templ( N ) \
+  shifr_password  ##  N ##  _to_string_templ
+
+# define  shifr_password_to_string_templ_dec( N ) \
+void  shifr_password_to_string_templ  ( N ) ( \
+  shifr_number_type ( N ) const * password0 , shifr_strvp string ,  \
+  shifr_strp letters , uint8_t letterscount  ) ;
+
 shifr_password_to_string_templ_dec  ( v2 )
 shifr_password_to_string_templ_dec  ( v3 )  
+
+# define  shifr_string_to_password_templ( N ) \
+  shifr_string_to_password  ##  N ##  _templ
+
+# define  shifr_string_to_password_templ_dec( N ) \
+void  shifr_string_to_password_templ  ( N ) ( t_ns_shifr * , \
+  shifr_strvcp  string , shifr_number_type ( N ) * password , \
+  shifr_strcp letters , uint8_t letterscount  ) ;
 
 shifr_string_to_password_templ_dec  ( v2 )
 shifr_string_to_password_templ_dec  ( v3 )
 
+# define  shifr_number_mul_byte( N ) shifr_number_ ## N ## _mul_byte
+
+# define  shifr_number_dec_mul_byte(  N ) \
+void  shifr_number_mul_byte ( N ) ( shifr_number_type ( N ) * , uint8_t )  ;
+
 shifr_number_dec_mul_byte ( v2 )
 shifr_number_dec_mul_byte ( v3 )
+
+# define  shifr_number_set0( N ) shifr_number_ ## N ## _set0
+
+# define  shifr_number_dec_set0( N ) \
+  void shifr_number_set0  ( N )  ( shifr_number_type  ( N ) * ) ;
 
 shifr_number_dec_set0 ( v2 )
 shifr_number_dec_set0 ( v3 )

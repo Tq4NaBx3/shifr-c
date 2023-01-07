@@ -149,12 +149,10 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 //  log ( 10 , 1.26886932186e89 ) ≈ 89.1 digits <= 90 digits
 
 # include <errno.h>
-# include "define.h"
 # include "inline.h"
-# include "template.h"
 
 # define  shifr_number_def_set0( N , D ) \
-  void shifr_number ## N ## _set0  ( shifr_number_type  ( N ) * const np ) { \
+  void shifr_number_set0  ( N ) ( shifr_number_type  ( N ) * const np ) { \
     memset  ( & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) , 0 ,  \
       D ) ; \
   }
@@ -163,7 +161,7 @@ shifr_number_def_set0 ( v2 , shifr_number_size2 )
 shifr_number_def_set0 ( v3 , shifr_number_size3 )
 
 # define  shifr_number_def_mul_byte(  N , D ) \
-void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
+void  shifr_number_mul_byte ( N ) ( shifr_number_type ( N ) * const np  , \
   uint8_t const byte ) {  \
   if ( byte == 0 ) {  \
     shifr_number_set0 ( N ) ( np ) ; \
@@ -187,6 +185,8 @@ void  shifr_number ## N ## _mul_byte ( shifr_number_type ( N ) * const np  , \
 
 shifr_number_def_mul_byte ( v2 , shifr_number_size2 )
 shifr_number_def_mul_byte ( v3 , shifr_number_size3 )
+
+# include "define.h"
 
 # ifdef SHIFR_DEBUG
 void  shifr_printarr  ( shifr_strcp const  name , shifr_arrcp const p ,
@@ -764,7 +764,7 @@ void  shifr_dices_to_number3 ( t_ns_shifr * const ns_shifrp ) {
 # ifdef SHIFR_DEBUG
 
 # define  shifr_number_def_princ( N , D ) \
-void  shifr_number  ##  N ##  _princ ( \
+void  shifr_number_princ  ( N ) ( \
   shifr_number_type ( N ) const * const np , FILE * const fs ) { \
   fputs ( "[ " , fs ) ; \
   uint8_t i = D - 1 ;  \

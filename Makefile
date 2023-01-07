@@ -10,7 +10,10 @@ CSTANDARD = -std=c11
 SHIFR_OBJECTS = o/shifr.o o/private.o
 SHIFR_ASM = s/shifr.s s/main.s s/private.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
-SHIFR_INCLUDE = -I h
+# for syscall
+#USE_GNU_SOURCE = -D'_GNU_SOURCE'
+USE_GNU_SOURCE =
+SHIFR_INCLUDE = -I h $(USE_GNU_SOURCE)
 SHIFR_GCCRUN = $(GCC) $(SHIFR_INCLUDE) -Wall -Wextra -Winline -Wshadow -Wconversion \
  -Wno-clobbered -Wpedantic -Werror=implicit-function-declaration \
  -Wmissing-include-dirs -Wswitch-default -Wswitch-enum -Wfloat-equal \

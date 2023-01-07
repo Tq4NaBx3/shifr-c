@@ -20,27 +20,32 @@ typedef struct  shifr_s_arrps shifr_arrps ;
 struct  shifr_s_size_io ;
 typedef struct  shifr_s_size_io shifr_size_io ;
 
+# define  shifr_number_struct_name( N ) shifr_s_number_ ## N
+
 # define  shifr_number_structtype( N ) \
-  struct  shifr_s_number ## N ;
+  struct  shifr_number_struct_name ( N ) ;
   
-# define  shifr_number_type( N ) shifr_t_number ## N
+# define  shifr_number_type( N ) shifr_t_number_ ## N
 
 # define  shifr_number_typedef( N ) \
-  typedef struct  shifr_s_number ## N shifr_number_type ( N ) ;    
-  
-# define  shifr_number_priv_structtype( N ) \
-  struct  shifr_s_number_priv ## N ;
+  typedef struct  shifr_number_struct_name ( N ) shifr_number_type ( N ) ;
 
-# define  shifr_number_priv_type( N ) shifr_t_number_priv ## N
+# define  shifr_number_priv_structname( N ) shifr_s_number_priv_ ## N
+
+# define  shifr_number_priv_structtype( N ) \
+  struct  shifr_number_priv_structname ( N ) ;
+
+# define  shifr_number_priv_type( N ) shifr_t_number_priv_ ## N
 
 # define  shifr_number_priv_typedef( N ) \
-  typedef struct  shifr_s_number_priv ## N shifr_number_priv_type ( N ) ;  
+  typedef struct  shifr_number_priv_structname ( N ) shifr_number_priv_type ( N ) ;
 
 // log(2,16!) ceil 8 = 6
 // log(2,64!) ceil 8 = 37
 enum  shifr_e_number_size { shifr_number_size2  = 6 ,
   shifr_number_size3  = 37  
 } ;
+
 typedef enum  shifr_e_number_size shifr_t_number_size ;
 
 shifr_number_structtype( v2 )

@@ -10,11 +10,15 @@
   
 # ifdef SHIFR_DEBUG
 
+# define  shifr_number_princ( N ) shifr_number_  ##  N ##  _princ
+
+# define  shifr_number_dec_princ( N ) \
+void  shifr_number_princ  ( N ) ( shifr_number_type ( N ) const * np , FILE * fs ) ;
+
 shifr_number_dec_princ  ( v2 )
 shifr_number_dec_princ  ( v3 )
 
-void  shifr_printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize ,
-  FILE * f ) ;
+void  shifr_printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize , FILE * f ) ;
 
 # endif // SHIFR_DEBUG
 
@@ -49,5 +53,104 @@ void  shifr_destr ( t_ns_shifr * ) ;
 uint8_t shifr_flush ( t_ns_shifr  * , shifr_arrps ) ;
 
 void  shifr_salt_init ( t_ns_shifr  * ) ;
+
+# define  shifr_number_elt_copy( N ) shifr_number_ ## N ## _elt_copy
+
+# define  shifr_number_dec_elt_copy(  N ) \
+uint8_t shifr_number_elt_copy ( N ) ( shifr_number_type ( N ) const * np  , uint8_t i ) ;
+
+static  inline  shifr_number_dec_elt_copy ( v2  )
+static  inline  shifr_number_dec_elt_copy ( v3  )
+
+# define  shifr_number_add( N ) shifr_number_ ## N ## _add
+
+# define  shifr_number_dec_add( N ) \
+  void  shifr_number_add  ( N ) ( shifr_number_type ( N ) * np  , \
+    shifr_number_type ( N ) const * xp  ) ;
+
+static  inline  shifr_number_dec_add  ( v2  )
+static  inline  shifr_number_dec_add  ( v3  )
+
+# define  shifr_number_not_zero( N ) shifr_number_ ## N ## _not_zero
+
+# define  shifr_number_dec_not_zero(  N ) \
+bool  shifr_number_not_zero ( N ) ( shifr_number_type ( N ) const * np  ) ;
+
+# include <stdbool.h>
+
+static  inline  shifr_number_dec_not_zero ( v2  )
+static  inline  shifr_number_dec_not_zero ( v3  )
+
+# define  shifr_number_dec( N ) shifr_number_ ## N ## _dec
+
+# define  shifr_number_dec_dec(  N ) \
+void  shifr_number_dec  ( N ) ( shifr_number_type ( N ) * np  ) ;
+
+static  inline  shifr_number_dec_dec  ( v2  )
+static  inline  shifr_number_dec_dec  ( v3  )
+
+# define  shifr_number_div_mod( N ) shifr_number_ ## N ## _div_mod
+
+# define  shifr_number_dec_div_mod(  N ) \
+  uint8_t shifr_number_div_mod  ( N ) ( shifr_number_type ( N ) * np0 , uint8_t div ) ;
+
+static  inline  shifr_number_dec_div_mod  ( v2  )
+static  inline  shifr_number_dec_div_mod  ( v3  )
+
+# define  shifr_number_set_byte( N ) shifr_number_ ## N ## _set_byte
+
+# define  shifr_number_dec_set_byte(  N ) \
+void  shifr_number_set_byte ( N ) ( shifr_number_type ( N ) * np0 , uint8_t x ) ;
+
+static  inline  shifr_number_dec_set_byte ( v2  )
+static  inline  shifr_number_dec_set_byte ( v3  )
+
+/*
+пароль раскладываем в таблицу шифровки , дешифровки
+  пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
+  пароль делим на 16, остаются 15! вариантов пароля
+пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
+секретных кодов для соли+данных 0x1
+в deshi нужна соль
+
+we lay out the password in the table of encryption, decryption
+password % 0x10 = 0xa means that 0xa is the encrypted code for salt + data 0x0
+divide the password by 16, 15! remain password options
+password % 0xf = 0xa is the sequence number for the remaining NOT occupied from
+0xff secret codes for salt + data 0x1
+deshi needs salt
+*/
+# define  shifr_password_load( N ) shifr_password_  ##  N ##  _load
+
+# define  shifr_password_load_dec(  N ) \
+void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * password0 , \
+  shifr_arrp shifrp , shifr_arrp deship ) ;
+
+static  inline  shifr_password_load_dec ( v2  )
+static  inline  shifr_password_load_dec ( v3  )
+
+/*
+пароль раскладываем в таблицу шифровки , дешифровки
+  пароль % 0x10 = 0xa означает, что 0xa это шифрованный код для соли+данных 0x0
+  пароль делим на 16, остаются 15! вариантов пароля
+пароль % 0xf = 0xa это порядковый номер для оставшегося НЕ занятого из 0xff
+секретных кодов для соли+данных 0x1
+в deshi нужна соль
+
+we lay out the password in the table of encryption, decryption
+password % 0x10 = 0xa means that 0xa is the encrypted code for salt + data 0x0
+divide the password by 16, 15! remain password options
+password % 0xf = 0xa is the sequence number for the remaining NOT occupied from
+0xff secret codes for salt + data 0x1
+deshi needs salt
+*/
+# define  shifr_password_from_dice( N ) shifr_password_  ##  N ##  _from_dice
+
+# define  shifr_password_from_dice_dec(  N ) \
+void  shifr_password_from_dice  ( N ) ( uint8_t const * dice  , \
+  shifr_arrp shifrp , shifr_arrp deship ) ;
+
+static  inline  shifr_password_from_dice_dec (  v2  )
+static  inline  shifr_password_from_dice_dec (  v3  )
 
 # endif // SHIFR_PUBLIC_H

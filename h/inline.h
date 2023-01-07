@@ -4,26 +4,18 @@
 # ifndef  SHIFR_INLINE_H
 # define  SHIFR_INLINE_H
 
-# include "template.h"
+# include "public.h"
 
-static  inline  shifr_number_dec_elt_copy ( v2  )
-static  inline  shifr_number_dec_elt_copy ( v3  )
-static  inline  shifr_number_dec_add  ( v2  )
-static  inline  shifr_number_dec_add  ( v3  )
-static  inline  shifr_number_dec_not_zero ( v2  )
-static  inline  shifr_number_dec_not_zero ( v3  )
-static  inline  shifr_number_dec_dec  ( v2  )
-static  inline  shifr_number_dec_dec  ( v3  )
-static  inline  shifr_number_dec_div_mod  ( v2  )
-static  inline  shifr_number_dec_div_mod  ( v3  )
-static  inline  shifr_number_dec_set_byte ( v2  )
-static  inline  shifr_number_dec_set_byte ( v3  )
 // generate big number as password to raspr.pass
 //  + create tables shifr deshi
 static  inline  void  shifr_generate_password ( t_ns_shifr * )  ;
+
+// private
+# define  shifr_enter_password_name( vv  ) shifr_enter_password_  ## vv
 // from stdin get password string -> make big number
-static  inline  void  shifr_enter_password2 ( t_ns_shifr * )  ;
-static  inline  void  shifr_enter_password3 ( t_ns_shifr * )  ;
+static  inline  void  shifr_enter_password_name ( v2 ) ( t_ns_shifr * )  ;
+static  inline  void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
+
 // from stdin get password string -> make big number -> tables shifr deshi
 static  inline  void  shifr_enter_password ( t_ns_shifr * ) ;
 static  inline  void  shifr_init  ( t_ns_shifr  * ) ;
@@ -48,32 +40,114 @@ static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * ,
 static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * ,
   uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
   uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
-static  inline  shifr_password_load_dec ( v2  )
-static  inline  shifr_password_load_dec ( v3  )
-static  inline  shifr_password_from_dice_dec (  v2  )
-static  inline  shifr_password_from_dice_dec (  v3  )
 
 # include "inline-pri.h"
+
+# define  shifr_number_def_elt_copy( N ) \
+uint8_t shifr_number_elt_copy ( N ) ( \
+  shifr_number_type ( N ) const * const np  , uint8_t const i ) { \
+  return  shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ i ] ; \
+}
 
 static  inline  shifr_number_def_elt_copy ( v2 )
 static  inline  shifr_number_def_elt_copy ( v3 )
 
+# define  shifr_number_def_add(  N , D ) \
+void  shifr_number_add  ( N ) ( \
+  shifr_number_type ( N ) * const restrict  np  , \
+  shifr_number_type ( N ) const * const restrict  xp ) { \
+  uint8_t per = 0 ; \
+  uint8_t i = 0 ; \
+  do  { \
+    uint16_t const s = int_cast_uint16 ( \
+      uint8_cast_uint16 ( shifr_number_elt_copy ( N ) ( np , i ) ) + \
+      uint8_cast_uint16 ( shifr_number_elt_copy ( N ) ( xp , i ) ) + \
+      uint8_cast_uint16 ( per ) ) ; \
+    if ( s >= 0x100  ) {  \
+      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = \
+        int_cast_uint8 ( s - 0x100 ) ; \
+      per = 1 ; \
+    } else  { \
+      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = \
+        uint16_cast_uint8 ( s )  ;  \
+      per = 0 ; \
+    } \
+    ++ i  ; \
+  } while ( i < D ) ; \
+}
+
 static  inline  shifr_number_def_add  ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_add  ( v3 , shifr_number_size3 )
+
+# define  shifr_number_def_not_zero(  N , D ) \
+bool  shifr_number_not_zero ( N ) ( \
+  shifr_number_type ( N ) const * const np  ) { \
+  uint8_t const * i = \
+    & ( shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ D ] ) ; \
+  do {  \
+    --  i ; \
+    if ( * i )  \
+      return  true  ; \
+  } while ( i not_eq & ( \
+    shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ) ;  \
+  return  false ; \
+}
 
 static  inline  shifr_number_def_not_zero ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_not_zero ( v3 , shifr_number_size3 )
 
+# define  shifr_number_def_dec(  N , D ) \
+void  shifr_number_dec  ( N ) ( shifr_number_type ( N ) * const np  ) { \
+  uint8_t  * i = & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ; \
+  do {  \
+    if ( ( * i ) == 0 ) \
+      ( * i ) = 0xffU ; \
+    else  { \
+      -- ( * i ) ;  \
+      break ; \
+    } \
+    ++  i ; \
+  } while ( i not_eq & ( \
+    shifr_number_pub_to_priv ( N ) ( np ) -> arr [ D ] ) ) ; \
+}
+
 static  inline  shifr_number_def_dec  ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_dec  ( v3 , shifr_number_size3 )
+
+# define  shifr_number_def_div_mod(  N , D ) \
+uint8_t shifr_number_div_mod  ( N ) ( \
+  shifr_number_type ( N ) * const np0 , uint8_t const div ) { \
+  shifr_number_priv_type ( N ) * const np = \
+    shifr_number_pub_to_priv ( N ) ( np0 ) ; \
+  uint8_t modi  = 0 ; \
+  uint8_t i = D ; \
+  do {  \
+    -- i ;  \
+    uint16_t const x = int_cast_uint16 ( ( uint8_cast_uint16 ( modi ) <<  8 ) \
+      bitor uint8_cast_uint16 ( np -> arr [ i ] ) ) ; \
+    modi  = int_cast_uint8 ( x % div ) ; \
+    np -> arr [ i ] = int_cast_uint8 ( x / div ) ; \
+  } while ( i > 0 ) ; \
+  return  modi ; \
+}
 
 static  inline  shifr_number_def_div_mod  ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_div_mod  ( v3 , shifr_number_size3 )
 
+# define  shifr_number_def_set_byte(  N , D ) \
+void  shifr_number_set_byte ( N ) ( shifr_number_type ( N ) * const np0 , \
+  uint8_t const x ) { \
+  shifr_number_priv_type ( N ) * const np = \
+    shifr_number_pub_to_priv ( N ) ( np0 ) ; \
+  memset  ( & ( np -> arr [ 1 ] ) , 0 , D - 1 ) ; \
+  np -> arr [ 0 ] = x ; \
+}
+
+# include <string.h> // memset
+
 static  inline  shifr_number_def_set_byte ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_set_byte ( v3 , shifr_number_size3 )
 
-# include "public.h"
 # include "private.h"
 
 // generate big number as password to raspr.pass
@@ -212,20 +286,20 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
     sizeof  ( password_letters  ) ) ; \
 }
 
-static  inline  shifr_enter_password_templ  ( shifr_enter_password2 ,
+static  inline  shifr_enter_password_templ  ( shifr_enter_password_name  ( v2  ) ,
   shifr_password_letters2size , v2 , raspr2 )
 
-static  inline  shifr_enter_password_templ  ( shifr_enter_password3 ,
+static  inline  shifr_enter_password_templ  ( shifr_enter_password_name  ( v3  ) ,
   shifr_password_letters3size , v3 , raspr3 )
 
 // from stdin get password string -> make big number -> tables shifr deshi
 static  inline  void  shifr_enter_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
   case  3 :
-    shifr_enter_password3  ( ns_shifrp ) ;
+    shifr_enter_password_name  ( v3  ) ( ns_shifrp ) ;
     break ;
   case 2 :
-    shifr_enter_password2  ( ns_shifrp ) ;
+    shifr_enter_password_name  ( v2  ) ( ns_shifrp ) ;
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
@@ -1014,8 +1088,72 @@ static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * const main_shifrp ,
   } while ( true ) ;
 }
 
+# define  shifr_password_load_def(  N , SDS ) \
+void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * const password0 , \
+  shifr_arrp const shifrp , shifr_arrp const deship ) { \
+  shifr_initarr ( shifrp  , 0xff  , SDS ) ; \
+  shifr_initarr ( deship  , 0xff  , SDS ) ; \
+  uint8_t volatile  arrind  [ SDS ] ; \
+  { uint8_t volatile  * arrj  = & ( arrind  [ SDS  ] ) ; \
+    uint8_t j = SDS  ;  \
+    do  { \
+      --  arrj  ; \
+      --  j ; \
+      ( * arrj )  = j ; \
+    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; \
+  } \
+  uint8_t inde  = 0 ; \
+  shifr_number_priv_type ( N ) password = \
+    * shifr_number_const_pub_to_priv ( N ) ( password0 ) ; \
+  do { \
+    { uint8_t const cindex = shifr_number_div_mod ( N ) ( & password . pub ,  \
+        int_cast_uint8 ( SDS - inde  ) ) ; \
+      uint8_t volatile  * const arrind_cindexp = & ( arrind [ cindex ] ) ; \
+      ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
+      ( * deship ) [ * arrind_cindexp ] = inde ;  \
+      memmove ( uint8volatilep_cast_unt8p ( arrind_cindexp ) , \
+        uint8volatilep_cast_unt8p ( arrind_cindexp ) + 1 , \
+        int_cast_size ( SDS  - inde  - cindex - 1 ) ) ; \
+    } \
+    ++ inde  ; \
+  } while ( inde < SDS ) ; \
+  shifr_memsetv ( arrind  , shifr_memsetv_default_byte , sizeof  ( arrind  ) ) ; \
+}
+
 static  inline  shifr_password_load_def (  v2 , shifr_deshi_size2 )
 static  inline  shifr_password_load_def (  v3 , shifr_deshi_size3 )            
+
+# define  shifr_password_from_dice_def(  N , SDS ) \
+void  shifr_password_from_dice  ( N ) ( uint8_t const * const dice  , \
+  shifr_arrp const shifrp , shifr_arrp const deship ) { \
+  shifr_initarr ( shifrp  , 0xff  , SDS ) ; \
+  shifr_initarr ( deship  , 0xff  , SDS ) ; \
+  uint8_t volatile  arrind  [ SDS ] ; \
+  { uint8_t volatile  * arrj  = & ( arrind  [ SDS  ] ) ; \
+    uint8_t j = SDS  ; \
+    do  { \
+      --  arrj  ; \
+      --  j ; \
+      ( * arrj )  = j ; \
+    } while ( arrj  not_eq & ( arrind  [ 0 ] ) ) ; \
+  } \
+  uint8_t inde  = 0 ; \
+  do { \
+    { uint8_t const cindex  = \
+        ( inde == SDS - 1 ? \
+          0 : \
+          dice  [ inde  ] ) ; \
+      uint8_t volatile  * const arrind_cindexp = & ( arrind [ cindex ] ) ; \
+      ( * shifrp ) [ inde ] = ( * arrind_cindexp ) ;  \
+      ( * deship ) [ * arrind_cindexp ] = inde ;  \
+      memmove ( uint8volatilep_cast_unt8p ( arrind_cindexp ) ,  \
+        uint8volatilep_cast_unt8p ( arrind_cindexp ) + 1 , \
+        int_cast_size ( SDS  - inde  - cindex - 1 ) ) ; \
+    } \
+    ++ inde  ; \
+  } while ( inde < SDS ) ; \
+  shifr_memsetv ( arrind  , shifr_memsetv_default_byte , sizeof  ( arrind  ) ) ; \
+}
 
 static  inline  shifr_password_from_dice_def (  v2 , shifr_deshi_size2 )
 static  inline  shifr_password_from_dice_def (  v3 , shifr_deshi_size3 )            
