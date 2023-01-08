@@ -5,15 +5,15 @@
 # include "define.h"
 # include "type.h"
 # include "struct.h"
+# include <iso646.h> // bitor bitand
 
 # ifdef  SHIFR_RANDOM_rand
 # include <stdlib.h> // srand
 # include <time.h>
 # include <stdbool.h>
 # include "cast.h"
-# include <iso646.h> // bitand
 
-static  ssize_t shifr_getrandom  ( shifr_arrps const * const vec ) {
+static  ssize_t shifr_getrandom  ( shifr_arrps const vec ) {
   static  bool  first = true  ;
   if ( first  ) {
     if  ( sizeof  ( unsigned  int ) ==  4 )
@@ -24,29 +24,29 @@ static  ssize_t shifr_getrandom  ( shifr_arrps const * const vec ) {
       srand ( ulint_cast_uint ( lint_cast_ulint ( time  ( 0 ) ) ) ) ;
     first = false ;
   }
-  uint8_t * p = & ( ( * ( vec -> p ) ) [ 0 ] ) ;
-  size_t j = vec -> s ;
+  uint8_t * p = & ( ( * ( vec . p ) ) [ 0 ] ) ;
+  size_t j = vec . s ;
   while ( j ) {
     -- j ;
     * p = int_cast_uint8 ( rand  ( ) bitand  0xff ) ;    
     ++ p ;
   }
-  return ulint_cast_lint ( vec -> s ) ;
+  return ulint_cast_lint ( vec . s ) ;
 }
 # else
 # ifdef  SHIFR_RANDOM_getrandom
 # include <sys/random.h> // getrandom
 // OR
 // # include <linux/random.h> // getrandom
-static  ssize_t shifr_getrandom  ( shifr_arrps const * const vec ) {
-  return getrandom ( vec -> p , vec -> s , 0 ) ;
+static  inline  ssize_t shifr_getrandom  ( shifr_arrps const vec ) {
+  return getrandom ( vec . p , vec . s , 0 ) ;
 }
 # else
 # ifdef  SHIFR_RANDOM_syscall
 # include <unistd.h> // syscall
 # include <sys/syscall.h> // SYS_getrandom
-static  ssize_t shifr_getrandom  ( shifr_arrps const * const vec ) {
-  return  syscall ( SYS_getrandom , vec -> p , vec -> s , 0 ) ;
+static  ssize_t shifr_getrandom  ( shifr_arrps const vec ) {
+  return  syscall ( SYS_getrandom , vec . p , vec . s , 0 ) ;
 }
 # else
 # error SHIFR_RANDOM no rand no getrandom no syscall
@@ -55,7 +55,6 @@ static  ssize_t shifr_getrandom  ( shifr_arrps const * const vec ) {
 # endif
 
 # include "private.h"
-# include <iso646.h> // not_eq
 
 // generate random number [ fr .. to ]
 unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
@@ -82,7 +81,7 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
 # ifdef SHIFR_DEBUG
     ssize_t const r = 
 # endif
-      shifr_getrandom ( & bufv ) ;
+      shifr_getrandom ( bufv ) ;
 # ifdef SHIFR_DEBUG
     if ( r == -1 ) {
       perror  ( "uirandfrto : getrandom" ) ;
@@ -114,7 +113,7 @@ void shifr_datasalt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
 # ifdef SHIFR_DEBUG
   ssize_t const r =
 # endif
-    shifr_getrandom ( & ranv ) ;
+    shifr_getrandom ( ranv ) ;
 # ifdef SHIFR_DEBUG
     if ( r == -1 ) {
       perror  ( "datasalt2 : getrandom" ) ;
@@ -157,7 +156,7 @@ void shifr_datasalt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
 # ifdef SHIFR_DEBUG
   ssize_t const r =
 # endif
-    shifr_getrandom ( & aranv ) ;
+    shifr_getrandom ( aranv ) ;
 # ifdef SHIFR_DEBUG
   if ( r == -1 ) {
     perror  ( "datasalt3 : getrandom" ) ;
