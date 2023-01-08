@@ -334,19 +334,19 @@ int main  ( int argc , char * argv [ ] ) {
   static  uint8_t outputbuffer  [ outputbuffersize ] ;
   if ( flagenc ) {
     if ( main_shifr . use_version == 3 ) 
-      shifr_encode_file_v3  ( & main_shifr  , & inputbuffer , inputbuffersize ,
+      shifr_encode_file ( v3 ) ( & main_shifr  , & inputbuffer , inputbuffersize ,
         & outputbuffer  , outputbuffersize  ) ;
     else
       if ( main_shifr . use_version == 2 ) 
-        shifr_encode_file_v2  ( & main_shifr  , & inputbuffer ,
+        shifr_encode_file ( v2 ) ( & main_shifr  , & inputbuffer ,
           inputbuffersize , & outputbuffer  , outputbuffersize  ) ;
   // if flagenc
   } else { // flagdec
     if ( main_shifr . use_version == 2 )
-      shifr_decode_file_v2  ( & main_shifr  , & inputbuffer , inputbuffersize ,
+      shifr_decode_file ( v2 ) ( & main_shifr  , & inputbuffer , inputbuffersize ,
         & outputbuffer  , outputbuffersize  ) ;
     else 
-      shifr_decode_file_v3  ( & main_shifr  , & inputbuffer , inputbuffersize ,
+      shifr_decode_file ( v3 ) ( & main_shifr  , & inputbuffer , inputbuffersize ,
         & outputbuffer  , outputbuffersize  ) ;
   }
   int resulterror  = 0 ;

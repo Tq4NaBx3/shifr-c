@@ -13,6 +13,8 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * ns_shifrp ,
 
 # define  shifr_datasalt( N ) shifr_datasalt_  ##  N
 
+# include <stddef.h> // size_t
+
 # define  shifr_datasalt_dec( N ) \
 void  shifr_datasalt ( N ) ( t_ns_shifr * ns_shifrp , \
   shifr_arrcp secretdata , shifr_arrp secretdatasalt , \
@@ -80,48 +82,10 @@ shifr_dices_to_number_dec ( v2 )
 shifr_dices_to_number_dec ( v3 )
 
 /*
-Encryption
-Reads data from 'input.cp' of size 'input.s' bytes,
-writes to 'output.p' of size 'output.s' bytes,
-returns the size of read and written data
-Шифрование
-Читает данные из 'input.cp' размера 'input.s' байт ,
-записывает в 'output.p' размера 'output.s' байт ,
-возвращает размер считаных и записаных данных
-*/
-# define  shifr_encrypt( N ) shifr_encrypt_  ##  N
-
-# define  shifr_encrypt_dec( N ) \
-shifr_size_io  shifr_encrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
-  shifr_arrps output )  ;
-
-shifr_encrypt_dec ( v2 )
-shifr_encrypt_dec ( v3 )
-
-/*
 Finished buffer encryption, returns output_buffer size written
 Заканчивает шифрование буфера, возвращает размер записаных данных.
 */
 uint8_t shifr_encrypt2_flush  ( t_ns_shifr * , shifr_arrps output )  ;
-
-/*
-Decryption
-Reads data from 'input.cp' of size 'input.s' bytes,
-writes to 'output.p' of size 'output.s' bytes,
-returns the size of read and written data
-Расшифровка
-Читает данные из 'input.cp' размера 'input.s' байт ,
-записывает в 'output.p' размера 'output.s' байт ,
-возвращает размер считаных и записаных данных
-*/
-# define  shifr_decrypt( N ) shifr_decrypt_  ##  N
-
-# define  shifr_decrypt_dec( N ) \
-shifr_size_io  shifr_decrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
-  shifr_arrps output )  ;
-
-shifr_decrypt_dec ( v2 )
-shifr_decrypt_dec ( v3 )
 
 uint8_t  shifr_streambuf_writeflushzero3 ( t_ns_shifr * , shifr_arrps ) ;
 

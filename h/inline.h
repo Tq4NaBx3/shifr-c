@@ -4,44 +4,6 @@
 # ifndef  SHIFR_INLINE_H
 # define  SHIFR_INLINE_H
 
-# include "type.h"
-
-// generate big number as password to raspr.pass
-//  + create tables shifr deshi
-static  inline  void  shifr_generate_password ( t_ns_shifr * )  ;
-
-// private
-# define  shifr_enter_password_name( vv  ) shifr_enter_password_  ## vv
-// from stdin get password string -> make big number
-static  inline  void  shifr_enter_password_name ( v2 ) ( t_ns_shifr * )  ;
-static  inline  void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
-
-// from stdin get password string -> make big number -> tables shifr deshi
-static  inline  void  shifr_enter_password ( t_ns_shifr * ) ;
-static  inline  void  shifr_init  ( t_ns_shifr  * ) ;
-# include "define.h"
-# ifdef SHIFR_DEBUG
-static  inline  shifr_timestamp_t get_timestamp ( void )  ;
-# endif
-static  inline  int shifr_show_help ( t_ns_shifr  const * ) ;
-// generate big number as password, convert to string and puts
-// in debug mode creates tables shifr deshi many times
-static  inline  void  shifr_main_genpsw ( t_ns_shifr  * ) ;
-# include <stddef.h> // size_t
-static  inline  void  shifr_test_password ( t_ns_shifr  * , size_t nr  ) ;
-static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * ,
-  uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
-  uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
-static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * ,
-  uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
-  uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
-static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * ,
-  uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
-  uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
-static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * ,
-  uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
-  uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
-
 # define  shifr_number_def_elt_copy( N ) \
 uint8_t shifr_number_elt_copy ( N ) ( \
   shifr_number_type ( N ) const * const np  , uint8_t const i ) { \
@@ -154,6 +116,8 @@ void  shifr_number_set_byte ( N ) ( shifr_number_type ( N ) * const np0 , \
 
 static  inline  shifr_number_def_set_byte ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_set_byte ( v3 , shifr_number_size3 )
+
+# include "define.h"
 
 // generate big number as password to raspr.pass
 //  + create tables shifr deshi
@@ -290,6 +254,12 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
   shifr_memsetv ( password_letters  , shifr_memsetv_default_byte , \
     sizeof  ( password_letters  ) ) ; \
 }
+
+// private
+# define  shifr_enter_password_name( vv  ) shifr_enter_password_  ## vv
+// from stdin get password string -> make big number
+static  inline  void  shifr_enter_password_name ( v2 ) ( t_ns_shifr * )  ;
+static  inline  void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
 
 static  inline  shifr_enter_password_templ  ( shifr_enter_password_name  ( v2  ) ,
   shifr_password_letters2size , v2 , raspr2 )
@@ -668,7 +638,7 @@ static  inline  void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       shifr_number_princ  ( v2 ) ( & password2 . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 
-      }
+    }
     break ;
   case  3 :
     { shifr_number_priv_type ( v3 ) password2 ;
@@ -713,7 +683,7 @@ static  inline  void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       shifr_number_princ  ( v3 ) ( & password2 . pub , stderr  ) ;
       fputs ( "\n" , stderr ) ;
 
-      }
+    }
     break ;
   default :
     fprintf ( stderr  , localerus ?
@@ -768,7 +738,8 @@ static  inline  void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       main_shifrp -> string_exception  = ( localerus ?
         ( shifr_strcp ) & "неизвестный алфавит пароля" :
         ( shifr_strcp ) & "unknown password alphabet" ) ;
-      longjmp ( main_shifrp -> jump , 1 ) ; }
+      longjmp ( main_shifrp -> jump , 1 ) ;
+    }
     puts  ( ( char * ) & ( main_shifrp -> password_letters2 [ 0 ] ) ) ;
     break ;
   case  3 :
@@ -886,7 +857,7 @@ static  inline  void  shifr_test_password ( t_ns_shifr  * const main_shifrp ,
   }
 }
 
-static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
+static  inline  void  shifr_encode_file ( v3 ) ( t_ns_shifr  * const main_shifrp ,
   uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
   uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
   size_t  writecount  ;
@@ -952,7 +923,7 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
   }
 }
 
-static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * const main_shifrp ,
+static  inline  void  shifr_encode_file ( v2 ) ( t_ns_shifr  * const main_shifrp ,
   uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
   uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
   size_t  writecount  ;
@@ -1005,7 +976,7 @@ Exc :
   }
 }
             
-static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * const main_shifrp ,
+static  inline  void  shifr_decode_file ( v2 ) ( t_ns_shifr  * const main_shifrp ,
   uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
   uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
   size_t  writecount  ;
@@ -1049,7 +1020,7 @@ static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * const main_shifrp ,
   } while ( true ) ;
 } // ver 2            
             
-static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * const main_shifrp ,
+static  inline  void  shifr_decode_file ( v3 ) ( t_ns_shifr  * const main_shifrp ,
   uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
   uint8_t ( * const outputbufferp ) [ ] , size_t  const outputbuffersize  ) {
   size_t  writecount  ;

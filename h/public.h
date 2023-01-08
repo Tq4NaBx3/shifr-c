@@ -153,4 +153,83 @@ void  shifr_password_from_dice  ( N ) ( uint8_t const * dice  , \
 static  inline  shifr_password_from_dice_dec (  v2  )
 static  inline  shifr_password_from_dice_dec (  v3  )
 
+// generate big number as password to raspr.pass
+//  + create tables shifr deshi
+static  inline  void  shifr_generate_password ( t_ns_shifr * )  ;
+
+// from stdin get password string -> make big number -> tables shifr deshi
+static  inline  void  shifr_enter_password ( t_ns_shifr * ) ;
+
+static  inline  void  shifr_init  ( t_ns_shifr  * ) ;
+
+# ifdef SHIFR_DEBUG
+static  inline  shifr_timestamp_t get_timestamp ( void )  ;
+# endif
+
+static  inline  int shifr_show_help ( t_ns_shifr  const * ) ;
+
+// generate big number as password, convert to string and puts
+// in debug mode creates tables shifr deshi many times
+static  inline  void  shifr_main_genpsw ( t_ns_shifr  * ) ;
+
+static  inline  void  shifr_test_password ( t_ns_shifr  * , size_t nr  ) ;
+
+# define  shifr_encode_file(  N ) shifr_encode_file_  ##  N
+
+# define  shifr_encode_file_dec(  N ) \
+void  shifr_encode_file ( N ) ( t_ns_shifr  * , \
+  uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize , \
+  uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
+
+static  inline  shifr_encode_file_dec (  v2 )
+static  inline  shifr_encode_file_dec (  v3 )
+
+# define  shifr_decode_file(  N ) shifr_decode_file_  ##  N
+
+# define  shifr_decode_file_dec(  N ) \
+void  shifr_decode_file ( N ) ( t_ns_shifr  * , \
+  uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize , \
+  uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
+
+static  inline  shifr_decode_file_dec (  v2 )
+static  inline  shifr_decode_file_dec (  v3 )
+
+/*
+Encryption
+Reads data from 'input.cp' of size 'input.s' bytes,
+writes to 'output.p' of size 'output.s' bytes,
+returns the size of read and written data
+Шифрование
+Читает данные из 'input.cp' размера 'input.s' байт ,
+записывает в 'output.p' размера 'output.s' байт ,
+возвращает размер считаных и записаных данных
+*/
+# define  shifr_encrypt( N ) shifr_encrypt_  ##  N
+
+# define  shifr_encrypt_dec( N ) \
+shifr_size_io  shifr_encrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
+  shifr_arrps output )  ;
+
+shifr_encrypt_dec ( v2 )
+shifr_encrypt_dec ( v3 )
+
+/*
+Decryption
+Reads data from 'input.cp' of size 'input.s' bytes,
+writes to 'output.p' of size 'output.s' bytes,
+returns the size of read and written data
+Расшифровка
+Читает данные из 'input.cp' размера 'input.s' байт ,
+записывает в 'output.p' размера 'output.s' байт ,
+возвращает размер считаных и записаных данных
+*/
+# define  shifr_decrypt( N ) shifr_decrypt_  ##  N
+
+# define  shifr_decrypt_dec( N ) \
+shifr_size_io  shifr_decrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
+  shifr_arrps output )  ;
+
+shifr_decrypt_dec ( v2 )
+shifr_decrypt_dec ( v3 )
+
 # endif // SHIFR_PUBLIC_H
