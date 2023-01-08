@@ -11,15 +11,17 @@
 unsigned  int shifr_uirandfrto  ( t_ns_shifr * ns_shifrp ,
   unsigned  int fr , unsigned  int to ) ;
 
-// data_size = 4
-void shifr_datasalt2 ( t_ns_shifr * ns_shifrp ,
-  shifr_arrcp secretdata , shifr_arrp secretdatasalt ,
+# define  shifr_datasalt( N ) shifr_datasalt_  ##  N
+
+# define  shifr_datasalt_dec( N ) \
+void  shifr_datasalt ( N ) ( t_ns_shifr * ns_shifrp , \
+  shifr_arrcp secretdata , shifr_arrp secretdatasalt , \
   size_t data_size ) ;
   
+// data_size = 4
+shifr_datasalt_dec ( v2 )
 // data_size = 1 .. 3
-void shifr_datasalt3 ( t_ns_shifr * ns_shifrp ,
-  shifr_arrcp secretdata , shifr_arrp secretdatasalt ,
-  size_t data_size ) ;
+shifr_datasalt_dec ( v3 )
 
 // пишу по шесть бит
 // secretdatasaltsize - количество шести-битных отделов (2 или 3)
@@ -39,15 +41,25 @@ void  shifr_streambuf_write3bits ( t_ns_shifr * ns_shifrp ,
   uint8_t encrypteddata , uint8_t * restrict * output_bufferp ,
   size_t * writesp )  ;
 
+# define  shifr_generate_dices( N ) shifr_generate_dices_  ##  N
+
+# define  shifr_generate_dices_dec( N ) \
+void  shifr_generate_dices ( N ) ( t_ns_shifr * ) ;
+  
 // ! to remove , make random 0..16!-1
 // generate array raspr2.dice
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
-void  shifr_generate_dices2 ( t_ns_shifr * ) ;
+shifr_generate_dices_dec ( v2 )
 
 // ! to remove , make random 0..64!-1
 // generate array raspr3.dice
 // inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
-void  shifr_generate_dices3 ( t_ns_shifr * ) ;
+shifr_generate_dices_dec ( v3 )
+
+# define  shifr_dices_to_number( N ) shifr_dices_to_number_  ##  N
+
+# define  shifr_dices_to_number_dec( N ) \
+void  shifr_dices_to_number ( N ) ( t_ns_shifr * ) ;
 
 // ! to remove , make random 0..16!-1
 // convert raspr2.dice as array to big number raspr2.pass
@@ -56,7 +68,7 @@ void  shifr_generate_dices3 ( t_ns_shifr * ) ;
 // [ x , y , z , ... , u , v ] =
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 = 
 // 0 .. 16!-1
-void  shifr_dices_to_number2 ( t_ns_shifr * ) ;
+shifr_dices_to_number_dec ( v2 )
 
 // ! to remove , make random 0..64!-1
 // convert raspr3.dice as array to big number raspr3.pass
@@ -65,7 +77,7 @@ void  shifr_dices_to_number2 ( t_ns_shifr * ) ;
 // [ x , y , z , ... , u , v ] =
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 
 // 0 .. 64!-1
-void  shifr_dices_to_number3 ( t_ns_shifr * ) ;
+shifr_dices_to_number_dec ( v3 )
 
 /*
 Encryption
@@ -77,10 +89,14 @@ returns the size of read and written data
 записывает в 'output.p' размера 'output.s' байт ,
 возвращает размер считаных и записаных данных
 */
-shifr_size_io shifr_encrypt2  ( t_ns_shifr * , shifr_arrcps input ,
+# define  shifr_encrypt( N ) shifr_encrypt_  ##  N
+
+# define  shifr_encrypt_dec( N ) \
+shifr_size_io  shifr_encrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
   shifr_arrps output )  ;
-shifr_size_io shifr_encrypt3  ( t_ns_shifr * , shifr_arrcps input ,
-  shifr_arrps output )  ;
+
+shifr_encrypt_dec ( v2 )
+shifr_encrypt_dec ( v3 )
 
 /*
 Finished buffer encryption, returns output_buffer size written
@@ -98,15 +114,14 @@ returns the size of read and written data
 записывает в 'output.p' размера 'output.s' байт ,
 возвращает размер считаных и записаных данных
 */
-shifr_size_io  shifr_decrypt2 ( t_ns_shifr * , shifr_arrcps input ,
-  shifr_arrps output ) ;
-  
-/*
-Decryption
-Расшифровка
-*/
-shifr_size_io  shifr_decrypt3 ( t_ns_shifr * , shifr_arrcps input ,
-  shifr_arrps output ) ;
+# define  shifr_decrypt( N ) shifr_decrypt_  ##  N
+
+# define  shifr_decrypt_dec( N ) \
+shifr_size_io  shifr_decrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
+  shifr_arrps output )  ;
+
+shifr_decrypt_dec ( v2 )
+shifr_decrypt_dec ( v3 )
 
 uint8_t  shifr_streambuf_writeflushzero3 ( t_ns_shifr * , shifr_arrps ) ;
 
@@ -168,5 +183,48 @@ to the encryption table 'shifr', decryption 'deshi'
 */
 void  shifr_password_load_uni ( t_ns_shifr * ) ;
 void  shifr_password_from_dice_uni ( t_ns_shifr * ) ;
+
+# define  shifr_number_pub_to_priv( N ) shifr_number_pub_to_priv_ ## N
+
+# define  shifr_number_pub_to_priv_dec( N ) \
+shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( shifr_number_type  ( N ) * )  ;
+
+static  inline  shifr_number_pub_to_priv_dec  ( v2  )
+static  inline  shifr_number_pub_to_priv_dec  ( v3  )
+
+# define  shifr_number_const_pub_to_priv( N ) shifr_number_const_pub_to_priv_ ## N
+
+# define  shifr_number_const_pub_to_priv_dec( N ) \
+shifr_number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) ( shifr_number_type  ( N ) const * ) ;
+
+static  inline  shifr_number_const_pub_to_priv_dec  ( v2  )
+static  inline  shifr_number_const_pub_to_priv_dec  ( v3  )
+
+static  inline  uint8_t shifr_letter_to_bits6 ( char  letter  ) ;
+
+// ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
+static  inline  char  shifr_bits6_to_letter ( uint8_t bits6 ) ;
+
+static  inline  void  shifr_data_xor3  ( uint8_t * old_last_data , uint8_t * old_last_salt ,
+  shifr_arrp  secretdatasalt  , size_t  data_size ) ;
+
+static  inline  void  shifr_crypt_decrypt ( shifr_arrp  datap ,
+  shifr_arrcp tablep  , shifr_arrp  encrp , size_t  data_size ) ;
+  
+static  inline  void  shifr_data_xor2 ( t_ns_shifr  * ns_shifrp ,
+  shifr_arrp  secretdatasalt  , size_t  data_size ) ;
+
+# define  shifr_decrypt_salt( N ) shifr_decrypt_salt_ ## N
+
+# define  shifr_decrypt_salt_dec( N ) \
+void  shifr_decrypt_salt ( N ) ( shifr_arrp  datap , \
+  shifr_arrcp tablep  , shifr_arrp  decrp , size_t  data_size , \
+  uint8_t * old_last_salt , uint8_t * old_last_data ) ;
+  
+static  inline  shifr_decrypt_salt_dec  ( v2  )
+static  inline  shifr_decrypt_salt_dec  ( v3  )
+
+static  inline  void  shifr_initarr ( shifr_arrp  p ,
+  uint8_t codefree  , size_t  loc_shifr_deshi_size  ) ;
 
 # endif // SHIFR_PRIVATE_H

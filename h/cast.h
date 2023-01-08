@@ -1,8 +1,10 @@
-// Шифр ©2020-2 Глебов А.Н.
-// Shifr ©2020-2 Glebe A.N.
+// Шифр ©2020-3 Глебов А.Н.
+// Shifr ©2020-3 Glebe A.N.
 
 # ifndef  SHIFR_CAST_H
 # define  SHIFR_CAST_H
+
+# include <stdint.h> // uint16_t
 
 # define  uint8_cast_uint16 shifr_uint8_cast_uint16
 static  inline  uint16_t  uint8_cast_uint16 ( uint8_t const u ) {
@@ -79,6 +81,8 @@ static  inline  uint8_t * uint8volatilep_cast_unt8p (
   uint8_t volatile * const bv ) {
   return  ( uint8_t * ) bv ;
 }
+
+# include "type.h" // shifr_strcp
 
 # define  charconstp_cast_stringconstp shifr_charconstp_cast_stringconstp
 static  inline  shifr_strcp charconstp_cast_stringconstp (

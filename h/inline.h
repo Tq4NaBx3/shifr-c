@@ -4,7 +4,7 @@
 # ifndef  SHIFR_INLINE_H
 # define  SHIFR_INLINE_H
 
-# include "public.h"
+# include "type.h"
 
 // generate big number as password to raspr.pass
 //  + create tables shifr deshi
@@ -27,6 +27,7 @@ static  inline  int shifr_show_help ( t_ns_shifr  const * ) ;
 // generate big number as password, convert to string and puts
 // in debug mode creates tables shifr deshi many times
 static  inline  void  shifr_main_genpsw ( t_ns_shifr  * ) ;
+# include <stddef.h> // size_t
 static  inline  void  shifr_test_password ( t_ns_shifr  * , size_t nr  ) ;
 static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * ,
   uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
@@ -41,13 +42,15 @@ static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * ,
   uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize ,
   uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
 
-# include "inline-pri.h"
-
 # define  shifr_number_def_elt_copy( N ) \
 uint8_t shifr_number_elt_copy ( N ) ( \
   shifr_number_type ( N ) const * const np  , uint8_t const i ) { \
   return  shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ i ] ; \
 }
+
+# include "private.h"
+# include "struct.h"
+# include "public.h"
 
 static  inline  shifr_number_def_elt_copy ( v2 )
 static  inline  shifr_number_def_elt_copy ( v3 )
@@ -76,6 +79,8 @@ void  shifr_number_add  ( N ) ( \
   } while ( i < D ) ; \
 }
 
+# include "cast.h"
+
 static  inline  shifr_number_def_add  ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_add  ( v3 , shifr_number_size3 )
 
@@ -92,6 +97,8 @@ bool  shifr_number_not_zero ( N ) ( \
     shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ) ;  \
   return  false ; \
 }
+
+# include <iso646.h> // not_eq
 
 static  inline  shifr_number_def_not_zero ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_not_zero ( v3 , shifr_number_size3 )
@@ -148,15 +155,13 @@ void  shifr_number_set_byte ( N ) ( shifr_number_type ( N ) * const np0 , \
 static  inline  shifr_number_def_set_byte ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_set_byte ( v3 , shifr_number_size3 )
 
-# include "private.h"
-
 // generate big number as password to raspr.pass
 //  + create tables shifr deshi
 static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
   switch  ( ns_shifrp -> use_version  ) {
   case  2 : 
-    shifr_generate_dices2  ( ns_shifrp ) ;
-    shifr_dices_to_number2  ( ns_shifrp ) ;
+    shifr_generate_dices ( v2 ) ( ns_shifrp ) ;
+    shifr_dices_to_number ( v2 ) ( ns_shifrp ) ;
 # ifdef SHIFR_DEBUG
     fputs ( ( ns_shifrp -> localerus ?
       "generate_password:внутренний пароль = " :
@@ -167,8 +172,8 @@ static  inline  void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
 # endif
     break ;
   case 3 :
-    shifr_generate_dices3  ( ns_shifrp ) ;
-    shifr_dices_to_number3  ( ns_shifrp ) ;
+    shifr_generate_dices ( v3 ) ( ns_shifrp ) ;
+    shifr_dices_to_number ( v3 ) ( ns_shifrp ) ;
 # ifdef SHIFR_DEBUG
     fputs ( ( ns_shifrp -> localerus ?
       "generate_password:внутренний пароль = " :
@@ -890,7 +895,7 @@ static  inline  void  shifr_encode_file_v3  ( t_ns_shifr  * const main_shifrp ,
     size_t const  readcount = fread ( & ( ( * inputbufferp  ) [ 0 ] ) ,
       1 , inputbuffersize , main_shifrp -> filebuffrom . file ) ;
     if ( readcount  ) {
-      sizeio  = shifr_encrypt3  ( main_shifrp ,
+      sizeio  = shifr_encrypt ( v3 ) ( main_shifrp ,
         ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp ,
           .s = readcount } ,
         ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
@@ -956,7 +961,7 @@ static  inline  void  shifr_encode_file_v2 ( t_ns_shifr  * const main_shifrp ,
     size_t const  readcount = fread ( & ( ( * inputbufferp  ) [ 0 ] ) , 1 ,
       inputbuffersize , main_shifrp -> filebuffrom . file ) ;
     if ( readcount  ) {
-      sizeio  = shifr_encrypt2  ( main_shifrp ,
+      sizeio  = shifr_encrypt ( v2 ) ( main_shifrp ,
         ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp ,
         .s = readcount } ,
         ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
@@ -1009,7 +1014,7 @@ static  inline  void  shifr_decode_file_v2 ( t_ns_shifr  * const main_shifrp ,
     size_t const  readcount = fread ( & ( ( * inputbufferp  ) [ 0 ] ) , 1 ,
       inputbuffersize , main_shifrp -> filebuffrom . file ) ;
     if ( readcount  ) {
-      sizeio  = shifr_decrypt2  ( main_shifrp ,
+      sizeio  = shifr_decrypt ( v2 ) ( main_shifrp ,
         ( shifr_arrcps ) { .cp = ( shifr_arrcp ) inputbufferp ,
           .s = readcount } ,
         ( shifr_arrps ) { .p = outputbufferp , .s = outputbuffersize } ) ;
@@ -1053,7 +1058,7 @@ static  inline  void  shifr_decode_file_v3 ( t_ns_shifr  * const main_shifrp ,
     size_t const  readcount = fread ( & ( ( * inputbufferp  ) [ 0 ] ) , 1 ,
       inputbuffersize , main_shifrp -> filebuffrom . file ) ;
     if ( readcount  ) {
-      sizeio  = shifr_decrypt3  ( main_shifrp ,
+      sizeio  = shifr_decrypt ( v3 ) ( main_shifrp ,
         ( shifr_arrcps  ) { . cp  = ( shifr_arrcp ) inputbufferp ,
           . s = readcount } ,
         ( shifr_arrps ) { . p = outputbufferp , . s = outputbuffersize } ) ;
@@ -1157,5 +1162,7 @@ void  shifr_password_from_dice  ( N ) ( uint8_t const * const dice  , \
 
 static  inline  shifr_password_from_dice_def (  v2 , shifr_deshi_size2 )
 static  inline  shifr_password_from_dice_def (  v3 , shifr_deshi_size3 )            
+
+# include "inline-pri.h"
 
 # endif //  SHIFR_INLINE_H

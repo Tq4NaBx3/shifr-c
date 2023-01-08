@@ -1,18 +1,15 @@
 // Шифр ©2020-3 Глебов А.Н.
 // Shifr ©2020-3 Glebe A.N.
 
-# include <stdio.h>
 # include <sys/types.h> // ssize_t
-# include <iso646.h> // not_eq
 # include "define.h"
-# include "private.h"
-# include "struct.h"
-# include "inline-pri.h"
 
 # ifdef  SHIFR_RANDOM_rand
-# include <stdint.h>
-# include <stdlib.h>
+# include <stdlib.h> // srand
 # include <time.h>
+# include <stdbool.h>
+# include "cast.h"
+# include <iso646.h> // bitand
 
 static  ssize_t shifr_getrandom  ( void  * const buf , size_t  const len ) {
   static  bool  first = true  ;
@@ -45,8 +42,8 @@ static  inline  ssize_t shifr_getrandom  ( void  * const buf ,
 }
 # else
 # ifdef  SHIFR_RANDOM_syscall
-# include <unistd.h>
-# include <sys/syscall.h> // syscall getrandom
+# include <unistd.h> // syscall
+# include <sys/syscall.h> // SYS_getrandom
 static  inline  ssize_t shifr_getrandom  ( void  * const buf ,
   size_t  const len ) {
   return  syscall ( SYS_getrandom , buf , len , 0 ) ;
@@ -56,6 +53,8 @@ static  inline  ssize_t shifr_getrandom  ( void  * const buf ,
 # endif
 # endif
 # endif
+
+# include "private.h"
 
 // generate random number [ fr .. to ]
 unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
@@ -100,8 +99,11 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
   return  fr + buf % ( to - fr + 1 ) ;
 }
 
+# include "cast.h"
+# include <iso646.h> // bitor
+
 // data_size = 4
-void shifr_datasalt2 ( t_ns_shifr * const ns_shifrp ,
+void shifr_datasalt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
   shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
@@ -142,7 +144,7 @@ void shifr_datasalt2 ( t_ns_shifr * const ns_shifrp ,
 }
 
 // data_size = 1 .. 3
-void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
+void shifr_datasalt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
   shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
@@ -186,7 +188,9 @@ void shifr_datasalt3 ( t_ns_shifr * const ns_shifrp ,
     ran >>= 3 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ;
 }
-  
+
+# include "struct.h"
+
 // пишу по шесть бит
 // secretdatasaltsize - количество шести-битных отделов (2 или 3)
 // encrypteddata - массив шести-битных чисел
@@ -202,7 +206,7 @@ void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
   if  ( flagtext  ) {
     uint8_t i = 0 ;
     do {
-      char  buf2  = bits6_to_letter ( ( * encrypteddata ) [ i ] ) ;
+      char  const buf2  = shifr_bits6_to_letter ( ( * encrypteddata ) [ i ] ) ;
       if ( ( * writesp ) >= outputs ) {
         ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
           ( shifr_strcp ) &
@@ -283,3 +287,5 @@ void  shifr_streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
       ( 3 - ( me -> bufbitsize ) ) ) ;
   }
 }     
+
+# include "inline-pri.h"
