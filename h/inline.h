@@ -573,23 +573,23 @@ static  inline  void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       ( shifr_strcp ) & "show password : unrecognized version" ) ;
     longjmp ( main_shifrp -> jump  , 1 ) ;
   }
-  printf  ( ( localerus ?
+  fprintf  ( stderr , ( localerus ?
     "--a95\tбуквами, знаками между кавычек = \'%s\'\n" :
     "--a95\tby letters, signs between quotes = \'%s\'\n"  ) ,
     & ( ( ( main_shifrp -> use_version == 3 ) ?
       main_shifrp -> password_letters3 :
       main_shifrp -> password_letters2 ) [ 0 ] ) ) ;
-  printf  ( ( localerus ?
+  fprintf  ( stderr , ( localerus ?
     "--a62\tбуквами, цифрами между кавычек = \'%s\' (по-умолчанию)\n" :
     "--a62\tby letters, digits between quotes = \'%s\' (by default)\n"  ) ,
     & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_62  :
       password_letters2_62  ) [ 0 ] ) ) ;
-  printf  ( ( localerus ?
+  fprintf  ( stderr , ( localerus ?
     "--a26\tмаленькими буквами между кавычек = \'%s\'\n" :
     "--a26\tby small letters between quotes = \'%s\'\n"  ) ,
     & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_26 :
       password_letters2_26  ) [ 0 ] ) ) ;
-  printf  ( ( localerus ?
+  fprintf  ( stderr , ( localerus ?
     "--a10\tцифрами между кавычек = \'%s\'\n" :
     "--a10\tby digits between quotes = \'%s\'\n"  ) ,
     & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_10 :

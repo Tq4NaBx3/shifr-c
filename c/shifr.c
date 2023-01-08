@@ -193,8 +193,13 @@ void  shifr_printarr  ( shifr_strcp const  name , shifr_arrcp const p ,
   size_t const arrsize , FILE * const f ) {
   fprintf  ( f  , "%s = [ " , * name  ) ;
   uint8_t const * i = & ( ( * p ) [ 0 ] ) ;
+  char const * format ;
+  if ( arrsize == 0x10 )
+    format = "%01hhx " ;
+  else
+    format = "%02hhx " ;
   do {
-    fprintf  ( f  , "%hhx " , * i ) ; 
+    fprintf ( f , format  , * i ) ;
     ++  i ;
   } while ( i not_eq  & ( ( * p ) [ arrsize ] ) ) ;
   fputs ( "]\n" , f ) ;
@@ -769,7 +774,7 @@ void  shifr_number_princ  ( N ) ( \
   fputs ( "[ " , fs ) ; \
   uint8_t i = D - 1 ;  \
   do  { \
-    fprintf ( fs  , "%x " , shifr_number_elt_copy ( N ) ( np , i ) ) ; \
+    fprintf ( fs  , "%02x " , shifr_number_elt_copy ( N ) ( np , i ) ) ; \
     if ( ! i ) \
       break ; \
     --  i ; \
