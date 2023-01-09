@@ -191,4 +191,15 @@ static  inline  shifr_decrypt_salt_dec  ( v3  )
 static  inline  void  shifr_initarr ( shifr_arrp  p ,
   uint8_t codefree  , size_t  loc_shifr_deshi_size  ) ;
 
+// читаю 6 бит
+// 6 bits reads
+static  inline  bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
+  uint8_t * const encrypteddata , size_t * const  readsp ,
+  uint8_t const * restrict * const input_bufferp , size_t const inputs ) ;
+
+# define  shifr_enter_password_name( vv  ) shifr_enter_password_  ## vv
+// from stdin get password string -> make big number
+static  inline  void  shifr_enter_password_name ( v2 ) ( t_ns_shifr * )  ;
+static  inline  void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
+
 # endif // SHIFR_PRIVATE_H

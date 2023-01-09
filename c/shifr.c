@@ -324,44 +324,6 @@ void  shifr_reset_keypress  ( t_ns_shifr * const ns_shifrp ) {
   }
 }
 
-// читаю 6 бит
-// 6 bits reads
-static  inline  bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
-  uint8_t * const encrypteddata , size_t * const  readsp ,
-  uint8_t const * restrict * const input_bufferp , size_t const inputs ) {
-  shifr_t_streambuf * const restrict me = & ns_shifrp -> filebuffrom ;
-  if  ( ns_shifrp  -> flagtext  ) {
-    uint8_t buf ;
-    do  {
-      if ( ( * readsp ) >= inputs )
-        return  true  ;
-      buf = * * input_bufferp  ;
-      ++  ( * input_bufferp  ) ;
-      ++  ( * readsp ) ;
-      // читаем одну букву ';'-'z' -> декодируем в шесть бит
-      // reads one letter ';'-'z' -> decode to six bits
-    } while ( ( buf < char_cast_uint8 ( ';' ) ) or
-      ( buf > char_cast_uint8 ( 'z' ) ) ) ;
-    ( * encrypteddata ) = shifr_letter_to_bits6 ( uint8_cast_char ( buf ) ) ;
-    return  false ;
-  }
-  if  ( ( me -> bufbitsize ) >= 6 ) {
-    me -> bufbitsize = uint_cast_uint8 ( ( me -> bufbitsize ) - 6U ) ;
-    ( * encrypteddata ) = ( me -> buf ) bitand ( 0x40 - 1 ) ;
-    ( me -> buf ) >>= 6 ;
-    return  false ;
-  }
-  uint8_t buf = * * input_bufferp  ;
-  ++  ( * readsp ) ;
-  ++  ( * input_bufferp  ) ;
-  ( * encrypteddata ) = ( ( me -> buf ) bitor 
-    ( buf <<  ( me -> bufbitsize ) ) ) bitand ( 0x40 - 1 )  ;
-  me -> buf = int_cast_uint8 ( buf >> ( 6 - ( me -> bufbitsize ) ) ) ;
-  // + 8 - 6
-  me -> bufbitsize = int_cast_uint8 ( ( me -> bufbitsize ) + 2 ) ;
-  return  false ;
-}
-
 uint8_t shifr_flush ( t_ns_shifr  * const ns_shifrp ,
   shifr_arrps const output  ) {
   switch  ( ns_shifrp ->  use_version ) {

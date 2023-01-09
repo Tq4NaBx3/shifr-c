@@ -255,12 +255,6 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
     sizeof  ( password_letters  ) ) ; \
 }
 
-// private
-# define  shifr_enter_password_name( vv  ) shifr_enter_password_  ## vv
-// from stdin get password string -> make big number
-static  inline  void  shifr_enter_password_name ( v2 ) ( t_ns_shifr * )  ;
-static  inline  void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
-
 static  inline  shifr_enter_password_templ  ( shifr_enter_password_name  ( v2  ) ,
   shifr_password_letters2size , v2 , raspr2 )
 
