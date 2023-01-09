@@ -173,7 +173,7 @@ static  inline  void  shifr_data_xor3  ( uint8_t * old_last_data , uint8_t * old
   shifr_arrp  secretdatasalt  , size_t  data_size ) ;
 
 static  inline  void  shifr_crypt_decrypt ( shifr_arrp  datap ,
-  shifr_arrcp tablep  , shifr_arrp  encrp , size_t  data_size ) ;
+  shifr_arrvcp  tablep  , shifr_arrp  encrp , size_t  data_size ) ;
   
 static  inline  void  shifr_data_xor2 ( t_ns_shifr  * ns_shifrp ,
   shifr_arrp  secretdatasalt  , size_t  data_size ) ;
@@ -182,13 +182,13 @@ static  inline  void  shifr_data_xor2 ( t_ns_shifr  * ns_shifrp ,
 
 # define  shifr_decrypt_salt_dec( N ) \
 void  shifr_decrypt_salt ( N ) ( shifr_arrp  datap , \
-  shifr_arrcp tablep  , shifr_arrp  decrp , size_t  data_size , \
+  shifr_arrvcp  tablep  , shifr_arrp  decrp , size_t  data_size , \
   uint8_t * old_last_salt , uint8_t * old_last_data ) ;
   
 static  inline  shifr_decrypt_salt_dec  ( v2  )
 static  inline  shifr_decrypt_salt_dec  ( v3  )
 
-static  inline  void  shifr_initarr ( shifr_arrp  p ,
+static  inline  void  shifr_initarr ( shifr_arrvp p ,
   uint8_t codefree  , size_t  loc_shifr_deshi_size  ) ;
 
 // читаю 6 бит

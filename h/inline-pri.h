@@ -62,8 +62,7 @@ static  inline  void  shifr_data_xor3 ( uint8_t * const restrict  old_last_data 
 }  
   
 static inline void  shifr_crypt_decrypt ( shifr_arrp const datap ,
-  shifr_arrcp const tablep , shifr_arrp const encrp , size_t const data_size )
-{
+  shifr_arrvcp  const tablep , shifr_arrp const encrp , size_t const data_size ) {
   uint8_t const * id = & ( ( * datap ) [ data_size ] ) ;
   uint8_t * ied = & ( ( * encrp ) [ data_size ] ) ;
   do {
@@ -99,7 +98,7 @@ static inline void  shifr_data_xor2  ( t_ns_shifr * const ns_shifrp ,
 }  
   
 static inline void  shifr_decrypt_salt ( v2 ) ( shifr_arrp const datap ,
-  shifr_arrcp const tablep , shifr_arrp const decrp , size_t const data_size ,
+  shifr_arrvcp  const tablep , shifr_arrp const decrp , size_t const data_size  ,
   uint8_t * const restrict old_last_salt ,
   uint8_t * const restrict old_last_data ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
@@ -117,7 +116,7 @@ static inline void  shifr_decrypt_salt ( v2 ) ( shifr_arrp const datap ,
 }  
   
 static inline void  shifr_decrypt_salt ( v3 ) ( shifr_arrp const datap ,
-  shifr_arrcp const tablep , shifr_arrp const decrp , size_t const data_size ,
+  shifr_arrvcp  const tablep , shifr_arrp const decrp , size_t const data_size ,
   uint8_t * const restrict old_last_salt ,
   uint8_t * const restrict old_last_data ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
@@ -134,9 +133,9 @@ static inline void  shifr_decrypt_salt ( v3 ) ( shifr_arrp const datap ,
   } while ( id not_eq & ( ( * datap ) [ data_size ] ) ) ;
 }  
   
-static inline  void  shifr_initarr ( shifr_arrp  const p ,
+static inline  void  shifr_initarr ( shifr_arrvp  const p ,
   uint8_t const codefree , size_t const loc_shifr_deshi_size ) {
-  uint8_t * i = & ( ( * p ) [ loc_shifr_deshi_size  ] ) ;
+  uint8_t volatile  * i = & ( ( * p ) [ loc_shifr_deshi_size  ] ) ;
   do {
     --  i ;
     ( * i ) = codefree ;

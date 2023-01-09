@@ -385,7 +385,7 @@ uint8_t shifr_streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
     & ns_shifrp -> secretdatasalt , secretdatasaltsize )  ;
   uint8_t encrypteddata [ 3 ] ;
   shifr_crypt_decrypt ( & ns_shifrp -> secretdatasalt ,
-    ( shifr_arrcp ) & ns_shifrp  -> shifr3 , & encrypteddata ,
+    ( shifr_arrvcp )  & ns_shifrp  -> shifrv3 , & encrypteddata ,
     secretdatasaltsize ) ;
   
   size_t  writes  = 0 ;
@@ -436,8 +436,8 @@ shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
     // after settling in, we turn the data over with the previous xor
     shifr_data_xor2 ( ns_shifrp , & secretdatasalt , 4 )  ;
     uint8_t encrypteddata [ 4 ] ;
-    shifr_crypt_decrypt ( & secretdatasalt , ( shifr_arrcp ) & ns_shifrp  ->
-      shifr2 , & encrypteddata , 4 ) ;
+    shifr_crypt_decrypt ( & secretdatasalt , ( shifr_arrvcp ) & ns_shifrp  ->
+      shifrv2 , & encrypteddata , 4 ) ;
 // 2^16 ^ 1/3 = 40.32
 // 2^16 % 40 = 0 .. 39
 // 2^16 / 40 = 1638.4
@@ -546,7 +546,7 @@ shifr_size_io shifr_encrypt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
     shifr_data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_salt ,
       & ns_shifrp -> secretdatasalt , secretdatasaltsize ) ;
     shifr_crypt_decrypt ( & ns_shifrp -> secretdatasalt ,
-      ( shifr_arrcp ) & ns_shifrp  -> shifr3 , & encrypteddata ,
+      ( shifr_arrvcp  ) & ns_shifrp  -> shifrv3 , & encrypteddata ,
       secretdatasaltsize ) ;
     shifr_streambuf_write3 ( ns_shifrp , & ns_shifrp -> filebufto ,
       ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
@@ -612,8 +612,8 @@ shifr_size_io  shifr_decrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
       [ 2 ] = buf [ 1 ] bitand  0xf ,
       [ 3 ] = ( buf [ 1 ] >>  4 ) bitand  0xf  } ;
     uint8_t decrypteddata [ 4 ] ;
-    shifr_decrypt_salt ( v2 ) ( & secretdata , ( shifr_arrcp ) & ( ns_shifrp  ->
-        deshi2 ) , & decrypteddata , 4 , & ns_shifrp  -> old_last_salt ,
+    shifr_decrypt_salt ( v2 ) ( & secretdata , ( shifr_arrvcp ) & ( ns_shifrp  ->
+        deshiv2 ) , & decrypteddata , 4 , & ns_shifrp  -> old_last_salt ,
       & ns_shifrp  -> old_last_data ) ;
     ( * output_buffer ) = ( uint8_t ) ( ( decrypteddata [ 0 ] bitand 0x3  )
       bitor ( ( decrypteddata [ 1 ] bitand 0x3  ) << 2  )
@@ -640,8 +640,8 @@ shifr_size_io shifr_decrypt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
       & ( secretdata [ 0 ] ) , & reads , & input_buffer , input . s ) )
       break ;
     uint8_t decrypteddata [ 1 ] ;
-    shifr_decrypt_salt ( v3 ) ( & secretdata , ( shifr_arrcp ) &
-      ns_shifrp  -> deshi3 , & decrypteddata , 1 ,
+    shifr_decrypt_salt ( v3 ) ( & secretdata , ( shifr_arrvcp ) &
+      ns_shifrp  -> deshiv3 , & decrypteddata , 1 ,
       & ns_shifrp  -> old_last_salt , & ns_shifrp  -> old_last_data ) ;
     shifr_streambuf_write3bits ( ns_shifrp , decrypteddata [ 0 ] , &
       output_buffer , & writes ) ;
@@ -892,12 +892,12 @@ to the encryption table 'shifr', decryption 'deshi'
 void  shifr_password_load_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
   case 2 :
-    shifr_password_load ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
-      & ns_shifrp  -> shifr2 , & ns_shifrp  -> deshi2 ) ;
+    shifr_password_load ( v2  ) ( & ns_shifrp -> raspr2  . pass . pub ,
+      & ns_shifrp  -> shifrv2 , & ns_shifrp  -> deshiv2 ) ;
     break ;
   case 3 :
-    shifr_password_load ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub , 
-      & ns_shifrp  -> shifr3 , & ns_shifrp  -> deshi3 ) ;
+    shifr_password_load ( v3  ) ( & ns_shifrp -> raspr3  . pass . pub ,
+      & ns_shifrp  -> shifrv3 , & ns_shifrp  -> deshiv3 ) ;
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
@@ -921,11 +921,11 @@ void  shifr_password_from_dice_uni ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
   case 2 :
     shifr_password_from_dice ( v2 ) ( ns_shifrp  -> raspr2 . dice ,
-      & ns_shifrp  -> shifr2 , & ns_shifrp  -> deshi2 ) ;
+      & ns_shifrp  -> shifrv2 , & ns_shifrp  -> deshiv2 ) ;
     break ;
   case 3 :
     shifr_password_from_dice ( v3 ) ( ns_shifrp  -> raspr3 . dice , 
-      & ns_shifrp  -> shifr3 , & ns_shifrp  -> deshi3 ) ;
+      & ns_shifrp  -> shifrv3 , & ns_shifrp  -> deshiv3 ) ;
     break ;
   default :
     fprintf ( stderr  , ( ns_shifrp -> localerus ?
@@ -1041,12 +1041,18 @@ void  volatile  * shifr_memsetv ( void  volatile  * const str ,
 }
 
 void  shifr_destr ( t_ns_shifr * const ns_shifrp ) {
-  shifr_memsetv ( ns_shifrp ->  password_letters2 ,
-    shifr_memsetv_default_byte ,
+  shifr_memsetv ( ns_shifrp ->  password_letters2 , shifr_memsetv_default_byte ,
     sizeof  ( ns_shifrp ->  password_letters2 ) ) ;
-  shifr_memsetv ( ns_shifrp ->  password_letters3 ,
-    shifr_memsetv_default_byte ,
+  shifr_memsetv ( ns_shifrp ->  password_letters3 , shifr_memsetv_default_byte ,
     sizeof  ( ns_shifrp ->  password_letters3 ) ) ;
+  shifr_memsetv ( ns_shifrp ->  shifrv2 , shifr_memsetv_default_byte ,
+    sizeof  ( ns_shifrp ->  shifrv2 ) ) ;
+  shifr_memsetv ( ns_shifrp ->  shifrv3 , shifr_memsetv_default_byte ,
+    sizeof  ( ns_shifrp ->  shifrv3 ) ) ;
+  shifr_memsetv ( ns_shifrp ->  deshiv2 , shifr_memsetv_default_byte ,
+    sizeof  ( ns_shifrp ->  deshiv2 ) ) ;
+  shifr_memsetv ( ns_shifrp ->  deshiv3 , shifr_memsetv_default_byte ,
+    sizeof  ( ns_shifrp ->  deshiv3 ) ) ;
 }
 
 void  shifr_salt_init ( t_ns_shifr  * const ns_shifrp ) {

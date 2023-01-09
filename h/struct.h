@@ -133,16 +133,13 @@ struct  s_ns_shifr  {
   bool  flagtext  ;
 
   union {
-
-// ! volatile
-
-    uint8_t shifr2 [ shifr_deshi_size2 ] ;
-    uint8_t shifr3 [ shifr_deshi_size3 ] ;
+    uint8_t volatile  shifrv2 [ shifr_deshi_size2 ] ;
+    uint8_t volatile  shifrv3 [ shifr_deshi_size3 ] ;
   } ;
   
   union {
-    uint8_t deshi2 [ shifr_deshi_size2 ] ;
-    uint8_t deshi3 [ shifr_deshi_size3 ] ;
+    uint8_t volatile  deshiv2 [ shifr_deshi_size2 ] ;
+    uint8_t volatile  deshiv3 [ shifr_deshi_size3 ] ;
   } ;
   
   // 62 or 95 or 26 or 10

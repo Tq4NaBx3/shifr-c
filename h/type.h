@@ -13,6 +13,8 @@ typedef char const ( * shifr_strcp  ) [ ] ;
 typedef char  volatile  const ( * shifr_strvcp  ) [ ] ;
 typedef uint8_t ( * shifr_arrp  ) [ ] ;
 typedef uint8_t const ( * shifr_arrcp ) [ ] ;
+typedef uint8_t volatile  ( * shifr_arrvp ) [ ] ;
+typedef uint8_t volatile  const ( * shifr_arrvcp  ) [ ] ;
 struct  shifr_s_arrcps  ;
 typedef struct  shifr_s_arrcps  shifr_arrcps  ;
 struct  shifr_s_arrps ;

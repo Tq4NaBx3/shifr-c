@@ -124,7 +124,7 @@ deshi needs salt
 
 # define  shifr_password_load_dec(  N ) \
 void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * password0 , \
-  shifr_arrp shifrp , shifr_arrp deship ) ;
+  shifr_arrvp shifrp , shifr_arrvp  deship ) ;
 
 static  inline  shifr_password_load_dec ( v2  )
 static  inline  shifr_password_load_dec ( v3  )
@@ -148,7 +148,7 @@ deshi needs salt
 
 # define  shifr_password_from_dice_dec(  N ) \
 void  shifr_password_from_dice  ( N ) ( uint8_t const * dice  , \
-  shifr_arrp shifrp , shifr_arrp deship ) ;
+  shifr_arrvp shifrp , shifr_arrvp  deship ) ;
 
 static  inline  shifr_password_from_dice_dec (  v2  )
 static  inline  shifr_password_from_dice_dec (  v3  )

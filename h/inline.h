@@ -174,18 +174,19 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
     longjmp ( ns_shifrp  -> jump  , 1 ) ; \
   } \
   shifr_reset_keypress ( ns_shifrp ) ; \
-  char volatile * j = & ( p40 [ 0 ] ) ; \
-  while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and \
-    ( j < ( & ( p40 [ letters_size ] ) ) ) ) \
-    ++ j ; \
-  if ( j < ( & ( p40 [ letters_size ] ) ) ) \
-    ( * j ) = '\00' ; \
-  else  { \
-    shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ; \
-    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
-      ( shifr_strcp ) & # funname " : в пароле нет конца строки" : \
-      ( shifr_strcp ) & # funname " : there is no end of line in the password" ) ; \
-    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
+  { char volatile * j = & ( p40 [ 0 ] ) ; \
+    while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and \
+      ( j < ( & ( p40 [ letters_size ] ) ) ) ) \
+      ++ j ; \
+    if ( j < ( & ( p40 [ letters_size ] ) ) ) \
+      ( * j ) = '\00' ; \
+    else  { \
+      shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ; \
+      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
+        ( shifr_strcp ) & # funname " : в пароле нет конца строки" : \
+        ( shifr_strcp ) & # funname " : there is no end of line in the password" ) ; \
+      longjmp ( ns_shifrp  -> jump  , 1 ) ; \
+    } \
   } \
   switch ( ns_shifrp -> password_alphabet ) { \
   case  shifr_letters_count  : \
@@ -1060,7 +1061,7 @@ static  inline  void  shifr_decode_file ( v3 ) ( t_ns_shifr  * const main_shifrp
 
 # define  shifr_password_load_def(  N , SDS ) \
 void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * const password0 , \
-  shifr_arrp const shifrp , shifr_arrp const deship ) { \
+  shifr_arrvp const shifrp , shifr_arrvp  const deship ) { \
   shifr_initarr ( shifrp  , 0xff  , SDS ) ; \
   shifr_initarr ( deship  , 0xff  , SDS ) ; \
   uint8_t volatile  arrind  [ SDS ] ; \
@@ -1095,7 +1096,7 @@ static  inline  shifr_password_load_def (  v3 , shifr_deshi_size3 )
 
 # define  shifr_password_from_dice_def(  N , SDS ) \
 void  shifr_password_from_dice  ( N ) ( uint8_t const * const dice  , \
-  shifr_arrp const shifrp , shifr_arrp const deship ) { \
+  shifr_arrvp const shifrp , shifr_arrvp  const deship ) { \
   shifr_initarr ( shifrp  , 0xff  , SDS ) ; \
   shifr_initarr ( deship  , 0xff  , SDS ) ; \
   uint8_t volatile  arrind  [ SDS ] ; \
