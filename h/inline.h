@@ -41,8 +41,6 @@ void  shifr_number_add  ( N ) ( \
   } while ( i < D ) ; \
 }
 
-# include "cast.h"
-
 static  inline  shifr_number_def_add  ( v2 , shifr_number_size2 )
 static  inline  shifr_number_def_add  ( v3 , shifr_number_size3 )
 
@@ -1130,5 +1128,6 @@ static  inline  shifr_password_from_dice_def (  v2 , shifr_deshi_size2 )
 static  inline  shifr_password_from_dice_def (  v3 , shifr_deshi_size3 )            
 
 # include "inline-pri.h"
+# include "cast.h"
 
 # endif //  SHIFR_INLINE_H

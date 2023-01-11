@@ -11,7 +11,6 @@
 # include <stdlib.h> // srand
 # include <time.h>
 # include <stdbool.h>
-# include "cast.h"
 
 static  ssize_t shifr_getrandom  ( shifr_arrps const vec ) {
   static  bool  first = true  ;
@@ -100,7 +99,7 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
   return  fr + bufa [ 0 ] % ( to - fr + 1 ) ;
 }
 
-# include "cast.h"
+# include "public.h"
 
 // data_size = 4
 void shifr_datasalt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
@@ -291,3 +290,4 @@ void  shifr_streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
 }     
 
 # include "inline-pri.h"
+# include "cast.h"
