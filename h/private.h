@@ -153,29 +153,29 @@ void  shifr_password_from_dice_uni ( t_ns_shifr * ) ;
 # define  shifr_number_pub_to_priv_dec( N ) \
 shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( shifr_number_type  ( N ) * )  ;
 
-static  inline  shifr_number_pub_to_priv_dec  ( v2  )
-static  inline  shifr_number_pub_to_priv_dec  ( v3  )
+inline  shifr_number_pub_to_priv_dec  ( v2  )
+inline  shifr_number_pub_to_priv_dec  ( v3  )
 
 # define  shifr_number_const_pub_to_priv( N ) shifr_number_const_pub_to_priv_ ## N
 
 # define  shifr_number_const_pub_to_priv_dec( N ) \
 shifr_number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) ( shifr_number_type  ( N ) const * ) ;
 
-static  inline  shifr_number_const_pub_to_priv_dec  ( v2  )
-static  inline  shifr_number_const_pub_to_priv_dec  ( v3  )
+inline  shifr_number_const_pub_to_priv_dec  ( v2  )
+inline  shifr_number_const_pub_to_priv_dec  ( v3  )
 
-static  inline  uint8_t shifr_letter_to_bits6 ( char  letter  ) ;
+inline  uint8_t shifr_letter_to_bits6 ( char  letter  ) ;
 
 // ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
-static  inline  char  shifr_bits6_to_letter ( uint8_t bits6 ) ;
+inline  char  shifr_bits6_to_letter ( uint8_t bits6 ) ;
 
-static  inline  void  shifr_data_xor3  ( uint8_t * old_last_data , uint8_t * old_last_salt ,
+void  shifr_data_xor3  ( uint8_t * old_last_data , uint8_t * old_last_salt ,
   shifr_arrp  secretdatasalt  , size_t  data_size ) ;
 
-static  inline  void  shifr_crypt_decrypt ( shifr_arrp  datap ,
+void  shifr_crypt_decrypt ( shifr_arrp  datap ,
   shifr_arrvcp  tablep  , shifr_arrp  encrp , size_t  data_size ) ;
   
-static  inline  void  shifr_data_xor2 ( t_ns_shifr  * ns_shifrp ,
+void  shifr_data_xor2 ( t_ns_shifr  * ns_shifrp ,
   shifr_arrp  secretdatasalt  , size_t  data_size ) ;
 
 # define  shifr_decrypt_salt( N ) shifr_decrypt_salt_ ## N
@@ -185,15 +185,15 @@ void  shifr_decrypt_salt ( N ) ( shifr_arrp  datap , \
   shifr_arrvcp  tablep  , shifr_arrp  decrp , size_t  data_size , \
   uint8_t * old_last_salt , uint8_t * old_last_data ) ;
   
-static  inline  shifr_decrypt_salt_dec  ( v2  )
-static  inline  shifr_decrypt_salt_dec  ( v3  )
+shifr_decrypt_salt_dec  ( v2  )
+shifr_decrypt_salt_dec  ( v3  )
 
-static  inline  void  shifr_initarr ( shifr_arrvp p ,
+inline  void  shifr_initarr ( shifr_arrvp p ,
   uint8_t codefree  , size_t  loc_shifr_deshi_size  ) ;
 
 // читаю 6 бит
 // 6 bits reads
-static  inline  bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
+bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   uint8_t * const encrypteddata , size_t * const  readsp ,
   uint8_t const * restrict * const input_bufferp , size_t const inputs ) ;
 

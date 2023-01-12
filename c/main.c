@@ -321,14 +321,14 @@ int main  ( int argc , char * argv [ ] ) {
   }
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 3 )  {
-    shifr_printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr3 ,
+    shifr_printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifrv3 ,
       shifr_deshi_size3 , stderr  ) ;
-    shifr_printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi3 ,
+    shifr_printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshiv3 ,
       shifr_deshi_size3 , stderr  ) ;
   } else  {
-    shifr_printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifr2 ,
+    shifr_printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifrv2 ,
       shifr_deshi_size2 , stderr  ) ;
-    shifr_printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshi2 ,
+    shifr_printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshiv2 ,
       shifr_deshi_size2 , stderr  ) ;
   }
 # endif // SHIFR_DEBUG

@@ -14,11 +14,15 @@ SHIFR_ASM_OPTIONS = -S -fverbose-asm
 #USE_GNU_SOURCE = -D'_GNU_SOURCE'
 USE_GNU_SOURCE =
 SHIFR_INCLUDE = -I h $(USE_GNU_SOURCE)
+# skip warning on static inline never defined
+# COMPILEINLINE = -Wno-unused-function
+# using inline warn's when code size grow
+COMPILEINLINE =
 SHIFR_GCCRUN = $(GCC) $(SHIFR_INCLUDE) -Wall -Wextra -Winline -Wshadow -Wconversion \
  -Wno-clobbered -Wpedantic -Werror=implicit-function-declaration \
  -Wmissing-include-dirs -Wswitch-default -Wswitch-enum -Wfloat-equal \
  -Wcast-align -Wlogical-op -Wmissing-declarations -Wredundant-decls \
- -Werror=return-local-addr -Wbad-function-cast \
+ -Werror=return-local-addr -Wbad-function-cast $(COMPILEINLINE) \
  -Werror=missing-prototypes -Wnested-externs -Werror=incompatible-pointer-types \
  -Wold-style-definition -Wstrict-prototypes -Werror=discarded-qualifiers \
  $(CSTANDARD) -Os

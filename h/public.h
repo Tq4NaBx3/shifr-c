@@ -59,8 +59,8 @@ void  shifr_salt_init ( t_ns_shifr  * ) ;
 # define  shifr_number_dec_elt_copy(  N ) \
 uint8_t shifr_number_elt_copy ( N ) ( shifr_number_type ( N ) const * np  , uint8_t i ) ;
 
-static  inline  shifr_number_dec_elt_copy ( v2  )
-static  inline  shifr_number_dec_elt_copy ( v3  )
+inline  shifr_number_dec_elt_copy ( v2  )
+inline  shifr_number_dec_elt_copy ( v3  )
 
 # define  shifr_number_add( N ) shifr_number_ ## N ## _add
 
@@ -68,8 +68,8 @@ static  inline  shifr_number_dec_elt_copy ( v3  )
   void  shifr_number_add  ( N ) ( shifr_number_type ( N ) * np  , \
     shifr_number_type ( N ) const * xp  ) ;
 
-static  inline  shifr_number_dec_add  ( v2  )
-static  inline  shifr_number_dec_add  ( v3  )
+shifr_number_dec_add  ( v2  )
+shifr_number_dec_add  ( v3  )
 
 # define  shifr_number_not_zero( N ) shifr_number_ ## N ## _not_zero
 
@@ -78,32 +78,32 @@ bool  shifr_number_not_zero ( N ) ( shifr_number_type ( N ) const * np  ) ;
 
 # include <stdbool.h>
 
-static  inline  shifr_number_dec_not_zero ( v2  )
-static  inline  shifr_number_dec_not_zero ( v3  )
+shifr_number_dec_not_zero ( v2  )
+shifr_number_dec_not_zero ( v3  )
 
 # define  shifr_number_dec( N ) shifr_number_ ## N ## _dec
 
 # define  shifr_number_dec_dec(  N ) \
 void  shifr_number_dec  ( N ) ( shifr_number_type ( N ) * np  ) ;
 
-static  inline  shifr_number_dec_dec  ( v2  )
-static  inline  shifr_number_dec_dec  ( v3  )
+shifr_number_dec_dec  ( v2  )
+shifr_number_dec_dec  ( v3  )
 
 # define  shifr_number_div_mod( N ) shifr_number_ ## N ## _div_mod
 
 # define  shifr_number_dec_div_mod(  N ) \
   uint8_t shifr_number_div_mod  ( N ) ( shifr_number_type ( N ) * np0 , uint8_t div ) ;
 
-static  inline  shifr_number_dec_div_mod  ( v2  )
-static  inline  shifr_number_dec_div_mod  ( v3  )
+shifr_number_dec_div_mod  ( v2  )
+shifr_number_dec_div_mod  ( v3  )
 
 # define  shifr_number_set_byte( N ) shifr_number_ ## N ## _set_byte
 
 # define  shifr_number_dec_set_byte(  N ) \
 void  shifr_number_set_byte ( N ) ( shifr_number_type ( N ) * np0 , uint8_t x ) ;
 
-static  inline  shifr_number_dec_set_byte ( v2  )
-static  inline  shifr_number_dec_set_byte ( v3  )
+shifr_number_dec_set_byte ( v2  )
+shifr_number_dec_set_byte ( v3  )
 
 /*
 пароль раскладываем в таблицу шифровки , дешифровки
@@ -126,8 +126,8 @@ deshi needs salt
 void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * password0 , \
   shifr_arrvp shifrp , shifr_arrvp  deship ) ;
 
-static  inline  shifr_password_load_dec ( v2  )
-static  inline  shifr_password_load_dec ( v3  )
+shifr_password_load_dec ( v2  )
+shifr_password_load_dec ( v3  )
 
 /*
 пароль раскладываем в таблицу шифровки , дешифровки
@@ -150,29 +150,29 @@ deshi needs salt
 void  shifr_password_from_dice  ( N ) ( uint8_t const * dice  , \
   shifr_arrvp shifrp , shifr_arrvp  deship ) ;
 
-static  inline  shifr_password_from_dice_dec (  v2  )
-static  inline  shifr_password_from_dice_dec (  v3  )
+shifr_password_from_dice_dec (  v2  )
+shifr_password_from_dice_dec (  v3  )
 
 // generate big number as password to raspr.pass
 //  + create tables shifr deshi
-static  inline  void  shifr_generate_password ( t_ns_shifr * )  ;
+void  shifr_generate_password ( t_ns_shifr * )  ;
 
 // from stdin get password string -> make big number -> tables shifr deshi
-static  inline  void  shifr_enter_password ( t_ns_shifr * ) ;
+void  shifr_enter_password ( t_ns_shifr * ) ;
 
-static  inline  void  shifr_init  ( t_ns_shifr  * ) ;
+void  shifr_init  ( t_ns_shifr  * ) ;
 
 # ifdef SHIFR_DEBUG
-static  inline  shifr_timestamp_t get_timestamp ( void )  ;
+shifr_timestamp_t get_timestamp ( void )  ;
 # endif
 
-static  inline  int shifr_show_help ( t_ns_shifr  const * ) ;
+int shifr_show_help ( t_ns_shifr  const * ) ;
 
 // generate big number as password, convert to string and puts
 // in debug mode creates tables shifr deshi many times
-static  inline  void  shifr_main_genpsw ( t_ns_shifr  * ) ;
+void  shifr_main_genpsw ( t_ns_shifr  * ) ;
 
-static  inline  void  shifr_test_password ( t_ns_shifr  * , size_t nr  ) ;
+void  shifr_test_password ( t_ns_shifr  * , size_t nr  ) ;
 
 # define  shifr_encode_file(  N ) shifr_encode_file_  ##  N
 
@@ -181,8 +181,8 @@ void  shifr_encode_file ( N ) ( t_ns_shifr  * , \
   uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize , \
   uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
 
-static  inline  shifr_encode_file_dec (  v2 )
-static  inline  shifr_encode_file_dec (  v3 )
+shifr_encode_file_dec (  v2 )
+shifr_encode_file_dec (  v3 )
 
 # define  shifr_decode_file(  N ) shifr_decode_file_  ##  N
 
@@ -191,8 +191,8 @@ void  shifr_decode_file ( N ) ( t_ns_shifr  * , \
   uint8_t ( * inputbufferp  ) [ ] , size_t  inputbuffersize , \
   uint8_t ( * outputbufferp ) [ ] , size_t  outputbuffersize  ) ;
 
-static  inline  shifr_decode_file_dec (  v2 )
-static  inline  shifr_decode_file_dec (  v3 )
+shifr_decode_file_dec (  v2 )
+shifr_decode_file_dec (  v3 )
 
 /*
 Encryption
