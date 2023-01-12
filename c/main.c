@@ -4,7 +4,11 @@
 # include <locale.h>
 # include <errno.h>
 # include "define.h"
-# include "inline.h"
+# include "type.h"
+# include "struct.h"
+# include "public.h"
+# include <string.h> // strcmp
+# include <iso646.h> // or
 
 # ifdef SHIFR_DEBUG
 typedef shifr_timestamp_t timestamp_t ;
@@ -380,3 +384,5 @@ int main  ( int argc , char * argv [ ] ) {
   shifr_destr ( & main_shifr ) ;
   return  resulterror ;
 }
+
+# include "inline.h"

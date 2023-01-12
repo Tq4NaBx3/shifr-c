@@ -199,7 +199,7 @@ static  inline  bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
 
 # define  shifr_enter_password_name( vv  ) shifr_enter_password_  ## vv
 // from stdin get password string -> make big number
-static  inline  void  shifr_enter_password_name ( v2 ) ( t_ns_shifr * )  ;
-static  inline  void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
+void  shifr_enter_password_name ( v2 ) ( t_ns_shifr * )  ;
+void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
 
 # endif // SHIFR_PRIVATE_H
