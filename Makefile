@@ -7,8 +7,8 @@ GCC = gcc
 #GCC = gcc-9
 CSTANDARD = -std=c11
 #CSTANDARD = -std=c18
-SHIFR_OBJECTS = o/shifr.o o/private.o
-SHIFR_ASM = s/shifr.s s/main.s s/private.s
+SHIFR_OBJECTS = o/shifr.o o/private.o o/number.o
+SHIFR_ASM = s/shifr.s s/main.s s/private.s s/number.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
 # for syscall
 #USE_GNU_SOURCE = -D'_GNU_SOURCE'
@@ -38,6 +38,8 @@ shifr: $(SHIFR_OBJECTS) o/main.o
 	@chmod 0555 shifr
 o/shifr.o:
 	@$(call OGCC,shifr)
+o/number.o:
+	@$(call OGCC,number)
 o/private.o:
 	@$(call OGCC,private)
 o/main.o:
@@ -50,6 +52,8 @@ clean:
 asm: $(SHIFR_ASM)
 s/shifr.s:
 	@$(call SGCC,shifr)
+s/number.s:
+	@$(call SGCC,number)
 s/private.s:
 	@$(call SGCC,private)
 s/main.s:

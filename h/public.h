@@ -4,19 +4,10 @@
 # ifndef  SHIFR_PUBLIC_H
 # define  SHIFR_PUBLIC_H
 
-# include <stdio.h> // FILE
 # include "define.h"
 # include "type.h"
   
 # ifdef SHIFR_DEBUG
-
-# define  shifr_number_princ( N ) shifr_number_  ##  N ##  _princ
-
-# define  shifr_number_dec_princ( N ) \
-void  shifr_number_princ  ( N ) ( shifr_number_type ( N ) const * np , FILE * fs ) ;
-
-shifr_number_dec_princ  ( v2 )
-shifr_number_dec_princ  ( v3 )
 
 void  shifr_printarr  ( shifr_strcp name , shifr_arrcp p , size_t arrsize , FILE * f ) ;
 
@@ -53,57 +44,6 @@ void  shifr_destr ( t_ns_shifr * ) ;
 uint8_t shifr_flush ( t_ns_shifr  * , shifr_arrps ) ;
 
 void  shifr_salt_init ( t_ns_shifr  * ) ;
-
-# define  shifr_number_elt_copy( N ) shifr_number_ ## N ## _elt_copy
-
-# define  shifr_number_dec_elt_copy(  N ) \
-uint8_t shifr_number_elt_copy ( N ) ( shifr_number_type ( N ) const * np  , uint8_t i ) ;
-
-inline  shifr_number_dec_elt_copy ( v2  )
-inline  shifr_number_dec_elt_copy ( v3  )
-
-# define  shifr_number_add( N ) shifr_number_ ## N ## _add
-
-# define  shifr_number_dec_add( N ) \
-  void  shifr_number_add  ( N ) ( shifr_number_type ( N ) * np  , \
-    shifr_number_type ( N ) const * xp  ) ;
-
-shifr_number_dec_add  ( v2  )
-shifr_number_dec_add  ( v3  )
-
-# define  shifr_number_not_zero( N ) shifr_number_ ## N ## _not_zero
-
-# define  shifr_number_dec_not_zero(  N ) \
-bool  shifr_number_not_zero ( N ) ( shifr_number_type ( N ) const * np  ) ;
-
-# include <stdbool.h>
-
-shifr_number_dec_not_zero ( v2  )
-shifr_number_dec_not_zero ( v3  )
-
-# define  shifr_number_dec( N ) shifr_number_ ## N ## _dec
-
-# define  shifr_number_dec_dec(  N ) \
-void  shifr_number_dec  ( N ) ( shifr_number_type ( N ) * np  ) ;
-
-shifr_number_dec_dec  ( v2  )
-shifr_number_dec_dec  ( v3  )
-
-# define  shifr_number_div_mod( N ) shifr_number_ ## N ## _div_mod
-
-# define  shifr_number_dec_div_mod(  N ) \
-  uint8_t shifr_number_div_mod  ( N ) ( shifr_number_type ( N ) * np0 , uint8_t div ) ;
-
-shifr_number_dec_div_mod  ( v2  )
-shifr_number_dec_div_mod  ( v3  )
-
-# define  shifr_number_set_byte( N ) shifr_number_ ## N ## _set_byte
-
-# define  shifr_number_dec_set_byte(  N ) \
-void  shifr_number_set_byte ( N ) ( shifr_number_type ( N ) * np0 , uint8_t x ) ;
-
-shifr_number_dec_set_byte ( v2  )
-shifr_number_dec_set_byte ( v3  )
 
 /*
 пароль раскладываем в таблицу шифровки , дешифровки
@@ -232,63 +172,6 @@ shifr_size_io  shifr_decrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
 shifr_decrypt_dec ( v2 )
 shifr_decrypt_dec ( v3 )
 
-# include <stdint.h> // uint16_t
-
-# define  uint8_cast_uint16 shifr_uint8_cast_uint16
-inline  uint16_t  uint8_cast_uint16 ( uint8_t ) ;
-
-# define  uint8_cast_uint shifr_uint8_cast_uint
-inline  unsigned int  uint8_cast_uint ( uint8_t ) ;
-
-# define  uint16_cast_uint8 shifr_uint16_cast_uint8
-inline  uint8_t  uint16_cast_uint8 ( uint16_t ) ;
-
-# define  int_cast_uint8 shifr_int_cast_uint8
-inline  uint8_t  int_cast_uint8 ( int ) ;
-
-# define  uint_cast_uint8 shifr_uint_cast_uint8
-inline  uint8_t  uint_cast_uint8 ( unsigned  int ) ;
-
-# define  int_cast_uint16 shifr_int_cast_uint16
-inline  uint16_t  int_cast_uint16 ( int ) ;
-
-# define  uint_cast_uint16 shifr_uint_cast_uint16
-inline  uint16_t  uint_cast_uint16 ( unsigned int ) ;
-
-# define  int_cast_size shifr_int_cast_size
-inline  size_t  int_cast_size ( int ) ;
-
-# define  int_cast_uint shifr_int_cast_uint
-inline  unsigned  int int_cast_uint ( int ) ;
-
-# define  char_cast_uint8 shifr_char_cast_uint8
-inline  uint8_t  char_cast_uint8 ( char ) ;
-
-# define  uint8_cast_char shifr_uint8_cast_char
-inline  char  uint8_cast_char ( uint8_t ) ;
-
-# define  uint16_cast_char shifr_uint16_cast_char
-inline  char  uint16_cast_char ( uint16_t ) ;
-
-# define  int_cast_char shifr_int_cast_char
-inline  char  int_cast_char ( int ) ;
-
-# define  charvolatilep_cast_charp shifr_charvolatilep_cast_charp
-inline  char * charvolatilep_cast_charp ( char volatile * ) ;
-
-# define  uint8volatilep_cast_unt8p shifr_uint8volatilep_cast_unt8p
-inline  uint8_t * uint8volatilep_cast_unt8p ( uint8_t volatile * ) ;
-
-# define  charconstp_cast_stringconstp shifr_charconstp_cast_stringconstp
-inline  shifr_strcp charconstp_cast_stringconstp ( char const * ) ;
-
-# define  lint_cast_ulint shifr_lint_cast_ulint
-inline  unsigned  long  int lint_cast_ulint ( long  int ) ;
-
-# define  ulint_cast_uint shifr_ulint_cast_uint
-inline  unsigned int ulint_cast_uint ( unsigned long  int ) ;
-
-# define  ulint_cast_lint shifr_ulint_cast_lint
-inline  long int ulint_cast_lint ( unsigned long  int ) ;
+# include "private.h"
 
 # endif // SHIFR_PUBLIC_H

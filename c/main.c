@@ -1,5 +1,5 @@
-// Шифр ©2020-3 Глебов А.Н.
-// Shifr ©2020-3 Glebe A.N.
+// Shifr ©2020-3 Glebe A.N. main
+// Шифр ©2020-3 Глебов А.Н. main
 
 # include <locale.h>
 # include <errno.h>
@@ -9,6 +9,7 @@
 # include "public.h"
 # include <string.h> // strcmp
 # include <iso646.h> // or
+# include "number/public.h"
 
 # ifdef SHIFR_DEBUG
 typedef shifr_timestamp_t timestamp_t ;
@@ -143,11 +144,9 @@ int main  ( int argc , char * argv [ ] ) {
           "из строки во внутренний пароль = " :
           "from string to internal password = " ) , stderr ) ;
         if ( main_shifr . use_version == 2 )
-          shifr_number_princ  ( v2 ) ( & main_shifr . raspr2  . pass . pub ,
-            stderr  ) ;
+          shifr_number_princ  ( v2 ) ( & main_shifr . raspr2  . pass . pub , stderr  ) ;
         else 
-          shifr_number_princ  ( v3 ) ( & main_shifr . raspr3  . pass . pub ,
-            stderr  ) ;
+          shifr_number_princ  ( v3 ) ( & main_shifr . raspr3  . pass . pub , stderr  ) ;
         fputs ( "\n" , stderr ) ;
         shifr_password_to_string  ( & main_shifr ) ;
         if ( main_shifr . use_version == 3 ) {
@@ -322,14 +321,14 @@ int main  ( int argc , char * argv [ ] ) {
 # ifdef SHIFR_DEBUG    
   if ( main_shifr . use_version == 3 )  {
     shifr_printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifrv3 ,
-      shifr_deshi_size3 , stderr  ) ;
+      shifr_deshi_size ( v3 ) , stderr  ) ;
     shifr_printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshiv3 ,
-      shifr_deshi_size3 , stderr  ) ;
+      shifr_deshi_size ( v3 ) , stderr  ) ;
   } else  {
     shifr_printarr  ( ( strcp ) & "shifr" , ( arrcp ) & main_shifr . shifrv2 ,
-      shifr_deshi_size2 , stderr  ) ;
+      shifr_deshi_size ( v2 ) , stderr  ) ;
     shifr_printarr  ( ( strcp ) & "deshi" , ( arrcp ) & main_shifr . deshiv2 ,
-      shifr_deshi_size2 , stderr  ) ;
+      shifr_deshi_size ( v2 ) , stderr  ) ;
   }
 # endif // SHIFR_DEBUG
   enum  { inputbuffersize = 0x1000  } ;
@@ -384,5 +383,3 @@ int main  ( int argc , char * argv [ ] ) {
   shifr_destr ( & main_shifr ) ;
   return  resulterror ;
 }
-
-# include "inline.h"

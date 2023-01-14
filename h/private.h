@@ -4,7 +4,6 @@
 # ifndef  SHIFR_PRIVATE_H
 # define  SHIFR_PRIVATE_H
 
-# include <stdbool.h>
 # include "type.h"
 
 // generate random number [ fr .. to ]
@@ -13,17 +12,16 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * ns_shifrp ,
 
 # define  shifr_datasalt( N ) shifr_datasalt_  ##  N
 
-# include <stddef.h> // size_t
-
 # define  shifr_datasalt_dec( N ) \
 void  shifr_datasalt ( N ) ( t_ns_shifr * ns_shifrp , \
-  shifr_arrcp secretdata , shifr_arrp secretdatasalt , \
-  size_t data_size ) ;
+  shifr_arrcp secretdata , shifr_arrp secretdatasalt , size_t data_size ) ;
   
 // data_size = 4
 shifr_datasalt_dec ( v2 )
 // data_size = 1 .. 3
 shifr_datasalt_dec ( v3 )
+
+# include <stdbool.h>
 
 // пишу по шесть бит
 // secretdatasaltsize - количество шести-битных отделов (2 или 3)
@@ -109,6 +107,8 @@ void  shifr_password_to_string_templ  ( N ) ( \
   shifr_number_type ( N ) const * password0 , shifr_strvp string ,  \
   shifr_strp letters , uint8_t letterscount  ) ;
 
+# include "number/type.h"
+  
 shifr_password_to_string_templ_dec  ( v2 )
 shifr_password_to_string_templ_dec  ( v3 )  
 
@@ -122,22 +122,6 @@ void  shifr_string_to_password_templ  ( N ) ( t_ns_shifr * , \
 
 shifr_string_to_password_templ_dec  ( v2 )
 shifr_string_to_password_templ_dec  ( v3 )
-
-# define  shifr_number_mul_byte( N ) shifr_number_ ## N ## _mul_byte
-
-# define  shifr_number_dec_mul_byte(  N ) \
-void  shifr_number_mul_byte ( N ) ( shifr_number_type ( N ) * , uint8_t )  ;
-
-shifr_number_dec_mul_byte ( v2 )
-shifr_number_dec_mul_byte ( v3 )
-
-# define  shifr_number_set0( N ) shifr_number_ ## N ## _set0
-
-# define  shifr_number_dec_set0( N ) \
-  void shifr_number_set0  ( N )  ( shifr_number_type  ( N ) * ) ;
-
-shifr_number_dec_set0 ( v2 )
-shifr_number_dec_set0 ( v3 )
 
 /*
  Translation of big number 'raspr.pass' 
@@ -201,5 +185,51 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
 // from stdin get password string -> make big number
 void  shifr_enter_password_name ( v2 ) ( t_ns_shifr * )  ;
 void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
+
+# define  shifr_number_pub_to_priv_def( N ) \
+shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
+  shifr_number_type  ( N ) * const n ) { \
+  return  ( shifr_number_priv_type  ( N ) * ) ( \
+    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; \
+}
+
+# define  shifr_number_const_pub_to_priv_def( N ) \
+shifr_number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) (  \
+  shifr_number_type  ( N ) const * const n ) { \
+  return  ( shifr_number_priv_type  ( N ) const * ) ( \
+    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; \
+}
+
+# include "struct.h"
+# include <stddef.h> // offsetof
+
+inline  shifr_number_pub_to_priv_def  ( v2 )
+inline  shifr_number_pub_to_priv_def  ( v3 )
+    
+inline  shifr_number_const_pub_to_priv_def  ( v2 )
+inline  shifr_number_const_pub_to_priv_def  ( v3 )
+
+# include "cast.h"
+
+inline  uint8_t shifr_letter_to_bits6 ( char  const letter  ) {
+  return  int_cast_uint8 ( char_cast_uint8 ( letter ) -
+    char_cast_uint8 ( ';' ) ) ;
+}
+
+// ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
+inline  char  shifr_bits6_to_letter ( uint8_t const bits6 ) {
+  return  int_cast_char ( char_cast_uint8  ( ';' ) + bits6 ) ;
+}
+
+# include <iso646.h> // not_eq
+
+inline  void  shifr_initarr ( shifr_arrvp  const p ,
+  uint8_t const codefree , size_t const loc_shifr_deshi_size ) {
+  uint8_t volatile  * i = & ( ( * p ) [ loc_shifr_deshi_size  ] ) ;
+  do {
+    --  i ;
+    ( * i ) = codefree ;
+  } while ( i not_eq  & ( ( * p ) [ 0 ] ) ) ;
+}
 
 # endif // SHIFR_PRIVATE_H

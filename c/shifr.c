@@ -1,5 +1,5 @@
-// Шифр ©2020-3 Глебов А.Н.
 // Shifr ©2020-3 Glebe A.N.
+// Шифр ©2020-3 Глебов А.Н.
 
 // Version 2
 
@@ -149,44 +149,13 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 //  log ( 10 , 1.26886932186e89 ) ≈ 89.1 digits <= 90 digits
 
 # include <errno.h>
-# include "inline.h"
 # include <string.h> // memset
-
-# define  shifr_number_def_set0( N , D ) \
-  void shifr_number_set0  ( N ) ( shifr_number_type  ( N ) * const np ) { \
-    memset  ( & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) , 0 ,  \
-      D ) ; \
-  }
-
-shifr_number_def_set0 ( v2 , shifr_number_size2 )
-shifr_number_def_set0 ( v3 , shifr_number_size3 )
-
-# define  shifr_number_def_mul_byte(  N , D ) \
-void  shifr_number_mul_byte ( N ) ( shifr_number_type ( N ) * const np  , \
-  uint8_t const byte ) {  \
-  if ( byte == 0 ) {  \
-    shifr_number_set0 ( N ) ( np ) ; \
-    return  ; \
-  } \
-  if ( byte == 1 )  \
-    return ; \
-  uint8_t per = 0 ; \
-  { uint8_t i = 0 ; \
-    do { \
-      uint16_t const x = int_cast_uint16 ( uint8_cast_uint16 ( \
-        shifr_number_elt_copy ( N ) ( np , i ) ) * \
-        uint8_cast_uint16 ( byte ) + uint8_cast_uint16 ( per ) ) ; \
-      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] =  \
-        int_cast_uint8 ( x bitand 0xff ) ; \
-      per = int_cast_uint8 ( x >>  8 ) ; \
-      ++  i ; \
-    } while ( i < D ) ; \
-  } \
-}
-
-shifr_number_def_mul_byte ( v2 , shifr_number_size2 )
-shifr_number_def_mul_byte ( v3 , shifr_number_size3 )
-
+# include "type.h"
+# include "private.h"
+# include "struct.h"
+# include "cast.h"
+# include "public.h"
+# include "number/public.h"
 # include "define.h"
 
 # ifdef SHIFR_DEBUG
@@ -729,27 +698,6 @@ void  shifr_dices_to_number ( v3 ) ( t_ns_shifr * const ns_shifrp ) {
   shifr_password_from_dice_uni  ( ns_shifrp ) ;
 }
 
-# ifdef SHIFR_DEBUG
-
-# define  shifr_number_def_princ( N , D ) \
-void  shifr_number_princ  ( N ) ( \
-  shifr_number_type ( N ) const * const np , FILE * const fs ) { \
-  fputs ( "[ " , fs ) ; \
-  uint8_t i = D - 1 ;  \
-  do  { \
-    fprintf ( fs  , "%02x " , shifr_number_elt_copy ( N ) ( np , i ) ) ; \
-    if ( ! i ) \
-      break ; \
-    --  i ; \
-  } while ( true ) ; \
-  fputs ( "]" , fs ) ; \
-}
-
-shifr_number_def_princ  ( v2 , shifr_number_size2 )
-shifr_number_def_princ  ( v3 , shifr_number_size3 )
-
-# endif // SHIFR_DEBUG
-
 void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp ,
   char const * const pswstr ) {
   switch ( ns_shifrp -> use_version ) {
@@ -1107,8 +1055,8 @@ void  shifr_password_from_dice  ( N ) ( uint8_t const * const dice  , \
   shifr_memsetv ( arrind  , shifr_memsetv_default_byte , sizeof  ( arrind  ) ) ; \
 }
 
-shifr_password_from_dice_def (  v2 , shifr_deshi_size2 )
-shifr_password_from_dice_def (  v3 , shifr_deshi_size3 )
+shifr_password_from_dice_def (  v2 , shifr_deshi_size ( v2 ) )
+shifr_password_from_dice_def (  v3 , shifr_deshi_size ( v3 ) )
 
 # define  shifr_password_load_def(  N , SDS ) \
 void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * const password0 , \
@@ -1142,8 +1090,8 @@ void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * const password
   shifr_memsetv ( arrind  , shifr_memsetv_default_byte , sizeof  ( arrind  ) ) ; \
 }
 
-shifr_password_load_def (  v2 , shifr_deshi_size2 )
-shifr_password_load_def (  v3 , shifr_deshi_size3 )
+shifr_password_load_def (  v2 , shifr_deshi_size ( v2 ) )
+shifr_password_load_def (  v3 , shifr_deshi_size ( v3 ) )
 
 void  shifr_decode_file ( v2 ) ( t_ns_shifr  * const main_shifrp ,
   uint8_t ( * const inputbufferp  ) [ ] , size_t  const inputbuffersize ,
@@ -1425,16 +1373,14 @@ void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
     fputs ( ( localerus ?
       "внутренний пароль = " :
       "internal password = " ) , stderr ) ;
-    shifr_number_princ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
-      stderr  ) ;
+    shifr_number_princ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub , stderr  ) ;
     fputs ( "\n" , stderr ) ;
     break ;
   case  3 :
     fputs ( ( localerus ?
       "внутренний пароль = " :
       "internal password = " ) , stderr ) ;
-    shifr_number_princ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
-      stderr  ) ;
+    shifr_number_princ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub , stderr  ) ;
     fputs ( "\n" , stderr ) ;
     break ;
   default :
@@ -1981,97 +1927,3 @@ void  shifr_generate_password ( t_ns_shifr * const ns_shifrp ) {
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
 }
-
-# define  shifr_number_def_set_byte(  N , D ) \
-void  shifr_number_set_byte ( N ) ( shifr_number_type ( N ) * const np0 , \
-  uint8_t const x ) { \
-  shifr_number_priv_type ( N ) * const np = \
-    shifr_number_pub_to_priv ( N ) ( np0 ) ; \
-  memset  ( & ( np -> arr [ 1 ] ) , 0 , D - 1 ) ; \
-  np -> arr [ 0 ] = x ; \
-}
-
-shifr_number_def_set_byte ( v2 , shifr_number_size2 )
-shifr_number_def_set_byte ( v3 , shifr_number_size3 )
-
-# define  shifr_number_def_div_mod(  N , D ) \
-uint8_t shifr_number_div_mod  ( N ) ( \
-  shifr_number_type ( N ) * const np0 , uint8_t const div ) { \
-  shifr_number_priv_type ( N ) * const np = \
-    shifr_number_pub_to_priv ( N ) ( np0 ) ; \
-  uint8_t modi  = 0 ; \
-  uint8_t i = D ; \
-  do {  \
-    -- i ;  \
-    uint16_t const x = int_cast_uint16 ( ( uint8_cast_uint16 ( modi ) <<  8 ) \
-      bitor uint8_cast_uint16 ( np -> arr [ i ] ) ) ; \
-    modi  = int_cast_uint8 ( x % div ) ; \
-    np -> arr [ i ] = int_cast_uint8 ( x / div ) ; \
-  } while ( i > 0 ) ; \
-  return  modi ; \
-}
-
-shifr_number_def_div_mod  ( v2 , shifr_number_size2 )
-shifr_number_def_div_mod  ( v3 , shifr_number_size3 )
-
-# define  shifr_number_def_dec(  N , D ) \
-void  shifr_number_dec  ( N ) ( shifr_number_type ( N ) * const np  ) { \
-  uint8_t  * i = & ( shifr_number_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ; \
-  do {  \
-    if ( ( * i ) == 0 ) \
-      ( * i ) = 0xffU ; \
-    else  { \
-      -- ( * i ) ;  \
-      break ; \
-    } \
-    ++  i ; \
-  } while ( i not_eq & ( \
-    shifr_number_pub_to_priv ( N ) ( np ) -> arr [ D ] ) ) ; \
-}
-
-shifr_number_def_dec  ( v2 , shifr_number_size2 )
-shifr_number_def_dec  ( v3 , shifr_number_size3 )
-
-# define  shifr_number_def_not_zero(  N , D ) \
-bool  shifr_number_not_zero ( N ) ( \
-  shifr_number_type ( N ) const * const np  ) { \
-  uint8_t const * i = \
-    & ( shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ D ] ) ; \
-  do {  \
-    --  i ; \
-    if ( * i )  \
-      return  true  ; \
-  } while ( i not_eq & ( \
-    shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ) ;  \
-  return  false ; \
-}
-
-shifr_number_def_not_zero ( v2 , shifr_number_size2 )
-shifr_number_def_not_zero ( v3 , shifr_number_size3 )
-
-# define  shifr_number_def_add(  N , D ) \
-void  shifr_number_add  ( N ) ( \
-  shifr_number_type ( N ) * const restrict  np  , \
-  shifr_number_type ( N ) const * const restrict  xp ) { \
-  uint8_t per = 0 ; \
-  uint8_t i = 0 ; \
-  do  { \
-    uint16_t const s = int_cast_uint16 ( \
-      uint8_cast_uint16 ( shifr_number_elt_copy ( N ) ( np , i ) ) + \
-      uint8_cast_uint16 ( shifr_number_elt_copy ( N ) ( xp , i ) ) + \
-      uint8_cast_uint16 ( per ) ) ; \
-    if ( s >= 0x100  ) {  \
-      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = \
-        int_cast_uint8 ( s - 0x100 ) ; \
-      per = 1 ; \
-    } else  { \
-      shifr_number_pub_to_priv ( N ) ( np ) -> arr [ i ] = \
-        uint16_cast_uint8 ( s )  ;  \
-      per = 0 ; \
-    } \
-    ++ i  ; \
-  } while ( i < D ) ; \
-}
-
-shifr_number_def_add  ( v2 , shifr_number_size2 )
-shifr_number_def_add  ( v3 , shifr_number_size3 )

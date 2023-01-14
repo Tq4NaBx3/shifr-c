@@ -1,5 +1,5 @@
-// Шифр ©2020-3 Глебов А.Н.
-// Shifr ©2020-3 Glebe A.N.
+// Shifr ©2020-3 Glebe A.N. structs
+// Шифр ©2020-3 Глебов А.Н. структуры
 
 # ifndef  SHIFR_STRUCT_H
 # define  SHIFR_STRUCT_H
@@ -11,34 +11,17 @@
 # include <termios.h>
 # include <stdbool.h>
 # include "type.h"
+# include "number/type.h"
+# include "number/struct.h"
 
-# define  shifr_number_def( N ) \
-  struct  shifr_number_struct_name ( N ) { \
-    uint8_t _ ; \
-  } ;
-
-shifr_number_def  ( v2 )  
-shifr_number_def  ( v3 )
-
-# define  shifr_number_priv_def( N , D ) \
-  struct  shifr_number_priv_structname ( N ) { \
-    uint8_t arr [ D ] ; \
-    shifr_number_type ( N ) pub ; \
-  } ;
-
-shifr_number_priv_def ( v2 , shifr_number_size2 )
-
-struct  shifr_s_raspr2  {
-  uint8_t dice  [ shifr_deshi_size2 - 1  ] ;
-  shifr_number_priv_type ( v2 ) pass  ;
+# define  shifr_s_raspr_templ( V ) \
+struct_raspr ( V ) { \
+  uint8_t dice  [ shifr_deshi_size ( V ) - 1  ] ; \
+  shifr_number_priv_type ( V ) pass  ; \
 } ;
 
-shifr_number_priv_def ( v3 , shifr_number_size3 )
-
-struct  shifr_s_raspr3  {
-  uint8_t dice  [ shifr_deshi_size3 - 1 ] ;
-  shifr_number_priv_type ( v3 ) pass  ;
-} ;
+shifr_s_raspr_templ ( v2 )
+shifr_s_raspr_templ ( v3 )
 
 // 0x20 (space) ' '    ---     0x7e (tilde) '~'
 // 0x20 (пробел) ' '    ---     0x7e (тильда) '~'
@@ -101,9 +84,9 @@ struct  s_ns_shifr  {
 
   union {
     // ver2
-    shifr_t_raspr2 raspr2 ;
+    shifr_t_raspr ( v2  ) raspr2 ;
     // ver3
-    shifr_t_raspr3 raspr3 ;
+    shifr_t_raspr ( v3  ) raspr3 ;
   } ;
 
   //  2 or 3
@@ -133,13 +116,13 @@ struct  s_ns_shifr  {
   bool  flagtext  ;
 
   union {
-    uint8_t volatile  shifrv2 [ shifr_deshi_size2 ] ;
-    uint8_t volatile  shifrv3 [ shifr_deshi_size3 ] ;
+    uint8_t volatile  shifrv2 [ shifr_deshi_size ( v2 ) ] ;
+    uint8_t volatile  shifrv3 [ shifr_deshi_size ( v3 ) ] ;
   } ;
   
   union {
-    uint8_t volatile  deshiv2 [ shifr_deshi_size2 ] ;
-    uint8_t volatile  deshiv3 [ shifr_deshi_size3 ] ;
+    uint8_t volatile  deshiv2 [ shifr_deshi_size ( v2 ) ] ;
+    uint8_t volatile  deshiv3 [ shifr_deshi_size ( v3 ) ] ;
   } ;
   
   // 62 or 95 or 26 or 10

@@ -1,16 +1,16 @@
-// Шифр ©2020-3 Глебов А.Н.
-// Shifr ©2020-3 Glebe A.N.
+// Shifr ©2020-3 Glebe A.N. types
+// Шифр ©2020-3 Глебов А.Н. типы
 
 # ifndef  SHIFR_TYPE_H
 # define  SHIFR_TYPE_H
-
-# include <stdint.h>
-# include "define.h"
 
 typedef char ( * shifr_strp ) [ ] ;
 typedef char  volatile  ( * shifr_strvp ) [ ] ;
 typedef char const ( * shifr_strcp  ) [ ] ;
 typedef char  volatile  const ( * shifr_strvcp  ) [ ] ;
+
+# include <stdint.h>
+
 typedef uint8_t ( * shifr_arrp  ) [ ] ;
 typedef uint8_t const ( * shifr_arrcp ) [ ] ;
 typedef uint8_t volatile  ( * shifr_arrvp ) [ ] ;
@@ -22,49 +22,16 @@ typedef struct  shifr_s_arrps shifr_arrps ;
 struct  shifr_s_size_io ;
 typedef struct  shifr_s_size_io shifr_size_io ;
 
-# define  shifr_number_struct_name( N ) shifr_s_number_ ## N
+# define struct_raspr( V ) struct  shifr_s_raspr_ ## V
 
-# define  shifr_number_structtype( N ) \
-  struct  shifr_number_struct_name ( N ) ;
-  
-# define  shifr_number_type( N ) shifr_t_number_ ## N
+struct_raspr ( v2 ) ;
+struct_raspr ( v3 ) ;
 
-# define  shifr_number_typedef( N ) \
-  typedef struct  shifr_number_struct_name ( N ) shifr_number_type ( N ) ;
+# define  shifr_t_raspr( V ) shifr_t_raspr_ ## V
 
-# define  shifr_number_priv_structname( N ) shifr_s_number_priv_ ## N
+typedef struct_raspr ( v2 ) shifr_t_raspr ( v2 ) ;
 
-# define  shifr_number_priv_structtype( N ) \
-  struct  shifr_number_priv_structname ( N ) ;
-
-# define  shifr_number_priv_type( N ) shifr_t_number_priv_ ## N
-
-# define  shifr_number_priv_typedef( N ) \
-  typedef struct  shifr_number_priv_structname ( N ) shifr_number_priv_type ( N ) ;
-
-// log(2,16!) ceil 8 = 6
-// log(2,64!) ceil 8 = 37
-enum  shifr_e_number_size { shifr_number_size2  = 6 ,
-  shifr_number_size3  = 37  
-} ;
-
-typedef enum  shifr_e_number_size shifr_t_number_size ;
-
-shifr_number_structtype( v2 )
-shifr_number_typedef( v2 )
-shifr_number_structtype( v3 )
-shifr_number_typedef( v3 )
-
-shifr_number_priv_structtype( v2 )
-shifr_number_priv_typedef( v2 )
-shifr_number_priv_structtype( v3 )
-shifr_number_priv_typedef( v3 )
-
-struct  shifr_s_raspr2  ;
-typedef struct  shifr_s_raspr2  shifr_t_raspr2  ;
-
-struct  shifr_s_raspr3  ;
-typedef struct  shifr_s_raspr3  shifr_t_raspr3  ;
+typedef struct_raspr ( v3 ) shifr_t_raspr ( v3 ) ;
 
 struct  s_ns_shifr  ;
 typedef struct  s_ns_shifr  t_ns_shifr ;
@@ -72,15 +39,19 @@ typedef struct  s_ns_shifr  t_ns_shifr ;
 struct  shifr_s_streambuf ;
 typedef struct  shifr_s_streambuf shifr_t_streambuf ;
 
-// 4 * 4 = 16 = 0x10
+# define  shifr_deshi_size( V ) shifr_deshi_size_ ## V
 
-// 8 * 8 = 64 = 0x40
+// 4^2 = 16 = 0x10
+// 4^3 = 64 = 0x40
 
 enum  shifr_e_deshi_size  {
-  shifr_deshi_size2 = 0x10 ,
-  shifr_deshi_size3 = 0x40
+  shifr_deshi_size ( v2 ) = 0x10 ,
+  shifr_deshi_size ( v3 ) = 0x40 ,
 } ;
+
 typedef enum  shifr_e_deshi_size  shifr_t_deshi_size  ;
+
+# include "define.h"
 
 # ifdef SHIFR_DEBUG
 

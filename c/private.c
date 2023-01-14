@@ -291,7 +291,6 @@ void  shifr_streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
   }
 }     
 
-# include "inline-pri.h"
 # include "cast.h"
 
 // from stdin get password string -> make big number

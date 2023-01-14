@@ -4,7 +4,7 @@
 # ifndef  SHIFR_DEFINE_H
 # define  SHIFR_DEFINE_H
 
-//# define  SHIFR_DEBUG
+# define  SHIFR_DEBUG
 
 # define  SHIFR_RANDOM_getrandom
 //# define  SHIFR_RANDOM_rand
