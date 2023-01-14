@@ -2,11 +2,13 @@
 # Shifr ©2020-3 Glebe A.N.
 # Шифр ©2020-3 Глебов А.Н.
 #
+
 GCC = gcc
-#GCC = gcc-8
-#GCC = gcc-9
+#GCC = clang
+
 CSTANDARD = -std=c11
 #CSTANDARD = -std=c18
+
 SHIFR_OBJECTS = o/shifr.o o/private.o o/number.o
 SHIFR_ASM = s/shifr.s s/main.s s/private.s s/number.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
@@ -14,17 +16,22 @@ SHIFR_ASM_OPTIONS = -S -fverbose-asm
 # USE_GNU_SOURCE = -D'_GNU_SOURCE'
 USE_GNU_SOURCE =
 SHIFR_INCLUDE = -I h $(USE_GNU_SOURCE)
-# skip warning on static inline never defined
-# COMPILEINLINE = -Wno-unused-function
-# using inline warn's when code size grow
-COMPILEINLINE =
-SHIFR_GCCRUN = $(GCC) $(SHIFR_INCLUDE) -Wall -Wextra -Winline -Wshadow -Wconversion \
- -Wno-clobbered -Wpedantic -Werror=implicit-function-declaration \
+
+ifeq ($(GCC), gcc)
+  # $(info now use GCC)
+  GCCOPTIONS = -Wno-clobbered -Wlogical-op -Werror=return-local-addr -Werror=discarded-qualifiers
+else
+  # $(info now use CLang)
+  GCCOPTIONS = -Werror=return-stack-address -Wlong-long -Werror=ignored-qualifiers
+endif
+
+SHIFR_GCCRUN = $(GCC) $(SHIFR_INCLUDE) $(GCCOPTIONS) -Wall -Wextra -Winline -Wshadow -Wconversion \
+ -Wpedantic -Werror=implicit-function-declaration \
  -Wmissing-include-dirs -Wswitch-default -Wswitch-enum -Wfloat-equal \
- -Wcast-align -Wlogical-op -Wmissing-declarations -Wredundant-decls \
- -Werror=return-local-addr -Wbad-function-cast $(COMPILEINLINE) \
+ -Wcast-align -Wmissing-declarations -Wredundant-decls \
+ -Wbad-function-cast \
  -Werror=missing-prototypes -Wnested-externs -Werror=incompatible-pointer-types \
- -Wold-style-definition -Wstrict-prototypes -Werror=discarded-qualifiers \
+ -Wold-style-definition -Wstrict-prototypes \
  $(CSTANDARD) -Os
 SHIFR_COMPILE = $(SHIFR_GCCRUN) -c 
 EXAMPLE_OBJECTS = o/example.o $(SHIFR_OBJECTS)
