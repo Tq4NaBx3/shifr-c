@@ -1,6 +1,6 @@
 #
-# Шифр ©2020-3 Глебов А.Н.
 # Shifr ©2020-3 Glebe A.N.
+# Шифр ©2020-3 Глебов А.Н.
 #
 GCC = gcc
 #GCC = gcc-8
@@ -11,7 +11,7 @@ SHIFR_OBJECTS = o/shifr.o o/private.o o/number.o
 SHIFR_ASM = s/shifr.s s/main.s s/private.s s/number.s
 SHIFR_ASM_OPTIONS = -S -fverbose-asm
 # for syscall
-#USE_GNU_SOURCE = -D'_GNU_SOURCE'
+# USE_GNU_SOURCE = -D'_GNU_SOURCE'
 USE_GNU_SOURCE =
 SHIFR_INCLUDE = -I h $(USE_GNU_SOURCE)
 # skip warning on static inline never defined

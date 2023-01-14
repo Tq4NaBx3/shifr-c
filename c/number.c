@@ -1,8 +1,8 @@
 // Shifr ©2020-3 Glebe A.N. numbers
 // Шифр ©2020-3 Глебов А.Н. числа
 
-# include "number/public.h"
 # include "define.h"
+# include "number/public.h"
 
 # ifdef SHIFR_DEBUG
 
@@ -19,17 +19,13 @@ void  shifr_number_princ  ( V ) ( shifr_number_type ( V ) const * const np , FIL
   fputs ( "]" , fs ) ; \
 }
 
-# include <stdint.h>
-# include "public.h"
-
 shifr_number_def_princ  ( v2 )
 shifr_number_def_princ  ( v3 )
 
 # endif // SHIFR_DEBUG
 
 # define  shifr_number_def_add(  N , D ) \
-void  shifr_number_add  ( N ) ( \
-  shifr_number_type ( N ) * const restrict  np  , \
+void  shifr_number_add  ( N ) ( shifr_number_type ( N ) * const restrict  np  , \
   shifr_number_type ( N ) const * const restrict  xp ) { \
   uint8_t per = 0 ; \
   uint8_t i = 0 ; \
@@ -51,6 +47,8 @@ void  shifr_number_add  ( N ) ( \
   } while ( i < D ) ; \
 }
 
+# include "cast.h"
+
 shifr_number_def_add  ( v2 , shifr_number_size ( v2 ) )
 shifr_number_def_add  ( v3 , shifr_number_size ( v3 ) )
 
@@ -67,6 +65,8 @@ bool  shifr_number_not_zero ( N ) ( \
     shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ 0 ] ) ) ;  \
   return  false ; \
 }
+
+# include <iso646.h> // not_eq
 
 shifr_number_def_not_zero ( v2 , shifr_number_size ( v2 ) )
 shifr_number_def_not_zero ( v3 , shifr_number_size ( v3 ) )
@@ -146,10 +146,6 @@ void  shifr_number_mul_byte ( N ) ( shifr_number_type ( N ) * const np  , \
   } \
 }
 
-# include "cast.h"
-# include "public.h"
-# include "number/public.h"
-
 shifr_number_def_mul_byte ( v2 )
 shifr_number_def_mul_byte ( v3 )
 
@@ -159,9 +155,5 @@ shifr_number_def_mul_byte ( v3 )
       shifr_number_size ( N ) ) ; \
   }
 
-# include "type.h"
-# include "private.h"
-# include "struct.h"
-  
 shifr_number_def_set0 ( v2 )
 shifr_number_def_set0 ( v3 )

@@ -1,11 +1,9 @@
-// Шифр ©2020-3 Глебов А.Н.
 // Shifr ©2020-3 Glebe A.N.
+// Шифр ©2020-3 Глебов А.Н.
 
 # include <sys/types.h> // ssize_t
 # include "define.h"
-# include "type.h"
 # include "struct.h"
-# include <iso646.h> // bitor bitand
 
 static  ssize_t shifr_getrandom  ( shifr_arrps const vec )  ;
 
@@ -13,6 +11,8 @@ static  ssize_t shifr_getrandom  ( shifr_arrps const vec )  ;
 # include <stdlib.h> // srand
 # include <time.h>
 # include <stdbool.h>
+# include <iso646.h> // bitand
+# include "cast.h"
 
 static  ssize_t shifr_getrandom  ( shifr_arrps const vec ) {
   static  bool  first = true  ;
@@ -100,8 +100,6 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
   } while ( bufa [ 0 ] + 0x100 % ( to - fr + 1 ) >= 0x100 ) ;
   return  fr + bufa [ 0 ] % ( to - fr + 1 ) ;
 }
-
-# include "public.h"
 
 // data_size = 4
 void shifr_datasalt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
@@ -191,8 +189,6 @@ void shifr_datasalt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
     ran >>= 3 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ;
 }
-
-# include "struct.h"
 
 // пишу по шесть бит
 // secretdatasaltsize - количество шести-битных отделов (2 или 3)
@@ -291,16 +287,14 @@ void  shifr_streambuf_write3bits ( t_ns_shifr * const ns_shifrp ,
   }
 }     
 
-# include "cast.h"
-
 // from stdin get password string -> make big number
 //  + create tables shifr deshi
 
-# define  shifr_enter_password_templ( funname , letters_size , ver , rasprname ) \
+# define  shifr_enter_password_templ( funname , ver , rasprname ) \
 void  funname ( t_ns_shifr * const ns_shifrp ) { \
-  char  volatile  p40 [ letters_size ] ; \
+  char  volatile  p40 [ shifr_password_letters_size ( ver ) ] ; \
   shifr_set_keypress  ( ns_shifrp ) ; \
-  if ( ! fgets ( ( char  * ) & ( p40 [ 0 ] ) , letters_size , stdin ) ) { \
+  if ( ! fgets ( ( char  * ) & ( p40 [ 0 ] ) , shifr_password_letters_size ( ver ) , stdin ) ) { \
     shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ; \
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
       ( shifr_strcp ) & # funname " : ошибка чтения входящего потока" : \
@@ -310,9 +304,9 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
   shifr_reset_keypress ( ns_shifrp ) ; \
   { char volatile * j = & ( p40 [ 0 ] ) ; \
     while ( ( ( * j ) not_eq '\n' ) and ( ( * j ) not_eq '\00' ) and \
-      ( j < ( & ( p40 [ letters_size ] ) ) ) ) \
+      ( j < ( & ( p40 [ shifr_password_letters_size ( ver ) ] ) ) ) ) \
       ++ j ; \
-    if ( j < ( & ( p40 [ letters_size ] ) ) ) \
+    if ( j < ( & ( p40 [ shifr_password_letters_size ( ver ) ] ) ) ) \
       ( * j ) = '\00' ; \
     else  { \
       shifr_memsetv ( p40 , shifr_memsetv_default_byte , sizeof  ( p40 ) ) ; \
@@ -350,7 +344,7 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
       ( shifr_strcp ) & # funname " : unknown password alphabet" ) ; \
     longjmp ( ns_shifrp  -> jump  , 1 ) ; \
   } \
-  char  volatile  password_letters [ letters_size ] ; \
+  char  volatile  password_letters [ shifr_password_letters_size ( ver ) ] ; \
   switch  ( ns_shifrp -> password_alphabet  ) { \
   case  shifr_letters_count : \
     shifr_password_to_string_templ  ( ver ) ( \
@@ -392,11 +386,8 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
 
 # include <string.h> // strcmp
 
-shifr_enter_password_templ  ( shifr_enter_password_name  ( v2  ) ,
-  shifr_password_letters2size , v2 , raspr2 )
-
-shifr_enter_password_templ  ( shifr_enter_password_name  ( v3  ) ,
-  shifr_password_letters3size , v3 , raspr3 )
+shifr_enter_password_templ  ( shifr_enter_password_name  ( v2  ) , v2 , raspr2 )
+shifr_enter_password_templ  ( shifr_enter_password_name  ( v3  ) , v3 , raspr3 )
 
 // читаю 6 бит
 // 6 bits reads

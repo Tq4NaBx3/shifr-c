@@ -84,5 +84,3 @@ int main  ( int argc , char * argv [ ] ) {
   
   shifr_destr ( & shif ) ;
 }
-
-# include "inline.h"

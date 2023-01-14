@@ -4,6 +4,9 @@
 # ifndef  SHIFR_NUMBER_STRUCT_H
 # define  SHIFR_NUMBER_STRUCT_H
 
+# include <stdint.h>
+# include "number/type.h"
+
 # define  shifr_number_def( N ) \
   struct  shifr_number_struct_name ( N ) { \
     uint8_t _ ; \

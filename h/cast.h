@@ -4,8 +4,6 @@
 # ifndef  SHIFR_CAST_H
 # define  SHIFR_CAST_H
 
-# include <stdint.h> // uint16_t
-
 # define  uint8_cast_uint16 shifr_uint8_cast_uint16
 inline  uint16_t  uint8_cast_uint16 ( uint8_t ) ;
 
@@ -50,6 +48,8 @@ inline  char * charvolatilep_cast_charp ( char volatile * ) ;
 
 # define  uint8volatilep_cast_unt8p shifr_uint8volatilep_cast_unt8p
 inline  uint8_t * uint8volatilep_cast_unt8p ( uint8_t volatile * ) ;
+
+# include "type.h"
 
 # define  charconstp_cast_stringconstp shifr_charconstp_cast_stringconstp
 inline  shifr_strcp charconstp_cast_stringconstp ( char const * ) ;

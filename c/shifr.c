@@ -149,14 +149,12 @@ Function Shifr(of pair: data+salt)should be randomly disordered.
 //  log ( 10 , 1.26886932186e89 ) ≈ 89.1 digits <= 90 digits
 
 # include <errno.h>
-# include <string.h> // memset
-# include "type.h"
-# include "private.h"
+# include <string.h> // strerror
 # include "struct.h"
-# include "cast.h"
 # include "public.h"
 # include "number/public.h"
 # include "define.h"
+# include "private.h"
 
 # ifdef SHIFR_DEBUG
 void  shifr_printarr  ( shifr_strcp const  name , shifr_arrcp const p ,
@@ -186,7 +184,7 @@ Translation of the big number 'raspr.pass' to string 'password_letters'
 */
 
 # define  shifr_password_to_string_templ_def( N ) \
-void  shifr_password  ##  N ##  _to_string_templ ( \
+void  shifr_password_to_string_templ ( N ) ( \
   shifr_number_type ( N ) const * const password0 , \
   shifr_strvp const string , shifr_strp letters , \
   uint8_t const letterscount ) { \
@@ -704,8 +702,8 @@ void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp ,
   case  2 :
     strncpy ( charvolatilep_cast_charp ( &
       ns_shifrp  -> password_letters2 [ 0 ] ) , pswstr ,
-      shifr_password_letters2size ) ;
-    if ( ns_shifrp  -> password_letters2 [ shifr_password_letters2size - 1 ]
+      shifr_password_letters_size ( v2 ) ) ;
+    if ( ns_shifrp  -> password_letters2 [ shifr_password_letters_size ( v2 ) - 1 ]
       != '\00' ) {
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( shifr_strcp ) &
@@ -718,8 +716,8 @@ void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp ,
   case  3 :
     strncpy ( charvolatilep_cast_charp ( &
       ns_shifrp  -> password_letters3 [ 0 ] ) , pswstr ,
-      shifr_password_letters3size ) ;
-    if ( ns_shifrp  -> password_letters3 [ shifr_password_letters3size - 1 ]
+      shifr_password_letters_size ( v3 ) ) ;
+    if ( ns_shifrp  -> password_letters3 [ shifr_password_letters_size ( v3 ) - 1 ]
       != '\00' ) {
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( shifr_strcp ) & 
@@ -1393,12 +1391,12 @@ void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       ( shifr_strcp ) & "flaggenpasswd : unrecognized version" ) ;
     longjmp ( main_shifrp -> jump  , 1 ) ;
   }
-  char  volatile  password_letters2_62  [ shifr_password_letters2size ] ;
-  char  volatile  password_letters3_62  [ shifr_password_letters3size ] ;
-  char  volatile  password_letters2_10  [ shifr_password_letters2size ] ;
-  char  volatile  password_letters3_10  [ shifr_password_letters3size ] ;
-  char  volatile  password_letters2_26  [ shifr_password_letters2size ] ;
-  char  volatile  password_letters3_26  [ shifr_password_letters3size ] ;
+  char  volatile  password_letters2_62  [ shifr_password_letters_size ( v2 ) ] ;
+  char  volatile  password_letters3_62  [ shifr_password_letters_size ( v3 ) ] ;
+  char  volatile  password_letters2_10  [ shifr_password_letters_size ( v2 ) ] ;
+  char  volatile  password_letters3_10  [ shifr_password_letters_size ( v3 ) ] ;
+  char  volatile  password_letters2_26  [ shifr_password_letters_size ( v2 ) ] ;
+  char  volatile  password_letters3_26  [ shifr_password_letters_size ( v3 ) ] ;
   switch  ( main_shifrp -> use_version ) {
   case  2 :
     shifr_password_to_string_templ  ( v2 ) (

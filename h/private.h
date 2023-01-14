@@ -1,10 +1,8 @@
-// Шифр ©2020-3 Глебов А.Н.
-// Shifr ©2020-3 Glebe A.N.
+// Shifr ©2020-3 Glebe A.N. private
+// Шифр ©2020-3 Глебов А.Н. приватн
 
 # ifndef  SHIFR_PRIVATE_H
 # define  SHIFR_PRIVATE_H
-
-# include "type.h"
 
 // generate random number [ fr .. to ]
 unsigned  int shifr_uirandfrto  ( t_ns_shifr * ns_shifrp ,
@@ -20,8 +18,6 @@ void  shifr_datasalt ( N ) ( t_ns_shifr * ns_shifrp , \
 shifr_datasalt_dec ( v2 )
 // data_size = 1 .. 3
 shifr_datasalt_dec ( v3 )
-
-# include <stdbool.h>
 
 // пишу по шесть бит
 // secretdatasaltsize - количество шести-битных отделов (2 или 3)
@@ -106,8 +102,6 @@ void shifr_set_keypress ( t_ns_shifr * ) ;
 void  shifr_password_to_string_templ  ( N ) ( \
   shifr_number_type ( N ) const * password0 , shifr_strvp string ,  \
   shifr_strp letters , uint8_t letterscount  ) ;
-
-# include "number/type.h"
   
 shifr_password_to_string_templ_dec  ( v2 )
 shifr_password_to_string_templ_dec  ( v3 )  
@@ -131,22 +125,6 @@ to the encryption table 'shifr', decryption 'deshi'
 */
 void  shifr_password_load_uni ( t_ns_shifr * ) ;
 void  shifr_password_from_dice_uni ( t_ns_shifr * ) ;
-
-# define  shifr_number_pub_to_priv( N ) shifr_number_pub_to_priv_ ## N
-
-# define  shifr_number_pub_to_priv_dec( N ) \
-shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( shifr_number_type  ( N ) * )  ;
-
-inline  shifr_number_pub_to_priv_dec  ( v2  )
-inline  shifr_number_pub_to_priv_dec  ( v3  )
-
-# define  shifr_number_const_pub_to_priv( N ) shifr_number_const_pub_to_priv_ ## N
-
-# define  shifr_number_const_pub_to_priv_dec( N ) \
-shifr_number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) ( shifr_number_type  ( N ) const * ) ;
-
-inline  shifr_number_const_pub_to_priv_dec  ( v2  )
-inline  shifr_number_const_pub_to_priv_dec  ( v3  )
 
 inline  uint8_t shifr_letter_to_bits6 ( char  letter  ) ;
 
@@ -186,34 +164,10 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
 void  shifr_enter_password_name ( v2 ) ( t_ns_shifr * )  ;
 void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
 
-# define  shifr_number_pub_to_priv_def( N ) \
-shifr_number_priv_type ( N ) * shifr_number_pub_to_priv ( N ) ( \
-  shifr_number_type  ( N ) * const n ) { \
-  return  ( shifr_number_priv_type  ( N ) * ) ( \
-    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; \
-}
-
-# define  shifr_number_const_pub_to_priv_def( N ) \
-shifr_number_priv_type ( N ) const * shifr_number_const_pub_to_priv ( N ) (  \
-  shifr_number_type  ( N ) const * const n ) { \
-  return  ( shifr_number_priv_type  ( N ) const * ) ( \
-    ( ( uint8_t * ) n ) - offsetof ( shifr_number_priv_type ( N ) , pub ) ) ; \
-}
-
-# include "struct.h"
-# include <stddef.h> // offsetof
-
-inline  shifr_number_pub_to_priv_def  ( v2 )
-inline  shifr_number_pub_to_priv_def  ( v3 )
-    
-inline  shifr_number_const_pub_to_priv_def  ( v2 )
-inline  shifr_number_const_pub_to_priv_def  ( v3 )
-
 # include "cast.h"
 
 inline  uint8_t shifr_letter_to_bits6 ( char  const letter  ) {
-  return  int_cast_uint8 ( char_cast_uint8 ( letter ) -
-    char_cast_uint8 ( ';' ) ) ;
+  return  int_cast_uint8 ( char_cast_uint8 ( letter ) - char_cast_uint8 ( ';' ) ) ;
 }
 
 // ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64

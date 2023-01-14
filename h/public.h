@@ -1,11 +1,13 @@
-// Шифр ©2020-3 Глебов А.Н.
-// Shifr ©2020-3 Glebe A.N.
+// Shifr ©2020-3 Glebe A.N. public
+// Шифр ©2020-3 Глебов А.Н. публичные
 
 # ifndef  SHIFR_PUBLIC_H
 # define  SHIFR_PUBLIC_H
 
 # include "define.h"
 # include "type.h"
+# include <stdlib.h> // size_t
+# include <stdio.h> // FILE
   
 # ifdef SHIFR_DEBUG
 
@@ -65,6 +67,8 @@ deshi needs salt
 # define  shifr_password_load_dec(  N ) \
 void  shifr_password_load ( N ) ( shifr_number_type ( N ) const * password0 , \
   shifr_arrvp shifrp , shifr_arrvp  deship ) ;
+
+# include "number/type.h"
 
 shifr_password_load_dec ( v2  )
 shifr_password_load_dec ( v3  )
@@ -171,7 +175,5 @@ shifr_size_io  shifr_decrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
 
 shifr_decrypt_dec ( v2 )
 shifr_decrypt_dec ( v3 )
-
-# include "private.h"
 
 # endif // SHIFR_PUBLIC_H

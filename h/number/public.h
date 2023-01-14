@@ -5,6 +5,7 @@
 # define  SHIFR_NUMBER_PUBLIC_H
 
 # include "define.h"
+# include "number/type.h"
   
 # ifdef SHIFR_DEBUG
 
@@ -13,7 +14,6 @@
 # define  shifr_number_dec_princ( N ) \
 void  shifr_number_princ  ( N ) ( shifr_number_type ( N ) const * np , FILE * fs ) ;
 
-# include "number/type.h"
 # include <stdio.h>
 
 shifr_number_dec_princ  ( v2 )
@@ -37,7 +37,7 @@ uint8_t shifr_number_elt_copy ( N ) ( \
   return  shifr_number_const_pub_to_priv ( N ) ( np ) -> arr [ i ] ; \
 }
 
-# include "private.h"
+# include "number/private.h"
 
 inline  shifr_number_def_elt_copy ( v2 )
 inline  shifr_number_def_elt_copy ( v3 )

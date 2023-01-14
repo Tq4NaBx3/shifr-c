@@ -4,12 +4,12 @@
 # include <locale.h>
 # include <errno.h>
 # include "define.h"
-# include "type.h"
 # include "struct.h"
 # include "public.h"
+# include "number/public.h" // princ
 # include <string.h> // strcmp
 # include <iso646.h> // or
-# include "number/public.h"
+# include "cast.h"
 
 # ifdef SHIFR_DEBUG
 typedef shifr_timestamp_t timestamp_t ;
@@ -17,8 +17,8 @@ typedef shifr_timestamp_t timestamp_t ;
 typedef shifr_strcp strcp ;
 typedef shifr_arrcp arrcp ;
 enum  {
-  password_letters2size = shifr_password_letters2size ,
-  password_letters3size = shifr_password_letters3size ,
+  password_letters2size = shifr_password_letters_size ( v2 ) ,
+  password_letters3size = shifr_password_letters_size ( v3 ) ,
 } ;
 
 int main  ( int argc , char * argv [ ] ) {

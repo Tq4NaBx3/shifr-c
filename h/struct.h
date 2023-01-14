@@ -4,14 +4,7 @@
 # ifndef  SHIFR_STRUCT_H
 # define  SHIFR_STRUCT_H
 
-# include <stdio.h> //  FILE
-# include <setjmp.h>
-// убрать эхо в терминале
-// close terminal echo
-# include <termios.h>
-# include <stdbool.h>
 # include "type.h"
-# include "number/type.h"
 # include "number/struct.h"
 
 # define  shifr_s_raspr_templ( V ) \
@@ -50,16 +43,27 @@ enum  { shifr_letters_count3 =
   ( ( UINT8_C ( '9' ) - UINT8_C ( '0' ) ) + 1U )
 } ;
 
-enum  { shifr_password_letters2size = 30 ,
-  shifr_password_letters3size = 180
+# define  shifr_password_letters_size(  V ) shifr_password_letters_size_ ## V
+
+enum  {
+  shifr_password_letters_size ( v2 ) = 30 ,
+  shifr_password_letters_size ( v3 ) = 180 ,
 } ;
+
+# include <stdio.h> //  FILE
 
 struct  shifr_s_streambuf {  
   FILE  * file  ;
   uint8_t buf ;
   uint8_t bufbitsize  ;
 } ;
-  
+
+# include <stdbool.h>
+// убрать эхо в терминале
+// close terminal echo
+# include <termios.h>
+# include <setjmp.h>
+
 struct  s_ns_shifr  {
   // letters allowed in password :
   // буквы разрешённые в пароле :
@@ -131,9 +135,9 @@ struct  s_ns_shifr  {
   
   union {
     // ver2
-    char  volatile  password_letters2 [ shifr_password_letters2size ] ;
+    char  volatile  password_letters2 [ shifr_password_letters_size ( v2 ) ] ;
     // ver3
-    char  volatile  password_letters3 [ shifr_password_letters3size ] ;
+    char  volatile  password_letters3 [ shifr_password_letters_size ( v3 ) ] ;
   } ;
     
 // private :
