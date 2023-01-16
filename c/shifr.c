@@ -617,30 +617,47 @@ shifr_size_io shifr_decrypt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
   return  ( shifr_size_io ) { . i  = reads , .  o  = writes  } ;
 }
 
+# define  shifr_generate_dices_def( ver , rasprname ) \
+void  shifr_generate_dices ( ver ) ( t_ns_shifr * const ns_shifrp ) {  \
+  uint8_t * j = & ( ns_shifrp -> rasprname . dice [ 0 ] ) ;  \
+  uint8_t i  = shifr_deshi_size ( ver ) - 1 ;  \
+  do {  \
+    ( * j ) = uint_cast_uint8 ( shifr_uirandfrto  ( ns_shifrp , 0 , i ) ) ; \
+    --  i ; \
+    ++  j ; \
+  } while ( i >= 1 ) ;  \
+}
+
 // ! to remove , make random 0..16!-1
 // generate array raspr2.dice
 // inits array [ 0..15 , 0..14 , ... , 0..2 , 0..1 ]
-void  shifr_generate_dices ( v2 ) ( t_ns_shifr * const ns_shifrp ) {
-  uint8_t * j = & ( ns_shifrp -> raspr2  . dice [ 0 ] ) ;
-  uint8_t i  = 0x10 - 1 ; // 15
-  do {
-    ( * j ) = uint_cast_uint8 ( shifr_uirandfrto  ( ns_shifrp , 0 , i ) ) ;
-    --  i ;
-    ++  j ;
-  } while ( i >= 1 ) ;
-}
+shifr_generate_dices_def  ( v2 , raspr2 )
 
 // ! to remove , make random 0..64!-1
 // generate array raspr3.dice
 // inits array [ 0..63 , 0..62 , ... , 0..2 , 0..1 ]
-void  shifr_generate_dices ( v3 ) ( t_ns_shifr * const ns_shifrp ) {
-  uint8_t * j = & ( ns_shifrp -> raspr3  . dice [ 0 ] ) ;
-  uint8_t i  = 0x40 - 1 ; // 63
-  do {
-    ( * j ) = uint_cast_uint8 ( shifr_uirandfrto  ( ns_shifrp , 0 , i ) ) ;
-    -- i  ;
-    ++ j  ;
-  } while ( i >= 1 ) ;
+shifr_generate_dices_def  ( v3 , raspr3 )
+
+# define  shifr_dices_to_number_def( ver , rasprname ) \
+void  shifr_dices_to_number ( ver ) ( t_ns_shifr * const ns_shifrp ) { \
+  shifr_number_set0 ( ver ) ( & ns_shifrp -> rasprname . pass . pub ) ; \
+  shifr_number_priv_type ( ver ) mu  ; \
+  shifr_number_set_byte ( ver ) ( & mu . pub , 1 ) ; \
+  uint8_t in = 0 ; \
+  do { \
+    { shifr_number_priv_type ( ver ) mux = mu ; \
+      /* re += dice [ in ] * mu ; */ \
+      shifr_number_mul_byte ( ver ) ( & mux . pub , \
+        ns_shifrp -> rasprname . dice [ in ] ) ; \
+      shifr_number_add  ( ver ) ( & ns_shifrp -> rasprname . pass . pub , \
+        & mux . pub ) ; \
+    } \
+    /* $mu *=  16|64 - $in ; */ \
+    shifr_number_mul_byte ( ver ) ( & mu . pub , \
+      int_cast_uint8 ( shifr_deshi_size ( ver ) - in ) ) ; \
+    ++  in ; \
+  } while ( in < shifr_deshi_size ( ver ) - 1 ) ; \
+  shifr_password_from_dice_uni  ( ns_shifrp ) ; \
 }
 
 // convert raspr2.dice as array to big number raspr2.pass
@@ -648,97 +665,53 @@ void  shifr_generate_dices ( v3 ) ( t_ns_shifr * const ns_shifrp ) {
 // [ 0..15 , 0..14 , 0..13 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ]
 // = x + y * 16 + z * 16 * 15 + ... + u * 16! / 2 / 3 + v * 16! / 2 =
 // 0 .. 16!-1
-void  shifr_dices_to_number ( v2 ) ( t_ns_shifr * const ns_shifrp ) {
-  shifr_number_set0 ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ) ;
-  shifr_number_priv_type ( v2 ) mu  ;
-  shifr_number_set_byte ( v2 ) ( & mu . pub , 1 ) ;
-  uint8_t in = 0 ;
-  do {
-    { shifr_number_priv_type ( v2 ) mux = mu ;
-      // re += dice [ in ] * mu ;
-      shifr_number_mul_byte ( v2 ) ( & mux . pub ,
-        ns_shifrp -> raspr2  . dice [ in ] ) ;
-      shifr_number_add  ( v2 ) ( & ns_shifrp -> raspr2  . pass . pub ,
-        & mux . pub ) ;
-    }
-    //$mu *=  16 - $in ;
-    shifr_number_mul_byte ( v2 ) ( & mu . pub ,
-      int_cast_uint8 ( 0x10 - in ) ) ;
-    ++  in ;
-  } while ( in < 0x10 - 1 ) ;
-  shifr_password_from_dice_uni  ( ns_shifrp ) ;
-}
+shifr_dices_to_number_def ( v2 , raspr2 )
 
 // convert raspr3.dice as array to big number raspr3.pass
 //  + create tables shifr deshi
 // [ 0..63 , 0..62 , 0..61 , ... , 0..2 , 0..1 ] = [ x , y , z , ... , u , v ]
 // = x + y * 64 + z * 64 * 63 + ... + u * 64! / 2 / 3 + v * 64! / 2 = 
 // 0 .. 64!-1
-void  shifr_dices_to_number ( v3 ) ( t_ns_shifr * const ns_shifrp ) {
-  shifr_number_set0 ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ) ;
-  shifr_number_priv_type ( v3 ) mu  ;
-  shifr_number_set_byte ( v3 ) ( & mu . pub , 1 ) ;
-  uint8_t in = 0 ;
-  do {
-    { shifr_number_priv_type ( v3 ) mux = mu ;
-      // re += dice [ in ] * mu ;
-      shifr_number_mul_byte ( v3 ) (
-        & mux . pub ,  ns_shifrp -> raspr3  . dice [ in ] ) ;
-      shifr_number_add  ( v3 ) ( & ns_shifrp -> raspr3  . pass . pub ,
-        & mux . pub ) ;
-    }
-    //$mu *=  64 - $in ;
-    shifr_number_mul_byte ( v3 ) ( & mu . pub ,
-      int_cast_uint8 ( 0x40 - in ) ) ;
-    ++  in ;
-  } while ( in < 0x40 - 1 ) ;
-  // reverse math .. dice [ i ] == cindex in _load
-  shifr_password_from_dice_uni  ( ns_shifrp ) ;
-}
+shifr_dices_to_number_def ( v3 , raspr3 )
+
+# define  shifr_password_set_by_string_templ( ver , password_letters_name ) \
+  strncpy ( charvolatilep_cast_charp ( & \
+    ns_shifrp  -> password_letters_name [ 0 ] ) , pswstr , \
+    shifr_password_letters_size ( ver ) ) ; \
+  if ( ns_shifrp  -> password_letters_name [ shifr_password_letters_size ( ver ) - 1 ] \
+    != '\00' ) { \
+    ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ? \
+      ( shifr_strcp ) & \
+      "shifr_password_set_by_string ( " # ver " ) : пароль очень длинный" : \
+      ( shifr_strcp ) & \
+      "shifr_password_set_by_string ( " # ver " ) : the password is very long" ) ; \
+    longjmp ( ns_shifrp  -> jump  , 1 ) ; \
+  } \
+  break ;
 
 void  shifr_password_set_by_string ( t_ns_shifr * const ns_shifrp ,
   char const * const pswstr ) {
   switch ( ns_shifrp -> use_version ) {
   case  2 :
-    strncpy ( charvolatilep_cast_charp ( &
-      ns_shifrp  -> password_letters2 [ 0 ] ) , pswstr ,
-      shifr_password_letters_size ( v2 ) ) ;
-    if ( ns_shifrp  -> password_letters2 [ shifr_password_letters_size ( v2 ) - 1 ]
-      != '\00' ) {
-      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-        ( shifr_strcp ) &
-        "shifr_password_set_string : пароль очень длинный" :
-        ( shifr_strcp ) & 
-        "shifr_password_set_string : the password is very long" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ;
-    }
-    break ;
+    shifr_password_set_by_string_templ  ( v2 , password_letters2 )
   case  3 :
-    strncpy ( charvolatilep_cast_charp ( &
-      ns_shifrp  -> password_letters3 [ 0 ] ) , pswstr ,
-      shifr_password_letters_size ( v3 ) ) ;
-    if ( ns_shifrp  -> password_letters3 [ shifr_password_letters_size ( v3 ) - 1 ]
-      != '\00' ) {
-      ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-        ( shifr_strcp ) & 
-        "shifr_password_set_string : пароль очень длинный" :
-        ( shifr_strcp ) & 
-        "shifr_password_set_string : the password is very long" ) ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ;
-    }
-    break ;
+    shifr_password_set_by_string_templ  ( v3 , password_letters3 )
   default :
-    fprintf ( stderr  , ( ns_shifrp -> localerus ?
-      "shifr_password_set_string : неизвестная версия %d\n" :
-      "shifr_password_set_string : unknown version %d\n" ) ,
-      ns_shifrp -> use_version )  ;
     ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
-      ( shifr_strcp ) & "shifr_password_set_string : неизвестная версия" :
-      ( shifr_strcp ) & "shifr_password_set_string : unknown version" ) ;
+      ( shifr_strcp ) & "shifr_password_set_by_string : неизвестная версия" :
+      ( shifr_strcp ) & "shifr_password_set_by_string : unknown version" ) ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
   shifr_string_to_password  ( ns_shifrp ) ;
 }
+
+# define  shifr_string_to_password_case( ver , shifr_letters_count_name , password_letters_name , raspr_name , letters_name ) \
+  case  shifr_letters_count_name : \
+    shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
+      ( shifr_strvcp  ) & ns_shifrp  -> password_letters_name , \
+      & ns_shifrp -> raspr_name  . pass . pub , \
+      ( shifr_strcp ) & ns_shifrp -> letters_name ,  shifr_letters_count_name ) ; \
+    break ;
 
 /*
 transfer 'password_letters' as string to 'raspr.pass' as big number
@@ -750,30 +723,10 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
   switch ( ns_shifrp -> use_version ) {
   case 2 :
     switch  ( ns_shifrp -> password_alphabet  ) {
-    case  shifr_letters_count :
-      shifr_string_to_password_templ  ( v2 ) ( ns_shifrp ,
-        ( shifr_strvcp  ) & ns_shifrp  -> password_letters2 ,
-        & ns_shifrp -> raspr2  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters ,  shifr_letters_count ) ;
-      break ;
-    case  shifr_letters_count2  :
-      shifr_string_to_password_templ  ( v2 ) ( ns_shifrp ,
-        ( shifr_strvcp  ) & ns_shifrp  -> password_letters2 ,
-        & ns_shifrp -> raspr2  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
-      break ;
-    case  shifr_letters_count3  :
-      shifr_string_to_password_templ  ( v2 ) ( ns_shifrp ,
-        ( shifr_strvcp  ) & ns_shifrp  -> password_letters2 ,
-        & ns_shifrp -> raspr2  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters3 , shifr_letters_count3 ) ;
-      break ;
-    case  shifr_letters_count4  :
-      shifr_string_to_password_templ  ( v2 ) ( ns_shifrp ,
-        ( shifr_strvcp  ) & ns_shifrp  -> password_letters2 ,
-        & ns_shifrp -> raspr2  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
-      break ;
+    shifr_string_to_password_case ( v2 , shifr_letters_count , password_letters2 , raspr2 , letters )
+    shifr_string_to_password_case ( v2 , shifr_letters_count2 , password_letters2 , raspr2 , letters2 )
+    shifr_string_to_password_case ( v2 , shifr_letters_count3 , password_letters2 , raspr2 , letters3 )
+    shifr_string_to_password_case ( v2 , shifr_letters_count4 , password_letters2 , raspr2 , letters4 )
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( shifr_strcp ) &
@@ -785,30 +738,10 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
     break ;
   case 3 :
     switch  ( ns_shifrp -> password_alphabet  ) {
-    case  shifr_letters_count :
-      shifr_string_to_password_templ  ( v3 ) ( ns_shifrp ,
-        ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
-        & ns_shifrp -> raspr3  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters ,  shifr_letters_count ) ;
-      break ;
-    case  shifr_letters_count2  :
-      shifr_string_to_password_templ  ( v3 ) ( ns_shifrp , 
-        ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
-        & ns_shifrp -> raspr3  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ;
-      break ;
-    case  shifr_letters_count3  :
-      shifr_string_to_password_templ  ( v3 ) ( ns_shifrp , 
-        ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
-        & ns_shifrp -> raspr3  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters3 , shifr_letters_count3 ) ;
-      break ;
-    case  shifr_letters_count4  :
-      shifr_string_to_password_templ  ( v3 ) ( ns_shifrp , 
-        ( shifr_strvcp  ) & ns_shifrp  -> password_letters3 ,
-        & ns_shifrp -> raspr3  . pass . pub ,
-        ( shifr_strcp ) & ns_shifrp -> letters4 , shifr_letters_count4 ) ;
-      break ;
+    shifr_string_to_password_case ( v3 , shifr_letters_count , password_letters3 , raspr3 , letters )
+    shifr_string_to_password_case ( v3 , shifr_letters_count2 , password_letters3 , raspr3 , letters2 )
+    shifr_string_to_password_case ( v3 , shifr_letters_count3 , password_letters3 , raspr3 , letters3 )
+    shifr_string_to_password_case ( v3 , shifr_letters_count4 , password_letters3 , raspr3 , letters4 )
     default :
       ns_shifrp  -> string_exception  = ( ns_shifrp -> localerus ?
         ( shifr_strcp ) & 
