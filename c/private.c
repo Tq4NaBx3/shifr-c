@@ -7,6 +7,12 @@
 
 static  ssize_t shifr_getrandom  ( shifr_arrps const vec )  ;
 
+# define  SHIFR_RANDOM_getrandom
+// # define  SHIFR_RANDOM_rand
+
+// ! declare in Makefile USE_GNU_SOURCE = -D'_GNU_SOURCE'
+// # define  SHIFR_RANDOM_syscall
+
 # ifdef  SHIFR_RANDOM_rand
 # include <stdlib.h> // srand
 # include <time.h>
