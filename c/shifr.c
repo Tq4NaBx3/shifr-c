@@ -376,6 +376,32 @@ lbreak  : ;
   return  result  ;
 }
 
+char  const shifr_text_num_to_let ( v2  ) [ 41  ] = {
+  [ 0 ] = 'a' , [ 1 ] = 'b' , [ 2 ] = 'c' , [ 3 ] = 'd' , [ 4 ] = 'e' , [ 5 ] = 'f' ,
+  [ 6 ] = 'g' , [ 7 ] = 'h' , [ 8 ] = 'i' , [ 9 ] = 'j' , [ 10  ] = 'k' , [ 11  ] = 'l' ,
+  [ 12  ] = 'm' , [ 13  ] = 'n' , [ 14  ] = 'o' , [ 15  ] = 'p' , [ 16  ] = 'q' , [ 17  ] = 'r' ,
+  [ 18  ] = 's' , [ 19  ] = 't' , [ 20  ] = 'u' , [ 21  ] = 'v' , [ 22  ] = 'w' , [ 23  ] = 'x' ,
+  [ 24  ] = 'y' , [ 25  ] = 'z' , [ 26  ] = 'A' , [ 27  ] = 'B' , [ 28  ] = 'C' , [ 29  ] = 'D' ,
+  [ 30  ] = 'E' , [ 31  ] = 'F' , [ 32  ] = 'G' , [ 33  ] = 'H' , [ 34  ] = 'I' , [ 35  ] = 'J' ,
+  [ 36  ] = 'K' , [ 37  ] = 'L' , [ 38  ] = 'M' , [ 39  ] = 'N' , [ 40  ] = 'O' ,
+} ;
+
+unsigned  int const shifr_text_let_to_num ( v2  ) [ ] = {
+  [ 'a' - 'A' ] = 0 , [ 'b' - 'A' ] = 1 , [ 'c' - 'A' ] = 2 , [ 'd' - 'A' ] = 3 , [ 'e' - 'A' ] = 4 ,
+  [ 'f' - 'A' ] = 5 ,
+  [ 'g' - 'A' ] = 6 , [ 'h' - 'A' ] = 7 , [ 'i' - 'A' ] = 8 , [ 'j' - 'A' ] = 9 , [ 'k' - 'A' ] = 10  ,
+  [ 'l' - 'A' ] = 11  ,
+  [ 'm' - 'A' ] = 12  , [ 'n' - 'A' ] = 13  , [ 'o' - 'A' ] = 14  , [ 'p' - 'A' ] = 15  , [ 'q' - 'A' ] = 16  ,
+  [ 'r' - 'A' ] = 17  ,
+  [ 's' - 'A' ] = 18  , [ 't' - 'A' ] = 19  , [ 'u' - 'A' ] = 20  , [ 'v' - 'A' ] = 21  , [ 'w' - 'A' ] = 22  ,
+  [ 'x' - 'A' ] = 23  ,
+  [ 'y' - 'A' ] = 24  , [ 'z' - 'A' ] = 25  , [ 'A' - 'A' ] = 26  , [ 'B' - 'A' ] = 27  , [ 'C' - 'A' ] = 28  ,
+  [ 'D' - 'A' ] = 29  ,
+  [ 'E' - 'A' ] = 30  , [ 'F' - 'A' ] = 31  , [ 'G' - 'A' ] = 32  , [ 'H' - 'A' ] = 33  , [ 'I' - 'A' ] = 34  ,
+  [ 'J' - 'A' ] = 35  ,
+  [ 'K' - 'A' ] = 36  , [ 'L' - 'A' ] = 37  , [ 'M' - 'A' ] = 38  , [ 'N' - 'A' ] = 39  , [ 'O' - 'A' ] = 40  ,
+} ;
+
 // returns size loads & writes
 shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
   shifr_arrcps const input , shifr_arrps const output  ) {
@@ -404,8 +430,10 @@ shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
 // 1639 ^ 1/2 = 40.48
 // 1639 % 40 = 0 .. 39
 // 1639 / 40 = 40.97
+// 2^16 = 65536
+// 40 * 40 * 41 = 65600
 // делаем make [0] % 40 , [1] % 40 , [2] % 41
-// 'R' = 82 .. 'z' = 122
+// 'a' .. 'z' 'A' .. 'O'
     if  ( ns_shifrp  -> flagtext  ) {
       uint16_t  buf16 = int_cast_uint16 (
         ( int_cast_uint16 ( encrypteddata [ 0 ] bitand  0xf ) ) bitor
@@ -413,11 +441,11 @@ shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
         ( ( int_cast_uint16 ( encrypteddata [ 2 ] bitand  0xf ) ) << 8 ) bitor
         ( ( int_cast_uint16 ( encrypteddata [ 3 ] bitand  0xf ) ) << 12  ) ) ;
       char buf3 [ 4 ] ;
-      buf3 [ 0 ] = int_cast_char ( 'R' + ( buf16 % 40 ) ) ;
+      buf3 [ 0 ] = shifr_text_num_to_let ( v2  ) [ buf16 % 40 ] ;
       buf16 /= 40 ;
-      buf3 [ 1 ] = int_cast_char ( 'R' + ( buf16 % 40 ) ) ;
+      buf3 [ 1 ] = shifr_text_num_to_let ( v2  ) [ buf16 % 40 ] ;
       buf16 /= 40 ;
-      buf3 [ 2 ] = int_cast_char ( 'R' + buf16 ) ;
+      buf3 [ 2 ] = shifr_text_num_to_let ( v2  ) [ buf16 ]  ;
       ns_shifrp  -> charcount += 3 ;
       if ( ns_shifrp  -> charcount == 60 )  {
         ns_shifrp  -> charcount = 0 ;
@@ -521,37 +549,30 @@ shifr_size_io  shifr_decrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
   while ( reads < input . s and writes < output . s ) {
     char buf [ 2 ] ;
     if  ( ns_shifrp  -> flagtext  ) {
-// 2^16 ^ 1/3 = 40.32
-// 2^16 % 40 = 0 .. 39
-// 2^16 / 40 = 1638.4
-// 1639 ^ 1/2 = 40.48
-// 1639 % 40 = 0 .. 39
-// 1639 / 40 = 40.97
-// делаем make [0] % 40 , [1] % 40 , [2] % 41
-// 'R' = 82 .. 'z' = 122
       // читаем три буквы ' a 1 b' -> декодируем в два байта "XY"
       // reads three letters ' a 1 b' -> decode to two bytes "XY"
       do {
+        char  tmp ;
         do {
           if ( reads >= input . s or writes >= output . s )
             goto Exit ;
-          ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ] = uint8_cast_char ( * input_buffer ) ;
+          tmp = uint8_cast_char ( * input_buffer ) ;
           ++  input_buffer  ;
           ++  reads ;
-        } while ( ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ] < 'R' or
-          ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ] > 'z' ) ;
+        } while ( ( tmp < 'A' or tmp > 'O' ) and ( tmp < 'a' or tmp > 'z' ) ) ;
+        ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ]  = tmp ;
         ++ ( ns_shifrp  -> buf2index ) ;
       } while ( ns_shifrp  -> buf2index < 3 ) ;
       // next letters begins with zero index
       // следующие буквы начинают с нулевого индекса
       ns_shifrp  -> buf2index = 0 ;
       uint16_t u16 = uint_cast_uint16 (
-        ( int_cast_uint16 ( ( ns_shifrp  -> buf2 ) [ 0 ] - 'R' ) ) +
-        40U * ( ( int_cast_uint16 ( ( ns_shifrp  -> buf2 ) [ 1 ] - 'R' ) ) +
-        40U * ( int_cast_uint16 ( ( ns_shifrp  -> buf2 ) [ 2 ] - 'R' ) ) ) ) ;
+        ( shifr_text_let_to_num ( v2  ) [ ( ns_shifrp  -> buf2 ) [ 0 ] - 'A' ] ) +
+        40U * ( ( shifr_text_let_to_num ( v2  ) [ ( ns_shifrp  -> buf2 ) [ 1 ] - 'A' ] ) +
+        40U * ( shifr_text_let_to_num ( v2  ) [ ( ns_shifrp  -> buf2 ) [ 2 ] - 'A' ] ) ) ) ;
       buf [ 0 ] = uint16_cast_char ( u16 bitand 0xff ) ;
       buf [ 1 ] = uint16_cast_char ( u16 >> 8  ) ;
-    } else {  // flagtext
+    } else { // ! flagtext
       if ( reads + 1 >= input . s )
         goto Exit ;
       buf [ 0 ] = uint8_cast_char ( * input_buffer ) ;
@@ -1567,7 +1588,7 @@ int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     "  $ ./shifr --gen-pas > psw"  ) ;
   puts  (
     "  $ cat psw\n"
-    "  EvLjLsc"  ) ;
+    "  MQsKYrs2"  ) ;
   puts  ( localerus ?
     "  $ ./shifr --пар-путь 'psw' > test.shi --текст"  :
     "  $ ./shifr --pas-path 'psw' > test.shi --text"  ) ;
@@ -1576,7 +1597,7 @@ int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     "  2+2=5 (Press Enter,Ctrl+D)" ) ;
   puts  (
     "  $ cat test.shi\n"
-    "  wr[\\XkaZsUfS^Uaktq" ) ;
+    "  sBluffCdjasiccAmcO" ) ;
   puts( localerus ?
     "  $ ./shifr --пар-путь 'psw' < test.shi --текст --расшифр" :
     "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;

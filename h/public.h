@@ -176,4 +176,10 @@ shifr_size_io  shifr_decrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
 shifr_decrypt_dec ( v2 )
 shifr_decrypt_dec ( v3 )
 
+# define  shifr_text_num_to_let( V )  shifr_text_num_to_let_ ## V
+extern  char  const shifr_text_num_to_let ( v2  ) [ 41  ] ;
+
+# define  shifr_text_let_to_num( V )  shifr_text_let_to_num_ ## V
+extern  unsigned  int const shifr_text_let_to_num ( v2  ) [ ] ;
+
 # endif // SHIFR_PUBLIC_H
