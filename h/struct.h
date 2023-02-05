@@ -39,7 +39,7 @@ enum  { shifr_letters_count4 =
 
 // 0x30 '0' - 0x39 '9'
 // 10 шт pcs
-enum  { shifr_letters_count3 = 
+enum  { shifr_letters_count_Digit =
   ( ( UINT8_C ( '9' ) - UINT8_C ( '0' ) ) + 1U )
 } ;
 
@@ -74,7 +74,7 @@ struct  s_ns_shifr  {
   // a..z
   char  letters4  [ shifr_letters_count4  ] ;
   // 0..9
-  char  letters3  [ shifr_letters_count3  ] ;
+  char  letters_Digit  [ shifr_letters_count_Digit  ] ;
   bool  localerus ; 
 
   // default state repository

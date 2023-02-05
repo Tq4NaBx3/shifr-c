@@ -5,7 +5,7 @@
 # include "define.h"
 # include "struct.h"
 
-static  ssize_t shifr_getrandom  ( shifr_arrps const vec )  ;
+static  ssize_t shifr_getrandom  ( shifr_arrps )  ;
 
 # define  SHIFR_RANDOM_getrandom
 // # define  SHIFR_RANDOM_rand
@@ -333,10 +333,10 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
       ( shifr_strvcp ) & p40 , & ns_shifrp -> rasprname  . pass . pub , \
       ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ; \
     break ; \
-  case  shifr_letters_count3  : \
+  case  shifr_letters_count_Digit  : \
     shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
       ( shifr_strvcp ) & p40 , & ns_shifrp -> rasprname  . pass . pub , \
-      ( shifr_strcp ) & ns_shifrp -> letters3 , shifr_letters_count3 ) ; \
+      ( shifr_strcp ) & ns_shifrp -> letters_Digit , shifr_letters_count_Digit ) ; \
     break ; \
   case  shifr_letters_count4  : \
     shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
@@ -362,10 +362,10 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
       & ns_shifrp -> rasprname  . pass . pub , & password_letters , \
       & ns_shifrp -> letters2 , shifr_letters_count2 ) ; \
     break ; \
-  case  shifr_letters_count3  : \
+  case  shifr_letters_count_Digit  : \
     shifr_password_to_string_templ  ( ver ) ( \
       & ns_shifrp -> rasprname  . pass . pub , & password_letters , \
-      & ns_shifrp -> letters3 , shifr_letters_count3 ) ; \
+      & ns_shifrp -> letters_Digit , shifr_letters_count_Digit ) ; \
     break ; \
   case  shifr_letters_count4  : \
     shifr_password_to_string_templ  ( ver ) ( \

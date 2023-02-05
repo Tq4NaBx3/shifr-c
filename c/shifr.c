@@ -711,7 +711,7 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
     switch  ( ns_shifrp -> password_alphabet  ) {
     shifr_string_to_password_case ( v2 , shifr_letters_count , password_letters2 , raspr2 , letters )
     shifr_string_to_password_case ( v2 , shifr_letters_count2 , password_letters2 , raspr2 , letters2 )
-    shifr_string_to_password_case ( v2 , shifr_letters_count3 , password_letters2 , raspr2 , letters3 )
+    shifr_string_to_password_case ( v2 , shifr_letters_count_Digit , password_letters2 , raspr2 , letters_Digit )
     shifr_string_to_password_case ( v2 , shifr_letters_count4 , password_letters2 , raspr2 , letters4 )
     default :
       goto  Exc ;
@@ -721,7 +721,7 @@ void  shifr_string_to_password ( t_ns_shifr * const ns_shifrp ) {
     switch  ( ns_shifrp -> password_alphabet  ) {
     shifr_string_to_password_case ( v3 , shifr_letters_count , password_letters3 , raspr3 , letters )
     shifr_string_to_password_case ( v3 , shifr_letters_count2 , password_letters3 , raspr3 , letters2 )
-    shifr_string_to_password_case ( v3 , shifr_letters_count3 , password_letters3 , raspr3 , letters3 )
+    shifr_string_to_password_case ( v3 , shifr_letters_count_Digit , password_letters3 , raspr3 , letters_Digit )
     shifr_string_to_password_case ( v3 , shifr_letters_count4 , password_letters3 , raspr3 , letters4 )
     default :
 Exc :
@@ -823,11 +823,11 @@ void  shifr_password_to_string  ( t_ns_shifr * const ns_shifrp ) {
         & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters2 ,
         shifr_letters_count2 ) ;
       break ;
-    case  shifr_letters_count3  :
+    case  shifr_letters_count_Digit  :
       shifr_password_to_string_templ  ( v2 ) (
         & ns_shifrp -> raspr2  . pass . pub ,
-        & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters3 ,
-        shifr_letters_count3 ) ;
+        & ns_shifrp  -> password_letters2 , & ns_shifrp -> letters_Digit ,
+        shifr_letters_count_Digit ) ;
       break ;
     case  shifr_letters_count4  :
       shifr_password_to_string_templ  ( v2 ) (
@@ -857,11 +857,11 @@ void  shifr_password_to_string  ( t_ns_shifr * const ns_shifrp ) {
         & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters2 ,
         shifr_letters_count2 ) ;
       break ;
-    case  shifr_letters_count3  :
+    case  shifr_letters_count_Digit  :
       shifr_password_to_string_templ  ( v3 ) (
         & ns_shifrp -> raspr3  . pass . pub ,
-        & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters3 ,
-        shifr_letters_count3 ) ;
+        & ns_shifrp  -> password_letters3 , & ns_shifrp -> letters_Digit ,
+        shifr_letters_count_Digit ) ;
       break ;
     case  shifr_letters_count4  :
       shifr_password_to_string_templ  ( v3 ) (
@@ -1152,7 +1152,7 @@ void  shifr_test_password ( t_ns_shifr  * const main_shifrp , size_t  const nr  
       psw_unii  = shifr_memsetv_default_byte ;
     }
     break ;
-  case  shifr_letters_count3  :
+  case  shifr_letters_count_Digit  :
     { size_t i  = 0 ;
       for ( ; i < nr  ; ++  i ) {
         if (  psw_uni [ i ] < '0' or  psw_uni  [ i ] > '9' ) {
@@ -1227,7 +1227,7 @@ void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       & password_letters2_62  , & main_shifrp -> letters2 , shifr_letters_count2 ) ;
     shifr_password_to_string_templ  ( v2 ) (
       & main_shifrp -> raspr2  . pass . pub ,
-      & password_letters2_10 , & main_shifrp -> letters3 , shifr_letters_count3 ) ;
+      & password_letters2_10 , & main_shifrp -> letters_Digit , shifr_letters_count_Digit ) ;
     shifr_password_to_string_templ  ( v2 ) (
       & main_shifrp -> raspr2  . pass . pub ,
       & password_letters2_26  , & main_shifrp -> letters4 , shifr_letters_count4 ) ;
@@ -1241,7 +1241,7 @@ void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
       & password_letters3_62  , & main_shifrp -> letters2 , shifr_letters_count2 ) ;
     shifr_password_to_string_templ  ( v3 ) (
       & main_shifrp -> raspr3  . pass . pub ,
-      & password_letters3_10  , & main_shifrp -> letters3 , shifr_letters_count3 ) ;
+      & password_letters3_10  , & main_shifrp -> letters_Digit , shifr_letters_count_Digit ) ;
     shifr_password_to_string_templ  ( v3 ) (
       & main_shifrp -> raspr3  . pass . pub ,
       & password_letters3_26  , & main_shifrp -> letters4 , shifr_letters_count4 ) ;
@@ -1273,8 +1273,8 @@ void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
     & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_26 :
       password_letters2_26  ) [ 0 ] ) ) ;
   fprintf  ( stderr , ( localerus ?
-    "--a10\tцифрами между кавычек = \'%s\'\n" :
-    "--a10\tby digits between quotes = \'%s\'\n"  ) ,
+    "--a10 --adig\tцифрами между кавычек = \'%s\'\n" :
+    "--a10 --adig\tby digits between quotes = \'%s\'\n"  ) ,
     & ( ( ( main_shifrp -> use_version == 3 ) ? password_letters3_10 :
       password_letters2_10 )  [ 0 ] ) ) ;
   switch  ( main_shifrp -> use_version ) {
@@ -1310,7 +1310,7 @@ void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
 
       shifr_string_to_password_templ  ( v2 ) ( main_shifrp ,
         ( shifr_strvcp  ) & password_letters2_10 ,
-        & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters3 , shifr_letters_count3 ) ;
+        & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters_Digit , shifr_letters_count_Digit ) ;
       fputs ( ( localerus ?
         "из строки10 во внутренний пароль = " :
         "from string10 to internal password = " ) , stderr ) ;
@@ -1351,7 +1351,7 @@ void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
 
       shifr_string_to_password_templ  ( v3 ) ( main_shifrp ,
         ( shifr_strvcp  ) & password_letters3_10 ,
-        & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters3 , shifr_letters_count3 ) ;
+        & password2 . pub , ( shifr_strcp ) & main_shifrp -> letters_Digit , shifr_letters_count_Digit ) ;
       fputs ( ( localerus ?
         "из строки10 во внутренний пароль = " :
         "from string10 to internal password = " ) , stderr ) ;
@@ -1394,10 +1394,10 @@ void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         & main_shifrp -> password_letters2 , & main_shifrp -> letters2 ,
         shifr_letters_count2 ) ;
       break ;
-    case  shifr_letters_count3  :
+    case  shifr_letters_count_Digit  :
       shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
-        & main_shifrp -> password_letters2 , & main_shifrp -> letters3 ,
-        shifr_letters_count3 ) ;
+        & main_shifrp -> password_letters2 , & main_shifrp -> letters_Digit ,
+        shifr_letters_count_Digit ) ;
       break ;
     case  shifr_letters_count4  :
       shifr_password_to_string_templ  ( v2 ) ( & main_shifrp -> raspr2  . pass . pub ,
@@ -1424,10 +1424,10 @@ void  shifr_main_genpsw ( t_ns_shifr  * const main_shifrp ) {
         & main_shifrp -> password_letters3 , & main_shifrp -> letters2 ,
         shifr_letters_count2 ) ;
       break ;
-    case  shifr_letters_count3  :
+    case  shifr_letters_count_Digit  :
       shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
-        & main_shifrp -> password_letters3 , & main_shifrp -> letters3 ,
-        shifr_letters_count3 ) ;
+        & main_shifrp -> password_letters3 , & main_shifrp -> letters_Digit ,
+        shifr_letters_count_Digit ) ;
       break ;
     case  shifr_letters_count4  :
       shifr_password_to_string_templ  ( v3 ) ( & main_shifrp -> raspr3  . pass . pub ,
@@ -1550,13 +1550,13 @@ int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
   }
   fputs ( "\'\n" , stdout  ) ;
   fputs ( ( localerus ?
-    "  --а10 или\n  --a10\t\'" :
-    "  --a10\t\'" ) , stdout  ) ;
-  { char const * cj = & ( main_shifrp -> letters3 [ 0 ] ) ;
+    "  --a10 --adig или\n  --а10\t\'" :
+    "  --a10 --adig\t\'" ) , stdout  ) ;
+  { char const * cj = & ( main_shifrp -> letters_Digit [ 0 ] ) ;
     do {
       fputc ( * cj  , stdout  ) ;
       ++ cj ;
-    } while ( cj not_eq ( & ( main_shifrp -> letters3 [ shifr_letters_count3 ] ) ) ) ;
+    } while ( cj not_eq ( & ( main_shifrp -> letters_Digit [ shifr_letters_count_Digit ] ) ) ) ;
   }
   fputs ( "\'\n" , stdout  ) ;
   puts  ( localerus ?
@@ -1632,7 +1632,7 @@ void  shifr_init  ( t_ns_shifr  * const ns_shifrp ) {
       } while ( i <= 'z'  ) ;
     }
   }
-  { char * j = & ( ns_shifrp -> letters3  [ 0 ] ) ;
+  { char * j = & ( ns_shifrp -> letters_Digit  [ 0 ] ) ;
     uint8_t i = '0' ;
     do {
       ( * j ) = uint8_cast_char ( i ) ;

@@ -224,19 +224,20 @@ int main  ( int argc , char * argv [ ] ) {
         } else
         if (  ( strcmp ( argv [ argj  ] , "--а95" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--a95" ) ==  0 ) ) { 
-          main_shifr . password_alphabet = 95 ;
+          main_shifr . password_alphabet = shifr_letters_count ;
         } else
         if (  ( strcmp ( argv [ argj  ] , "--а62" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--a62" ) ==  0 ) ) { 
-          main_shifr . password_alphabet = 62 ;
+          main_shifr . password_alphabet = shifr_letters_count2 ;
         } else
         if (  ( strcmp ( argv [ argj  ] , "--а26" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--a26" ) ==  0 ) ) { 
-          main_shifr . password_alphabet = 26 ;
+          main_shifr . password_alphabet = shifr_letters_count4 ;
         } else
         if (  ( strcmp ( argv [ argj  ] , "--а10" ) ==  0 ) or
-          ( strcmp ( argv [ argj  ] , "--a10" ) ==  0 ) ) { 
-          main_shifr . password_alphabet = 10 ;
+          ( strcmp ( argv [ argj  ] , "--a10" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--adig" ) ==  0 ) ) {
+          main_shifr . password_alphabet = shifr_letters_count_Digit ;
         } else
         if (  ( strcmp ( argv [ argj  ] , "--рус" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--rus" ) ==  0 ) ) {
