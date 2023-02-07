@@ -376,30 +376,37 @@ lbreak  : ;
   return  result  ;
 }
 
-char  const shifr_text_num_to_let ( v2  ) [ 41  ] = {
-  [ 0 ] = 'a' , [ 1 ] = 'b' , [ 2 ] = 'c' , [ 3 ] = 'd' , [ 4 ] = 'e' , [ 5 ] = 'f' ,
-  [ 6 ] = 'g' , [ 7 ] = 'h' , [ 8 ] = 'i' , [ 9 ] = 'j' , [ 10  ] = 'k' , [ 11  ] = 'l' ,
-  [ 12  ] = 'm' , [ 13  ] = 'n' , [ 14  ] = 'o' , [ 15  ] = 'p' , [ 16  ] = 'q' , [ 17  ] = 'r' ,
-  [ 18  ] = 's' , [ 19  ] = 't' , [ 20  ] = 'u' , [ 21  ] = 'v' , [ 22  ] = 'w' , [ 23  ] = 'x' ,
-  [ 24  ] = 'y' , [ 25  ] = 'z' , [ 26  ] = 'A' , [ 27  ] = 'B' , [ 28  ] = 'C' , [ 29  ] = 'D' ,
-  [ 30  ] = 'E' , [ 31  ] = 'F' , [ 32  ] = 'G' , [ 33  ] = 'H' , [ 34  ] = 'I' , [ 35  ] = 'J' ,
-  [ 36  ] = 'K' , [ 37  ] = 'L' , [ 38  ] = 'M' , [ 39  ] = 'N' , [ 40  ] = 'O' ,
+char  const shifr_base64_num_to_let [ 0x40  ] = {
+  [ 0x00  ] = 'A' , [ 0x01  ] = 'B' , [ 0x02  ] = 'C' , [ 0x03  ] = 'D' , [ 0x04  ] = 'E' , [ 0x05  ] = 'F' ,
+  [ 0x06  ] = 'G' , [ 0x07  ] = 'H' , [ 0x08  ] = 'I' , [ 0x09  ] = 'J' , [ 0x0a  ] = 'K' , [ 0x0b  ] = 'L' ,
+  [ 0x0c  ] = 'M' , [ 0x0d  ] = 'N' , [ 0x0e  ] = 'O' , [ 0x0f  ] = 'P' , [ 0x10  ] = 'Q' , [ 0x11  ] = 'R' ,
+  [ 0x12  ] = 'S' , [ 0x13  ] = 'T' , [ 0x14  ] = 'U' , [ 0x15  ] = 'V' , [ 0x16  ] = 'W' , [ 0x17  ] = 'X' ,
+  [ 0x18  ] = 'Y' , [ 0x19  ] = 'Z' , [ 0x1a  ] = 'a' , [ 0x1b  ] = 'b' , [ 0x1c  ] = 'c' , [ 0x1d  ] = 'd' ,
+  [ 0x1e  ] = 'e' , [ 0x1f  ] = 'f' , [ 0x20  ] = 'g' , [ 0x21  ] = 'h' , [ 0x22  ] = 'i' , [ 0x23  ] = 'j' ,
+  [ 0x24  ] = 'k' , [ 0x25  ] = 'l' , [ 0x26  ] = 'm' , [ 0x27  ] = 'n' , [ 0x28  ] = 'o' , [ 0x29  ] = 'p' ,
+  [ 0x2a  ] = 'q' , [ 0x2b  ] = 'r' , [ 0x2c  ] = 's' , [ 0x2d  ] = 't' , [ 0x2e  ] = 'u' , [ 0x2f  ] = 'v' ,
+  [ 0x30  ] = 'w' , [ 0x31  ] = 'x' , [ 0x32  ] = 'y' , [ 0x33  ] = 'z' , [ 0x34  ] = '0' , [ 0x35  ] = '1' ,
+  [ 0x36  ] = '2' , [ 0x37  ] = '3' , [ 0x38  ] = '4' , [ 0x39  ] = '5' , [ 0x3a  ] = '6' , [ 0x3b  ] = '7' ,
+  [ 0x3c  ] = '8' , [ 0x3d  ] = '9' , [ 0x3e  ] = '+' , [ 0x3f  ] = '/' ,
 } ;
 
-unsigned  int const shifr_text_let_to_num ( v2  ) [ ] = {
-  [ 'a' - 'A' ] = 0 , [ 'b' - 'A' ] = 1 , [ 'c' - 'A' ] = 2 , [ 'd' - 'A' ] = 3 , [ 'e' - 'A' ] = 4 ,
-  [ 'f' - 'A' ] = 5 ,
-  [ 'g' - 'A' ] = 6 , [ 'h' - 'A' ] = 7 , [ 'i' - 'A' ] = 8 , [ 'j' - 'A' ] = 9 , [ 'k' - 'A' ] = 10  ,
-  [ 'l' - 'A' ] = 11  ,
-  [ 'm' - 'A' ] = 12  , [ 'n' - 'A' ] = 13  , [ 'o' - 'A' ] = 14  , [ 'p' - 'A' ] = 15  , [ 'q' - 'A' ] = 16  ,
-  [ 'r' - 'A' ] = 17  ,
-  [ 's' - 'A' ] = 18  , [ 't' - 'A' ] = 19  , [ 'u' - 'A' ] = 20  , [ 'v' - 'A' ] = 21  , [ 'w' - 'A' ] = 22  ,
-  [ 'x' - 'A' ] = 23  ,
-  [ 'y' - 'A' ] = 24  , [ 'z' - 'A' ] = 25  , [ 'A' - 'A' ] = 26  , [ 'B' - 'A' ] = 27  , [ 'C' - 'A' ] = 28  ,
-  [ 'D' - 'A' ] = 29  ,
-  [ 'E' - 'A' ] = 30  , [ 'F' - 'A' ] = 31  , [ 'G' - 'A' ] = 32  , [ 'H' - 'A' ] = 33  , [ 'I' - 'A' ] = 34  ,
-  [ 'J' - 'A' ] = 35  ,
-  [ 'K' - 'A' ] = 36  , [ 'L' - 'A' ] = 37  , [ 'M' - 'A' ] = 38  , [ 'N' - 'A' ] = 39  , [ 'O' - 'A' ] = 40  ,
+unsigned  int const shifr_base64_let_to_num [ ] = {
+  [ 'A' - '+' ] = 0x00  , [ 'B' - '+' ] = 0x01  , [ 'C' - '+' ] = 0x02  , [ 'D' - '+' ] = 0x03  ,
+  [ 'E' - '+' ] = 0x04  , [ 'F' - '+' ] = 0x05  , [ 'G' - '+' ] = 0x06  , [ 'H' - '+' ] = 0x07  ,
+  [ 'I' - '+' ] = 0x08  , [ 'J' - '+' ] = 0x09  , [ 'K' - '+' ] = 0x0a  , [ 'L' - '+' ] = 0x0b  ,
+  [ 'M' - '+' ] = 0x0c  , [ 'N' - '+' ] = 0x0d  , [ 'O' - '+' ] = 0x0e  , [ 'P' - '+' ] = 0x0f  ,
+  [ 'Q' - '+' ] = 0x10  , [ 'R' - '+' ] = 0x11  , [ 'S' - '+' ] = 0x12  , [ 'T' - '+' ] = 0x13  ,
+  [ 'U' - '+' ] = 0x14  , [ 'V' - '+' ] = 0x15  , [ 'W' - '+' ] = 0x16  , [ 'X' - '+' ] = 0x17  ,
+  [ 'Y' - '+' ] = 0x18  , [ 'Z' - '+' ] = 0x19  , [ 'a' - '+' ] = 0x1a  , [ 'b' - '+' ] = 0x1b  ,
+  [ 'c' - '+' ] = 0x1c  , [ 'd' - '+' ] = 0x1d  , [ 'e' - '+' ] = 0x1e  , [ 'f' - '+' ] = 0x1f  ,
+  [ 'g' - '+' ] = 0x20  , [ 'h' - '+' ] = 0x21  , [ 'i' - '+' ] = 0x22  , [ 'j' - '+' ] = 0x23  ,
+  [ 'k' - '+' ] = 0x24  , [ 'l' - '+' ] = 0x25  , [ 'm' - '+' ] = 0x26  , [ 'n' - '+' ] = 0x27  ,
+  [ 'o' - '+' ] = 0x28  , [ 'p' - '+' ] = 0x29  , [ 'q' - '+' ] = 0x2a  , [ 'r' - '+' ] = 0x2b  ,
+  [ 's' - '+' ] = 0x2c  , [ 't' - '+' ] = 0x2d  , [ 'u' - '+' ] = 0x2e  , [ 'v' - '+' ] = 0x2f  ,
+  [ 'w' - '+' ] = 0x30  , [ 'x' - '+' ] = 0x31  , [ 'y' - '+' ] = 0x32  , [ 'z' - '+' ] = 0x33  ,
+  [ '0' - '+' ] = 0x34  , [ '1' - '+' ] = 0x35  , [ '2' - '+' ] = 0x36  , [ '3' - '+' ] = 0x37  ,
+  [ '4' - '+' ] = 0x38  , [ '5' - '+' ] = 0x39  , [ '6' - '+' ] = 0x3a  , [ '7' - '+' ] = 0x3b  ,
+  [ '8' - '+' ] = 0x3c  , [ '9' - '+' ] = 0x3d  , [ '+' - '+' ] = 0x3e  , [ '/' - '+' ] = 0x3f  ,
 } ;
 
 // returns size loads & writes
@@ -433,7 +440,7 @@ shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
 // 2^16 = 65536
 // 40 * 40 * 41 = 65600
 // делаем make [0] % 40 , [1] % 40 , [2] % 41
-// 'a' .. 'z' 'A' .. 'O'
+// 'A' .. 'Z' 'a' .. 'o'
     if  ( ns_shifrp  -> flagtext  ) {
       uint16_t  buf16 = int_cast_uint16 (
         ( int_cast_uint16 ( encrypteddata [ 0 ] bitand  0xf ) ) bitor
@@ -441,11 +448,11 @@ shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
         ( ( int_cast_uint16 ( encrypteddata [ 2 ] bitand  0xf ) ) << 8 ) bitor
         ( ( int_cast_uint16 ( encrypteddata [ 3 ] bitand  0xf ) ) << 12  ) ) ;
       char buf3 [ 4 ] ;
-      buf3 [ 0 ] = shifr_text_num_to_let ( v2  ) [ buf16 % 40 ] ;
+      buf3 [ 0 ] = shifr_base64_num_to_let [ buf16 % 40 ] ;
       buf16 /= 40 ;
-      buf3 [ 1 ] = shifr_text_num_to_let ( v2  ) [ buf16 % 40 ] ;
+      buf3 [ 1 ] = shifr_base64_num_to_let [ buf16 % 40 ] ;
       buf16 /= 40 ;
-      buf3 [ 2 ] = shifr_text_num_to_let ( v2  ) [ buf16 ]  ;
+      buf3 [ 2 ] = shifr_base64_num_to_let [ buf16 ]  ;
       ns_shifrp  -> charcount += 3 ;
       if ( ns_shifrp  -> charcount == 60 )  {
         ns_shifrp  -> charcount = 0 ;
@@ -559,7 +566,7 @@ shifr_size_io  shifr_decrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
           tmp = uint8_cast_char ( * input_buffer ) ;
           ++  input_buffer  ;
           ++  reads ;
-        } while ( ( tmp < 'A' or tmp > 'O' ) and ( tmp < 'a' or tmp > 'z' ) ) ;
+        } while ( ( tmp < 'a' or tmp > 'o' ) and ( tmp < 'A' or tmp > 'Z' ) ) ;
         ( ns_shifrp  -> buf2 ) [ ns_shifrp  -> buf2index ]  = tmp ;
         ++ ( ns_shifrp  -> buf2index ) ;
       } while ( ns_shifrp  -> buf2index < 3 ) ;
@@ -567,9 +574,9 @@ shifr_size_io  shifr_decrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
       // следующие буквы начинают с нулевого индекса
       ns_shifrp  -> buf2index = 0 ;
       uint16_t u16 = uint_cast_uint16 (
-        ( shifr_text_let_to_num ( v2  ) [ ( ns_shifrp  -> buf2 ) [ 0 ] - 'A' ] ) +
-        40U * ( ( shifr_text_let_to_num ( v2  ) [ ( ns_shifrp  -> buf2 ) [ 1 ] - 'A' ] ) +
-        40U * ( shifr_text_let_to_num ( v2  ) [ ( ns_shifrp  -> buf2 ) [ 2 ] - 'A' ] ) ) ) ;
+        ( shifr_base64_let_to_num [ ( ns_shifrp  -> buf2 ) [ 0 ] - '+' ] ) +
+        40U * ( ( shifr_base64_let_to_num [ ( ns_shifrp  -> buf2 ) [ 1 ] - '+' ] ) +
+        40U * ( shifr_base64_let_to_num [ ( ns_shifrp  -> buf2 ) [ 2 ] - '+' ] ) ) ) ;
       buf [ 0 ] = uint16_cast_char ( u16 bitand 0xff ) ;
       buf [ 1 ] = uint16_cast_char ( u16 >> 8  ) ;
     } else { // ! flagtext
@@ -1588,7 +1595,7 @@ int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     "  $ ./shifr --gen-pas > psw"  ) ;
   puts  (
     "  $ cat psw\n"
-    "  MQsKYrs2"  ) ;
+    "  iy1myMr4"  ) ;
   puts  ( localerus ?
     "  $ ./shifr --пар-путь 'psw' > test.shi --текст"  :
     "  $ ./shifr --pas-path 'psw' > test.shi --text"  ) ;
@@ -1597,7 +1604,7 @@ int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     "  2+2=5 (Press Enter,Ctrl+D)" ) ;
   puts  (
     "  $ cat test.shi\n"
-    "  sBluffCdjasiccAmcO" ) ;
+    "  OgWclhNXgkJifikPRL" ) ;
   puts( localerus ?
     "  $ ./shifr --пар-путь 'psw' < test.shi --текст --расшифр" :
     "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;
