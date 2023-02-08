@@ -176,8 +176,4 @@ shifr_size_io  shifr_decrypt ( N ) ( t_ns_shifr * , shifr_arrcps input , \
 shifr_decrypt_dec ( v2 )
 shifr_decrypt_dec ( v3 )
 
-extern  char  const shifr_base64_num_to_let [ 0x40  ] ;
-
-extern  unsigned  int const shifr_base64_let_to_num [ ] ;
-
 # endif // SHIFR_PUBLIC_H

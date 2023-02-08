@@ -202,20 +202,24 @@ void shifr_datasalt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
 // I write in six bits
 // secretdatasaltsize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
+
+// ! to do : arguments as struct
+
 void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
-  shifr_t_streambuf * const me  ,
-  uint8_t const (  * const encrypteddata ) [ 3 ] ,
+  shifr_t_streambuf * const me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
   uint8_t const secretdatasaltsize , bool const  flagtext ,
-  uint8_t * restrict * const output_bufferp , size_t * const writesp ,
-  size_t  const outputs ) {
+  uint8_t * restrict * const output_bufferp , size_t * const writesp , size_t  const outputs ) {
   if  ( flagtext  ) {
     uint8_t i = 0 ;
     do {
-      char  const buf2  = shifr_bits6_to_letter ( ( * encrypteddata ) [ i ] ) ;
+      char  const buf2  = shifr_bits6_to_letter (
+# ifdef SHIFR_DEBUG
+        ns_shifrp ,
+# endif
+        ( * encrypteddata ) [ i ] ) ;
       if ( ( * writesp ) >= outputs ) {
         ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-          ( shifr_strcp ) &
-          "streambuf_write3: переполнение буфера (flagtext)"  :
+          ( shifr_strcp ) & "streambuf_write3: переполнение буфера (flagtext)"  :
           ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagtext)" ) ;
         longjmp ( ns_shifrp  -> jump  , 1 ) ;
       }
@@ -226,8 +230,7 @@ void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
       if  ( ( ns_shifrp ->  bytecountw  ) >=  60  ) {
         if ( ( * writesp ) >= outputs ) {
           ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-            ( shifr_strcp ) &
-            "streambuf_write3: переполнение буфера для '\\n'"  :
+            ( shifr_strcp ) & "streambuf_write3: переполнение буфера для '\\n'"  :
             ( shifr_strcp ) & "streambuf_write3: buffer overflow for '\\n'" ) ;
           longjmp ( ns_shifrp  -> jump  , 1 ) ;
         }
@@ -238,23 +241,20 @@ void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
       }
       ++  i ;
     } while ( i < secretdatasaltsize ) ;
-  } else  {
+  } else  { // not flagtext
     uint8_t i = 0 ;
     do {
       if  ( ( me -> bufbitsize ) < 2 ) {
         me -> buf = ( me -> buf ) bitor
-          int_cast_uint8 ( ( ( * encrypteddata ) [ i ] ) <<
-            ( me -> bufbitsize ) ) ;
+          int_cast_uint8 ( ( ( * encrypteddata ) [ i ] ) << ( me -> bufbitsize ) ) ;
         me -> bufbitsize = int_cast_uint8 ( ( me -> bufbitsize ) + 6 ) ;
       } else  {
         uint8_t const to_write  = int_cast_uint8 ( ( ( ( * encrypteddata ) [ i ]
           ) << ( me -> bufbitsize  ) ) bitor ( me -> buf ) ) ;
         if ( ( * writesp ) >= outputs ) {
           ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
-            ( shifr_strcp ) & 
-            "streambuf_write3: переполнение буфера (flagdigit)"  :
-            ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagdigit)"
-            ) ;
+            ( shifr_strcp ) & "streambuf_write3: переполнение буфера (flagdigit)"  :
+            ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagdigit)" ) ;
           longjmp ( ns_shifrp  -> jump  , 1 ) ;
         }
         ( * * output_bufferp ) = to_write ;
@@ -397,6 +397,9 @@ shifr_enter_password_templ  ( shifr_enter_password_name  ( v3  ) , v3 , raspr3 )
 
 // читаю 6 бит
 // 6 bits reads
+
+// ! to do : arguments as struct
+
 bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   uint8_t * const encrypteddata , size_t * const  readsp ,
   uint8_t const * restrict * const input_bufferp , size_t const inputs ) {
@@ -409,11 +412,17 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
       buf = * * input_bufferp  ;
       ++  ( * input_bufferp  ) ;
       ++  ( * readsp ) ;
-      // читаем одну букву ';'-'z' -> декодируем в шесть бит
-      // reads one letter ';'-'z' -> decode to six bits
-    } while ( ( buf < char_cast_uint8 ( ';' ) ) or
-      ( buf > char_cast_uint8 ( 'z' ) ) ) ;
-    ( * encrypteddata ) = shifr_letter_to_bits6 ( uint8_cast_char ( buf ) ) ;
+      // читаем одну букву Base64 -> декодируем в шесть бит
+      // reads one letter Base64 -> decode to six bits
+    } while ( ( buf not_eq char_cast_uint8 ( '+' ) ) and
+      ( ( buf < char_cast_uint8 ( '/' ) ) or ( buf > char_cast_uint8 ( '9' ) ) ) and
+      ( ( buf < char_cast_uint8 ( 'A' ) ) or ( buf > char_cast_uint8 ( 'Z' ) ) ) and
+      ( ( buf < char_cast_uint8 ( 'a' ) ) or ( buf > char_cast_uint8 ( 'z' ) ) ) ) ;
+    ( * encrypteddata ) = shifr_letter_to_bits6 (
+# ifdef SHIFR_DEBUG
+      ns_shifrp ,
+# endif
+      uint8_cast_char ( buf ) ) ;
     return  false ;
   }
   if  ( ( me -> bufbitsize ) >= 6 ) {
@@ -435,8 +444,7 @@ bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
 
 void  shifr_decrypt_salt ( v2 ) ( shifr_arrp const datap ,
   shifr_arrvcp  const tablep , shifr_arrp const decrp , size_t const data_size  ,
-  uint8_t * const restrict old_last_salt ,
-  uint8_t * const restrict old_last_data ) {
+  uint8_t * const restrict old_last_salt , uint8_t * const restrict old_last_data ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
   uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
   do {
@@ -453,8 +461,7 @@ void  shifr_decrypt_salt ( v2 ) ( shifr_arrp const datap ,
 
 void  shifr_decrypt_salt ( v3 ) ( shifr_arrp const datap ,
   shifr_arrvcp  const tablep , shifr_arrp const decrp , size_t const data_size ,
-  uint8_t * const restrict old_last_salt ,
-  uint8_t * const restrict old_last_data ) {
+  uint8_t * const restrict old_last_salt , uint8_t * const restrict old_last_data ) {
   uint8_t const * restrict  id = & ( ( * datap ) [ 0 ] ) ;
   uint8_t * restrict  ide = & ( ( * decrp ) [ 0 ] ) ;
   do {
@@ -529,3 +536,64 @@ void  shifr_data_xor3 ( uint8_t * const restrict  old_last_data ,
     ++  ids ;
   } while ( ids not_eq & ( ( * secretdatasalt ) [ data_size ] ) ) ;
 }
+
+# ifdef SHIFR_DEBUG
+uint8_t shifr_letter_to_bits6 ( t_ns_shifr * const ns_shifrp , char  const letter  ) {
+  uint8_t const lette = char_cast_uint8 ( letter ) ;
+  if ( ( lette not_eq char_cast_uint8 ( '+' ) ) and
+      ( ( lette < char_cast_uint8 ( '/' ) ) or ( lette > char_cast_uint8 ( '9' ) ) ) and
+      ( ( lette < char_cast_uint8 ( 'A' ) ) or ( lette > char_cast_uint8 ( 'Z' ) ) ) and
+      ( ( lette < char_cast_uint8 ( 'a' ) ) or ( lette > char_cast_uint8 ( 'z' ) ) ) ) {
+    fprintf ( stderr , "shifr_letter_to_bits6:letter = '%c' [%hhu]" , letter , lette ) ;
+    fflush ( stderr ) ;
+    ns_shifrp  -> string_exception  =
+      ( shifr_strcp ) & "shifr_letter_to_bits6:letter not in Base64" ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ;
+  }
+  return  uint_cast_uint8 ( shifr_base64_let_to_num [ char_cast_uint8 ( letter ) - char_cast_uint8 ( '+' ) ] ) ;
+}
+
+char  shifr_bits6_to_letter ( t_ns_shifr * const ns_shifrp , uint8_t const bits6 ) {
+  if ( bits6 >= 0x40 ) {
+    fprintf ( stderr , "shifr_bits6_to_letter:bits6 = '%c' [%hhu]" , uint8_cast_char ( bits6 ) , bits6 ) ;
+    fflush ( stderr ) ;
+    ns_shifrp  -> string_exception  =
+      ( shifr_strcp ) & "shifr_bits6_to_letter:bits6 >= 0x40" ;
+    longjmp ( ns_shifrp  -> jump  , 1 ) ;
+  }
+  return  int_cast_char ( shifr_base64_num_to_let [ bits6 ] ) ;
+}
+# endif
+
+char  const shifr_base64_num_to_let [ 0x40  ] = {
+  [ 0x00  ] = 'A' , [ 0x01  ] = 'B' , [ 0x02  ] = 'C' , [ 0x03  ] = 'D' , [ 0x04  ] = 'E' , [ 0x05  ] = 'F' ,
+  [ 0x06  ] = 'G' , [ 0x07  ] = 'H' , [ 0x08  ] = 'I' , [ 0x09  ] = 'J' , [ 0x0a  ] = 'K' , [ 0x0b  ] = 'L' ,
+  [ 0x0c  ] = 'M' , [ 0x0d  ] = 'N' , [ 0x0e  ] = 'O' , [ 0x0f  ] = 'P' , [ 0x10  ] = 'Q' , [ 0x11  ] = 'R' ,
+  [ 0x12  ] = 'S' , [ 0x13  ] = 'T' , [ 0x14  ] = 'U' , [ 0x15  ] = 'V' , [ 0x16  ] = 'W' , [ 0x17  ] = 'X' ,
+  [ 0x18  ] = 'Y' , [ 0x19  ] = 'Z' , [ 0x1a  ] = 'a' , [ 0x1b  ] = 'b' , [ 0x1c  ] = 'c' , [ 0x1d  ] = 'd' ,
+  [ 0x1e  ] = 'e' , [ 0x1f  ] = 'f' , [ 0x20  ] = 'g' , [ 0x21  ] = 'h' , [ 0x22  ] = 'i' , [ 0x23  ] = 'j' ,
+  [ 0x24  ] = 'k' , [ 0x25  ] = 'l' , [ 0x26  ] = 'm' , [ 0x27  ] = 'n' , [ 0x28  ] = 'o' , [ 0x29  ] = 'p' ,
+  [ 0x2a  ] = 'q' , [ 0x2b  ] = 'r' , [ 0x2c  ] = 's' , [ 0x2d  ] = 't' , [ 0x2e  ] = 'u' , [ 0x2f  ] = 'v' ,
+  [ 0x30  ] = 'w' , [ 0x31  ] = 'x' , [ 0x32  ] = 'y' , [ 0x33  ] = 'z' , [ 0x34  ] = '0' , [ 0x35  ] = '1' ,
+  [ 0x36  ] = '2' , [ 0x37  ] = '3' , [ 0x38  ] = '4' , [ 0x39  ] = '5' , [ 0x3a  ] = '6' , [ 0x3b  ] = '7' ,
+  [ 0x3c  ] = '8' , [ 0x3d  ] = '9' , [ 0x3e  ] = '+' , [ 0x3f  ] = '/' ,
+} ;
+
+unsigned  int const shifr_base64_let_to_num [ ] = {
+  [ 'A' - '+' ] = 0x00  , [ 'B' - '+' ] = 0x01  , [ 'C' - '+' ] = 0x02  , [ 'D' - '+' ] = 0x03  ,
+  [ 'E' - '+' ] = 0x04  , [ 'F' - '+' ] = 0x05  , [ 'G' - '+' ] = 0x06  , [ 'H' - '+' ] = 0x07  ,
+  [ 'I' - '+' ] = 0x08  , [ 'J' - '+' ] = 0x09  , [ 'K' - '+' ] = 0x0a  , [ 'L' - '+' ] = 0x0b  ,
+  [ 'M' - '+' ] = 0x0c  , [ 'N' - '+' ] = 0x0d  , [ 'O' - '+' ] = 0x0e  , [ 'P' - '+' ] = 0x0f  ,
+  [ 'Q' - '+' ] = 0x10  , [ 'R' - '+' ] = 0x11  , [ 'S' - '+' ] = 0x12  , [ 'T' - '+' ] = 0x13  ,
+  [ 'U' - '+' ] = 0x14  , [ 'V' - '+' ] = 0x15  , [ 'W' - '+' ] = 0x16  , [ 'X' - '+' ] = 0x17  ,
+  [ 'Y' - '+' ] = 0x18  , [ 'Z' - '+' ] = 0x19  , [ 'a' - '+' ] = 0x1a  , [ 'b' - '+' ] = 0x1b  ,
+  [ 'c' - '+' ] = 0x1c  , [ 'd' - '+' ] = 0x1d  , [ 'e' - '+' ] = 0x1e  , [ 'f' - '+' ] = 0x1f  ,
+  [ 'g' - '+' ] = 0x20  , [ 'h' - '+' ] = 0x21  , [ 'i' - '+' ] = 0x22  , [ 'j' - '+' ] = 0x23  ,
+  [ 'k' - '+' ] = 0x24  , [ 'l' - '+' ] = 0x25  , [ 'm' - '+' ] = 0x26  , [ 'n' - '+' ] = 0x27  ,
+  [ 'o' - '+' ] = 0x28  , [ 'p' - '+' ] = 0x29  , [ 'q' - '+' ] = 0x2a  , [ 'r' - '+' ] = 0x2b  ,
+  [ 's' - '+' ] = 0x2c  , [ 't' - '+' ] = 0x2d  , [ 'u' - '+' ] = 0x2e  , [ 'v' - '+' ] = 0x2f  ,
+  [ 'w' - '+' ] = 0x30  , [ 'x' - '+' ] = 0x31  , [ 'y' - '+' ] = 0x32  , [ 'z' - '+' ] = 0x33  ,
+  [ '0' - '+' ] = 0x34  , [ '1' - '+' ] = 0x35  , [ '2' - '+' ] = 0x36  , [ '3' - '+' ] = 0x37  ,
+  [ '4' - '+' ] = 0x38  , [ '5' - '+' ] = 0x39  , [ '6' - '+' ] = 0x3a  , [ '7' - '+' ] = 0x3b  ,
+  [ '8' - '+' ] = 0x3c  , [ '9' - '+' ] = 0x3d  , [ '+' - '+' ] = 0x3e  , [ '/' - '+' ] = 0x3f  ,
+} ;

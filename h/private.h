@@ -25,11 +25,13 @@ shifr_datasalt_dec ( v3 )
 // I write in six bits
 // secretdatasaltsize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
+
+// ! to do : arguments as struct
+
 void  shifr_streambuf_write3 ( t_ns_shifr * ns_shifrp ,
   shifr_t_streambuf * me  , uint8_t const (  * encrypteddata ) [ 3 ] ,
   uint8_t secretdatasaltsize , bool flagtext ,
-  uint8_t * restrict * output_bufferp , size_t * writesp ,
-  size_t  outputs ) ;
+  uint8_t * restrict * output_bufferp , size_t * writesp , size_t  outputs ) ;
 
 // версия 3 пишу три бита для расшифровки
 // version 3 write three bits to decode
@@ -126,10 +128,13 @@ to the encryption table 'shifr', decryption 'deshi'
 void  shifr_password_load_uni ( t_ns_shifr * ) ;
 void  shifr_password_from_dice_uni ( t_ns_shifr * ) ;
 
+# ifdef  SHIFR_DEBUG
+uint8_t shifr_letter_to_bits6 ( t_ns_shifr * , char  letter  ) ;
+char  shifr_bits6_to_letter ( t_ns_shifr * , uint8_t bits6 ) ;
+# else
 inline  uint8_t shifr_letter_to_bits6 ( char  letter  ) ;
-
-// ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
 inline  char  shifr_bits6_to_letter ( uint8_t bits6 ) ;
+# endif
 
 void  shifr_data_xor3  ( uint8_t * old_last_data , uint8_t * old_last_salt ,
   shifr_arrp  secretdatasalt  , size_t  data_size ) ;
@@ -155,6 +160,9 @@ inline  void  shifr_initarr ( shifr_arrvp p ,
 
 // читаю 6 бит
 // 6 bits reads
+
+// ! to do : arguments as struct
+
 bool  isEOBstreambuf_read6bits ( t_ns_shifr * const ns_shifrp ,
   uint8_t * const encrypteddata , size_t * const  readsp ,
   uint8_t const * restrict * const input_bufferp , size_t const inputs ) ;
@@ -166,14 +174,20 @@ void  shifr_enter_password_name ( v3 ) ( t_ns_shifr * )  ;
 
 # include "cast.h"
 
+extern  char  const shifr_base64_num_to_let [ 0x40  ] ;
+
+extern  unsigned  int const shifr_base64_let_to_num [ ] ;
+
+# ifndef  SHIFR_DEBUG
 inline  uint8_t shifr_letter_to_bits6 ( char  const letter  ) {
-  return  int_cast_uint8 ( char_cast_uint8 ( letter ) - char_cast_uint8 ( ';' ) ) ;
+  return  uint_cast_uint8 ( shifr_base64_let_to_num [
+    char_cast_uint8 ( letter )  - char_cast_uint8 ( '+' ) ] ) ;
 }
 
-// ';' = 59 ... 'z' = 122 , 122 - 59 + 1 == 64
 inline  char  shifr_bits6_to_letter ( uint8_t const bits6 ) {
-  return  int_cast_char ( char_cast_uint8  ( ';' ) + bits6 ) ;
+  return  int_cast_char ( shifr_base64_num_to_let [ bits6 ] ) ;
 }
+# endif
 
 # include <iso646.h> // not_eq
 
