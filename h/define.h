@@ -4,6 +4,6 @@
 # ifndef  SHIFR_DEFINE_H
 # define  SHIFR_DEFINE_H
 
-// # define  SHIFR_DEBUG
+//# define  SHIFR_DEBUG
 
 # endif // SHIFR_DEFINE_H

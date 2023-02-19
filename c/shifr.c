@@ -602,11 +602,20 @@ shifr_size_io shifr_decrypt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
 void  shifr_generate_dices ( ver ) ( t_ns_shifr * const ns_shifrp ) {  \
   uint8_t * j = & ( ns_shifrp -> rasprname . dice [ 0 ] ) ;  \
   uint8_t i  = shifr_deshi_size ( ver ) - 1 ;  \
+  struct  s_shifr_fr_to volatile  ft = {  \
+    . sh = ns_shifrp ,  \
+    . fr = 0 ,  \
+  } ; \
   do {  \
-    ( * j ) = uint_cast_uint8 ( shifr_uirandfrto  ( ns_shifrp , 0 , i ) ) ; \
+    ft  . to  = i ; \
+    shifr_uirandfrto  ( & ft )  ; \
+    ( * j ) = uint_cast_uint8 ( ft . res ) ; \
     --  i ; \
     ++  j ; \
   } while ( i >= 1 ) ;  \
+  ft  . sh  = 0 ; \
+  ft  . to  = 0 ; \
+  ft  . res = 0 ; \
 }
 
 // ! to remove , make random 0..16!-1

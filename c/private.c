@@ -63,23 +63,18 @@ static  ssize_t shifr_getrandom  ( shifr_arrps const vec ) {
 
 # include "private.h"
 
-// generate random number [ fr .. to ]
-unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
-  unsigned  int const fr , unsigned  int const to ) {
+// generate secret random number [ fr .. to ]
+void  shifr_uirandfrto  ( struct  s_shifr_fr_to volatile  * const p ) {
 # ifdef SHIFR_DEBUG
-  if ( fr >= to ) {
-    fprintf ( stderr  , "uirandfrto : fr >= to , fr = %u , to = %u\n"  ,
-      fr , to ) ;
-    ns_shifrp  -> string_exception  = ( shifr_strcp ) & "uirandfrto : fr >= to" ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ;
+  if ( p -> fr >= p -> to ) {
+    fprintf ( stderr  , "uirandfrto : fr >= to , fr = %u , to = %u\n"  , p -> fr , p -> to ) ;
+    p -> sh -> string_exception  = ( shifr_strcp ) & "uirandfrto : fr >= to" ;
+    goto exc ;
   }
-  if ( fr + 0x100 <= to ) {
-    fprintf ( stderr  ,
-      "uirandfrto : fr + 0x100 <= to , fr = %u , to = %u\n"  ,
-      fr , to ) ;
-    ns_shifrp  -> string_exception  = ( shifr_strcp )
-      & "uirandfrto : fr + 0x100 <= to" ;
-    longjmp ( ns_shifrp  -> jump  , 1 ) ;
+  if ( p -> fr + 0x100 <= p -> to ) {
+    fprintf ( stderr  , "uirandfrto : fr + 0x100 <= to , fr = %u , to = %u\n"  , p -> fr , p -> to ) ;
+    p -> sh -> string_exception  = ( shifr_strcp ) & "uirandfrto : fr + 0x100 <= to" ;
+    goto exc ;
   }
 # endif
   uint8_t bufa  [ 1 ] ;
@@ -92,24 +87,35 @@ unsigned  int shifr_uirandfrto  ( t_ns_shifr * const ns_shifrp ,
 # ifdef SHIFR_DEBUG
     if ( r == -1 ) {
       perror  ( "uirandfrto : getrandom" ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp )
-        & "uirandfrto : getrandom" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ;
+      p -> sh  -> string_exception  = ( shifr_strcp ) & "uirandfrto : getrandom" ;
+      goto exc ;
     }
     if ( r not_eq 1 ) {
       fprintf ( stderr  , "uirandfrto : r = %ld not_eq 1\n"  , r ) ;
-      ns_shifrp  -> string_exception  = ( shifr_strcp )
-        & "uirandfrto : r not_eq 1" ;
-      longjmp ( ns_shifrp  -> jump  , 1 ) ;
+      p -> sh  -> string_exception  = ( shifr_strcp ) & "uirandfrto : r not_eq 1" ;
+      goto exc ;
     }
 # endif // SHIFR_DEBUG
-  } while ( bufa [ 0 ] + 0x100 % ( to - fr + 1 ) >= 0x100 ) ;
-  return  fr + bufa [ 0 ] % ( to - fr + 1 ) ;
+  } while ( bufa [ 0 ] + 0x100 % ( p -> to - p -> fr + 1 ) >= 0x100 ) ;
+  p -> res = p -> fr + bufa [ 0 ] % ( p -> to - p -> fr + 1 ) ;
+  return  ;
+# ifdef SHIFR_DEBUG
+exc : ;
+  jmp_buf * const j = & ( p ->  sh  ->  jump ) ;
+  p ->  sh  = 0 ;
+  p ->  fr  = 0 ;
+  p ->  to  = 0 ;
+  p ->  res = 0 ;
+  longjmp ( * j , 1 ) ;
+# endif
 }
 
 // data_size = 4
-void shifr_datasalt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
+void shifr_datasalt ( v2 ) ( t_ns_shifr * const ns_shifrp
+# ifndef SHIFR_DEBUG
+  __attribute__ ((unused))
+# endif
+  , shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasalt  ) [ data_size ] ) ;
@@ -150,8 +156,11 @@ void shifr_datasalt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
 }
 
 // data_size = 1 .. 3
-void shifr_datasalt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
-  shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
+void shifr_datasalt ( v3 ) ( t_ns_shifr * const ns_shifrp
+# ifndef SHIFR_DEBUG
+  __attribute__ ((unused))
+# endif
+  , shifr_arrcp const secretdata , shifr_arrp const secretdatasalt ,
   size_t const data_size ) {
   uint8_t const * restrict  id = &  ( ( * secretdata  ) [ data_size ] ) ;
   uint8_t * restrict  ids = & ( ( * secretdatasalt  ) [ data_size ] ) ;
@@ -544,10 +553,9 @@ uint8_t shifr_letter_to_bits6 ( t_ns_shifr * const ns_shifrp , char  const lette
       ( ( lette < char_cast_uint8 ( '/' ) ) or ( lette > char_cast_uint8 ( '9' ) ) ) and
       ( ( lette < char_cast_uint8 ( 'A' ) ) or ( lette > char_cast_uint8 ( 'Z' ) ) ) and
       ( ( lette < char_cast_uint8 ( 'a' ) ) or ( lette > char_cast_uint8 ( 'z' ) ) ) ) {
-    fprintf ( stderr , "shifr_letter_to_bits6:letter = '%c' [%hhu]" , letter , lette ) ;
+    fprintf ( stderr , "shifr_letter_to_bits6:letter = '%c' [%hhu]\n" , letter , lette ) ;
     fflush ( stderr ) ;
-    ns_shifrp  -> string_exception  =
-      ( shifr_strcp ) & "shifr_letter_to_bits6:letter not in Base64" ;
+    ns_shifrp  -> string_exception  = ( shifr_strcp ) & "shifr_letter_to_bits6:letter not in Base64" ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
   return  uint_cast_uint8 ( shifr_base64_let_to_num [ char_cast_uint8 ( letter ) - char_cast_uint8 ( '+' ) ] ) ;
@@ -555,10 +563,9 @@ uint8_t shifr_letter_to_bits6 ( t_ns_shifr * const ns_shifrp , char  const lette
 
 char  shifr_bits6_to_letter ( t_ns_shifr * const ns_shifrp , uint8_t const bits6 ) {
   if ( bits6 >= 0x40 ) {
-    fprintf ( stderr , "shifr_bits6_to_letter:bits6 = '%c' [%hhu]" , uint8_cast_char ( bits6 ) , bits6 ) ;
+    fprintf ( stderr , "shifr_bits6_to_letter:bits6 = '%c' [%hhu]\n" , uint8_cast_char ( bits6 ) , bits6 ) ;
     fflush ( stderr ) ;
-    ns_shifrp  -> string_exception  =
-      ( shifr_strcp ) & "shifr_bits6_to_letter:bits6 >= 0x40" ;
+    ns_shifrp  -> string_exception  = ( shifr_strcp ) & "shifr_bits6_to_letter:bits6 >= 0x40" ;
     longjmp ( ns_shifrp  -> jump  , 1 ) ;
   }
   return  int_cast_char ( shifr_base64_num_to_let [ bits6 ] ) ;

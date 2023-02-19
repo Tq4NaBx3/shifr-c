@@ -4,9 +4,14 @@
 # ifndef  SHIFR_PRIVATE_H
 # define  SHIFR_PRIVATE_H
 
-// generate random number [ fr .. to ]
-unsigned  int shifr_uirandfrto  ( t_ns_shifr * ns_shifrp ,
-  unsigned  int fr , unsigned  int to ) ;
+// generate secret random number [ fr .. to ]
+struct  s_shifr_fr_to {
+  t_ns_shifr  * volatile  sh  ;
+  unsigned  int volatile  fr  ;
+  unsigned  int volatile  to  ;
+  unsigned  int volatile  res ;
+} ;
+void  shifr_uirandfrto  ( struct  s_shifr_fr_to volatile  * ) ;
 
 # define  shifr_datasalt( N ) shifr_datasalt_  ##  N
 
