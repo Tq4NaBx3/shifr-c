@@ -9,7 +9,7 @@
 
 # define  shifr_s_raspr_templ( V ) \
 struct_raspr ( V ) { \
-  uint8_t dice  [ shifr_deshi_size ( V ) - 1  ] ; \
+  uint8_t volatile  dice  [ shifr_deshi_size ( V ) - 1  ] ; \
   shifr_number_priv_type ( V ) pass  ; \
 } ;
 

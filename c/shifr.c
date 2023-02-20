@@ -600,7 +600,7 @@ shifr_size_io shifr_decrypt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
 
 # define  shifr_generate_dices_def( ver , rasprname ) \
 void  shifr_generate_dices ( ver ) ( t_ns_shifr * const ns_shifrp ) {  \
-  uint8_t * j = & ( ns_shifrp -> rasprname . dice [ 0 ] ) ;  \
+  uint8_t volatile  * j = & ( ns_shifrp -> rasprname . dice [ 0 ] ) ;  \
   uint8_t i  = shifr_deshi_size ( ver ) - 1 ;  \
   struct  s_shifr_fr_to volatile  ft = {  \
     . sh = ns_shifrp ,  \
@@ -939,7 +939,7 @@ void  shifr_salt_init ( t_ns_shifr  * const ns_shifrp ) {
 }
 
 # define  shifr_password_from_dice_def(  N , SDS ) \
-void  shifr_password_from_dice  ( N ) ( uint8_t const * const dice  , \
+void  shifr_password_from_dice  ( N ) ( uint8_t volatile  const * const dice  , \
   shifr_arrvp const shifrp , shifr_arrvp  const deship ) { \
   shifr_initarr ( shifrp  , 0xff  , SDS ) ; \
   shifr_initarr ( deship  , 0xff  , SDS ) ; \

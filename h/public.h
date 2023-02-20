@@ -91,7 +91,7 @@ deshi needs salt
 # define  shifr_password_from_dice( N ) shifr_password_  ##  N ##  _from_dice
 
 # define  shifr_password_from_dice_dec(  N ) \
-void  shifr_password_from_dice  ( N ) ( uint8_t const * dice  , \
+void  shifr_password_from_dice  ( N ) ( uint8_t const volatile  * dice  , \
   shifr_arrvp shifrp , shifr_arrvp  deship ) ;
 
 shifr_password_from_dice_dec (  v2  )
