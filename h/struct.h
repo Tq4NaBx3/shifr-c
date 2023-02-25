@@ -25,9 +25,16 @@ enum  { shifr_letters_count =
 
 // 0x30 '0' - 0x39 '9' , 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'
 // 62 шт pcs
-enum  { shifr_letters_count2 =
+enum  { shifr_letters_count62 =
   ( ( UINT8_C ( '9' ) - UINT8_C ( '0' ) ) + 1U +
     ( UINT8_C ( 'Z' ) - UINT8_C ( 'A' ) ) + 1U +
+    ( UINT8_C ( 'z' ) - UINT8_C ( 'a' ) ) + 1U )
+} ;
+
+// 0x41 'A' - 0x5a 'Z' , 0x61 'a' - 0x7a 'z'
+// 52 шт pcs
+enum  { shifr_letters_count52 =
+  ( ( UINT8_C ( 'Z' ) - UINT8_C ( 'A' ) ) + 1U +
     ( UINT8_C ( 'z' ) - UINT8_C ( 'a' ) ) + 1U )
 } ;
 
@@ -70,7 +77,9 @@ struct  s_ns_shifr  {
   // ascii  
   char  letters [ shifr_letters_count ] ;  
   // a..zA..Z0..9
-  char  letters2  [ shifr_letters_count2  ] ;
+  char  letters62  [ shifr_letters_count62  ] ;
+  // a..zA..Z
+  char  letters52  [ shifr_letters_count52  ] ;
   // a..z
   char  letters4  [ shifr_letters_count4  ] ;
   // 0..9
@@ -129,8 +138,9 @@ struct  s_ns_shifr  {
     uint8_t volatile  deshiv3 [ shifr_deshi_size ( v3 ) ] ;
   } ;
   
-  // 62 or 95 or 26 or 10
-  // алфавит пароля 62 или 95 или 26 или 10
+  // 52 or 62 or 95 or 26 or 10
+  // алфавит пароля 52 или 62 или 95 или 26 или 10
+  // == letters count
   int password_alphabet ; 
   
   union {

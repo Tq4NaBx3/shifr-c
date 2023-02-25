@@ -4,6 +4,8 @@
 # include <sys/types.h> // ssize_t
 # include "define.h"
 # include "struct.h"
+# include "cast.h" // int_cast_uint8
+# include <iso646.h> // bitor
 
 static  ssize_t shifr_getrandom  ( shifr_arrps )  ;
 
@@ -17,8 +19,6 @@ static  ssize_t shifr_getrandom  ( shifr_arrps )  ;
 # include <stdlib.h> // srand
 # include <time.h>
 # include <stdbool.h>
-# include <iso646.h> // bitand
-# include "cast.h"
 
 static  ssize_t shifr_getrandom  ( shifr_arrps const vec ) {
   static  bool  first = true  ;
@@ -149,8 +149,7 @@ void shifr_datasalt ( v2 ) ( t_ns_shifr * const ns_shifrp
     //   10_00 or 10_01 or 10_10 or 10_11
     // in the table, everything is side by side, 4 options are evenly
     // distributed
-    ( * ids ) = int_cast_uint8 ( ( ( * id  ) <<  2 ) bitor
-      ( rana [ 0 ] bitand  0x3 ) ) ;
+    ( * ids ) = int_cast_uint8 ( ( ( * id  ) <<  2 ) bitor ( rana [ 0 ] bitand  0x3 ) ) ;
     rana [ 0 ] >>= 2 ;
   } while ( id not_eq & ( ( * secretdata  ) [ 0 ] ) ) ;
 }
@@ -337,10 +336,15 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
       ( shifr_strvcp ) & p40 , & ns_shifrp -> rasprname  . pass . pub , \
       ( shifr_strcp ) & ns_shifrp -> letters , shifr_letters_count ) ; \
     break ; \
-  case  shifr_letters_count2  : \
+  case  shifr_letters_count62  : \
     shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
       ( shifr_strvcp ) & p40 , & ns_shifrp -> rasprname  . pass . pub , \
-      ( shifr_strcp ) & ns_shifrp -> letters2 , shifr_letters_count2 ) ; \
+      ( shifr_strcp ) & ns_shifrp -> letters62 , shifr_letters_count62 ) ; \
+    break ; \
+  case  shifr_letters_count52  : \
+    shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
+      ( shifr_strvcp ) & p40 , & ns_shifrp -> rasprname  . pass . pub , \
+      ( shifr_strcp ) & ns_shifrp -> letters52 , shifr_letters_count52 ) ; \
     break ; \
   case  shifr_letters_count_Digit  : \
     shifr_string_to_password_templ  ( ver ) ( ns_shifrp , \
@@ -366,10 +370,15 @@ void  funname ( t_ns_shifr * const ns_shifrp ) { \
       & ns_shifrp -> rasprname  . pass . pub , & password_letters , \
       & ns_shifrp -> letters , shifr_letters_count ) ; \
     break ; \
-  case  shifr_letters_count2  : \
+  case  shifr_letters_count62  : \
     shifr_password_to_string_templ  ( ver ) ( \
       & ns_shifrp -> rasprname  . pass . pub , & password_letters , \
-      & ns_shifrp -> letters2 , shifr_letters_count2 ) ; \
+      & ns_shifrp -> letters62 , shifr_letters_count62 ) ; \
+    break ; \
+  case  shifr_letters_count52  : \
+    shifr_password_to_string_templ  ( ver ) ( \
+      & ns_shifrp -> rasprname  . pass . pub , & password_letters , \
+      & ns_shifrp -> letters52 , shifr_letters_count52 ) ; \
     break ; \
   case  shifr_letters_count_Digit  : \
     shifr_password_to_string_templ  ( ver ) ( \
@@ -535,8 +544,7 @@ void  shifr_data_xor3 ( uint8_t * const restrict  old_last_data ,
     //   101_000 or 101_001 or ... or 101_111
     // in the table, everything is side by side, 8 options are evenly
     // distributed the data is a rash of the previous salt
-    ( * ids ) = int_cast_uint8 ( ( * ids ) xor
-      ( ( * old_last_salt ) << 3  ) ) ;
+    ( * ids ) = int_cast_uint8 ( ( * ids ) xor ( ( * old_last_salt ) << 3  ) ) ;
     ( * ids ) xor_eq  ( * old_last_data ) ;
     // берю свежую соль
     // I take fresh salt
@@ -604,3 +612,4 @@ unsigned  int const shifr_base64_let_to_num [ ] = {
   [ '4' - '+' ] = 0x38  , [ '5' - '+' ] = 0x39  , [ '6' - '+' ] = 0x3a  , [ '7' - '+' ] = 0x3b  ,
   [ '8' - '+' ] = 0x3c  , [ '9' - '+' ] = 0x3d  , [ '+' - '+' ] = 0x3e  , [ '/' - '+' ] = 0x3f  ,
 } ;
+# include "inlinepri.h"

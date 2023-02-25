@@ -228,7 +228,11 @@ int main  ( int argc , char * argv [ ] ) {
         } else
         if (  ( strcmp ( argv [ argj  ] , "--а62" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--a62" ) ==  0 ) ) { 
-          main_shifr . password_alphabet = shifr_letters_count2 ;
+          main_shifr . password_alphabet = shifr_letters_count62 ;
+        } else
+        if (  ( strcmp ( argv [ argj  ] , "--а52" ) ==  0 ) or
+          ( strcmp ( argv [ argj  ] , "--a52" ) ==  0 ) ) {
+          main_shifr . password_alphabet = shifr_letters_count52 ;
         } else
         if (  ( strcmp ( argv [ argj  ] , "--а26" ) ==  0 ) or
           ( strcmp ( argv [ argj  ] , "--a26" ) ==  0 ) ) { 
