@@ -1606,6 +1606,7 @@ int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
       ++ cj ;
     } while ( cj not_eq ( & ( main_shifrp -> letters [ shifr_letters_count ] ) ) ) ;
   }
+
   fputs ( ( main_shifrp -> localerus ?
     "\'\n  --а62 или\n  --a62\t\'" :
     "\'\n  --a62\t\'" ) , stdout  ) ;
@@ -1615,22 +1616,24 @@ int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
       ++ cj ;
     } while ( cj not_eq ( & ( main_shifrp -> letters62 [ shifr_letters_count62 ] ) ) ) ;
   }
+
   fputs ( ( main_shifrp -> localerus ?
-    "\'\n  --а52 или\n  --a52\t\'" :
-    "\'\n  --a52\t\'" ) , stdout  ) ;
+    "\'\t(по умолчанию)\n" :
+    "\'\t(by default)\n"  ) , stdout  ) ;
+
+  fputs ( ( main_shifrp -> localerus ?
+    "  --а52 или\n  --a52\t\'" :
+    "  --a52\t\'" ) , stdout  ) ;
   { char const * cj = & ( main_shifrp -> letters52 [ 0 ] ) ;
     do {
       fputc ( * cj  , stdout  ) ;
       ++ cj ;
     } while ( cj not_eq ( & ( main_shifrp -> letters52 [ shifr_letters_count52 ] ) ) ) ;
   }
-  fputs ( ( main_shifrp -> localerus ?
-    "\'\t(по умолчанию)\n" :
-    "\'\t(by default)\n"  ) , stdout  ) ;
 
   fputs ( ( main_shifrp -> localerus ?
-    "  --а26 или\n  --a26\t\'" :
-    "  --a26\t\'" ) , stdout  ) ;
+    "\'\n  --а26 или\n  --a26\t\'" :
+    "\'\n  --a26\t\'" ) , stdout  ) ;
   { char const * cj = & ( main_shifrp -> letters4 [ 0 ] ) ;
     do {
       fputc ( * cj  , stdout  ) ;
@@ -1656,7 +1659,7 @@ int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     "  $ ./shifr --gen-pas > psw"  ) ;
   puts  (
     "  $ cat psw\n"
-    "  ylIAlhSG"  ) ;
+    "  kz8359K3"  ) ;
   puts  ( localerus ?
     "  $ ./shifr --пар-путь 'psw' > test.shi --текст"  :
     "  $ ./shifr --pas-path 'psw' > test.shi --text"  ) ;
@@ -1665,7 +1668,7 @@ int shifr_show_help ( t_ns_shifr  const * const main_shifrp ) {
     "  2+2=5 (Press Enter,Ctrl+D)" ) ;
   puts  (
     "  $ cat test.shi\n"
-    "  mVIInIcERJAkYhBAaI" ) ;
+    "  cUdDZClDEALaFVYMmf" ) ;
   puts( localerus ?
     "  $ ./shifr --пар-путь 'psw' < test.shi --текст --расшифр" :
     "  $ ./shifr --pas-path 'psw' < test.shi --text --decrypt" ) ;
@@ -1688,7 +1691,7 @@ shifr_timestamp_t get_timestamp ( void ) {
 void  shifr_init  ( t_ns_shifr  * const ns_shifrp ) {
   ns_shifrp ->  use_version = 2 ;
   ns_shifrp ->  flagtext  = false ;
-  ns_shifrp ->  password_alphabet = shifr_letters_count52 ;
+  ns_shifrp ->  password_alphabet = shifr_letters_count62 ;
   { char * j = & ( ns_shifrp -> letters [ 0 ] ) ;
     uint8_t i = ' ' ;
     do {
