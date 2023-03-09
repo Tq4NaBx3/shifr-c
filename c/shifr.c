@@ -387,7 +387,7 @@ shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
   size_t  reads = 0 ;
   size_t  writes  = 0 ;
   while ( reads < input . s and writes + 4 <= output . s ) {
-    char const  buf = uint8_cast_char ( * input_buffer ) ;
+    uint8_t const buf = ( * input_buffer ) ;
     ++  input_buffer  ;
     ++  reads ;
     uint8_t const secretdata  [ 4 ] = { [ 0 ]  = buf  bitand 0x3 ,
@@ -412,6 +412,10 @@ shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
 // делаем make [0] % 40 , [1] % 40 , [2] % 41
 // 'A' .. 'Z' 'a' .. 'o'
     if  ( ns_shifrp  -> flagtext  ) {
+/*
+ ! to get 3/4 and make 2 letters for Base64
+ ! 1/4 to cache
+*/
       uint16_t  buf16 = int_cast_uint16 (
         ( int_cast_uint16 ( encrypteddata [ 0 ] bitand  0xf ) ) bitor
         ( ( int_cast_uint16 ( encrypteddata [ 1 ] bitand  0xf ) ) << 4 ) bitor
@@ -424,7 +428,7 @@ shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
       buf16 /= 40 ;
       buf3 [ 2 ] = shifr_base64_num_to_let [ buf16 ]  ;
       ns_shifrp  -> charcount += 3 ;
-      if ( ns_shifrp  -> charcount == 60 )  {
+      if ( ns_shifrp  -> charcount == 60 ) {
         ns_shifrp  -> charcount = 0 ;
         buf3  [ 3 ] = '\n' ;
         memcpy  ( output_buffer , & ( buf3 [ 0 ] )  , 4 ) ;
@@ -436,10 +440,10 @@ shifr_size_io shifr_encrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
         output_buffer +=  3 ;
       }
     } else {
-      char buf2 [ 2 ] = {
-        [ 0 ] = int_cast_char ( ( int_cast_uint16 ( encrypteddata [ 0 ] & 0xf ) )
+      uint8_t const buf2 [ 2 ] = {
+        [ 0 ] = int_cast_uint8  ( ( int_cast_uint16 ( encrypteddata [ 0 ] & 0xf ) )
           bitor ( (int_cast_uint16( encrypteddata [ 1 ] & 0xf ) ) << 4  ) ) ,
-        [ 1 ] = int_cast_char ( ( int_cast_uint16( encrypteddata [ 2 ] & 0xf ) ) bitor
+        [ 1 ] = int_cast_uint8  ( ( int_cast_uint16( encrypteddata [ 2 ] & 0xf ) ) bitor
           ( ( int_cast_uint16 ( encrypteddata [ 3 ] & 0xf ) ) << 4 ) ) } ;
       memcpy  ( output_buffer , & ( buf2 [ 0 ] )  , 2 ) ;
       writes  +=  2 ;
@@ -459,35 +463,35 @@ shifr_size_io shifr_encrypt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
   uint8_t const * restrict  input_buffer = &  ( ( * input . cp  ) [ 0 ] ) ;
   uint8_t * restrict  output_buffer = & ( ( * output  . p ) [ 0 ] ) ;
   while ( reads < input . s and writes < output . s ) {
-    unsigned  char buf = ( * input_buffer ) ;
+    uint8_t const buf = ( * input_buffer ) ;
     ++  input_buffer  ;
     ++  reads ;
     switch  ( ns_shifrp -> bitscount  ) {
     case  0 :
-      // <= [ [1 0] [2 1 0] [2 1 0] ]
-      ( ns_shifrp -> secretdata ) [ 0 ] = buf  bitand 0x7 ;
-      ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  3 ) bitand 0x7 ;
-      ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  6 ;
-      ns_shifrp -> bitscount  = 2 ; // 0 + 8 - 6
+      // [ (0 1 2) (0 1 2) (0 1) ] =>
+      ( ns_shifrp ->  secretdata ) [ 0 ] = buf  bitand 0x7 ;
+      ( ns_shifrp ->  secretdata ) [ 1 ] = ( buf >>  3 ) bitand 0x7 ;
+      ( ns_shifrp ->  secretdata ) [ 2 ] = buf >>  6 ;
+      ns_shifrp ->  bitscount  = 2 ; // 0 + 8 - 6
       secretdatasaltsize  = 2 ;
       break ;
     case  1 : 
-      // <= [ [2 1 0] [2 1 0] [2 1] ] <= [ [0]
-      ( ns_shifrp -> secretdata ) [ 0 ] = int_cast_uint8 (
-        ( ns_shifrp -> secretdata ) [ 3 ] bitor ( ( buf  bitand 0x3 ) <<  1 ) ) ;
-      ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  2 ) bitand 0x7 ;
-      ( ns_shifrp -> secretdata ) [ 2 ] = buf >>  5 ;
-      ns_shifrp -> bitscount  = 0 ;   // 1 + 8 - 9
+      // .. (0) ] => [ (1 2) (0 1 2) (0 1 2) ] =>
+      ( ns_shifrp ->  secretdata ) [ 0 ] = int_cast_uint8 (
+        ( ns_shifrp ->  secretdata ) [ 3 ] bitor ( ( buf  bitand 0x3 ) <<  1 ) ) ;
+      ( ns_shifrp ->  secretdata ) [ 1 ] = ( buf >>  2 ) bitand 0x7 ;
+      ( ns_shifrp ->  secretdata ) [ 2 ] = buf >>  5 ;
+      ns_shifrp ->  bitscount  = 0 ;   // 1 + 8 - 9
       secretdatasaltsize  = 3 ;
       break ;
     case  2 :
-      // <= [ [0] [2 1 0] [2 1 0] [2] ] <= [ [1 0] ..
-      ( ns_shifrp -> secretdata ) [ 0 ] = int_cast_uint8 (
-        ( ns_shifrp -> secretdata ) [ 2 ] bitor ( ( buf  bitand 0x1 ) <<  2 ) ) ;
-      ( ns_shifrp -> secretdata ) [ 1 ] = ( buf >>  1 ) bitand 0x7 ;
-      ( ns_shifrp -> secretdata ) [ 2 ] = ( buf >>  4 ) bitand 0x7 ;
-      ( ns_shifrp -> secretdata ) [ 3 ] = buf >>  7 ;
-      ns_shifrp -> bitscount  = 1 ; // 2 + 8 - 9
+      // .. (0 1) ] => [ (2) (0 1 2) (0 1 2) (0) ] =>
+      ( ns_shifrp ->  secretdata ) [ 0 ] = int_cast_uint8 (
+        ( ns_shifrp ->  secretdata ) [ 2 ] bitor ( ( buf  bitand 0x1 ) <<  2 ) ) ;
+      ( ns_shifrp ->  secretdata ) [ 1 ] = ( buf >>  1 ) bitand 0x7 ;
+      ( ns_shifrp ->  secretdata ) [ 2 ] = ( buf >>  4 ) bitand 0x7 ;
+      ( ns_shifrp ->  secretdata ) [ 3 ] = buf >>  7 ;
+      ns_shifrp ->  bitscount  = 1 ; // 2 + 8 - 9
       secretdatasaltsize  = 3 ;
       break ;
     default :
@@ -524,7 +528,7 @@ shifr_size_io  shifr_decrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
   size_t  reads = 0 ;
   size_t  writes  = 0 ;
   while ( reads < input . s and writes < output . s ) {
-    char buf [ 2 ] ;
+    uint8_t buf [ 2 ] ;
     if  ( ns_shifrp  -> flagtext  ) {
       // читаем три буквы ' a 1 b' -> декодируем в два байта "XY"
       // reads three letters ' a 1 b' -> decode to two bytes "XY"
@@ -547,15 +551,15 @@ shifr_size_io  shifr_decrypt ( v2 ) ( t_ns_shifr * const ns_shifrp ,
         ( shifr_base64_let_to_num [ ( ns_shifrp  -> buf2 ) [ 0 ] - '+' ] ) +
         40U * ( ( shifr_base64_let_to_num [ ( ns_shifrp  -> buf2 ) [ 1 ] - '+' ] ) +
         40U * ( shifr_base64_let_to_num [ ( ns_shifrp  -> buf2 ) [ 2 ] - '+' ] ) ) ) ;
-      buf [ 0 ] = uint16_cast_char ( u16 bitand 0xff ) ;
-      buf [ 1 ] = uint16_cast_char ( u16 >> 8  ) ;
+      buf [ 0 ] = uint16_cast_uint8 ( u16 bitand 0xff ) ;
+      buf [ 1 ] = uint16_cast_uint8 ( u16 >> 8  ) ;
     } else { // ! flagtext
       if ( reads + 1 >= input . s )
         goto Exit ;
-      buf [ 0 ] = uint8_cast_char ( * input_buffer ) ;
+      buf [ 0 ] = ( * input_buffer ) ;
       ++  input_buffer  ;
       ++  reads ;
-      buf [ 1 ] = uint8_cast_char ( * input_buffer ) ;
+      buf [ 1 ] = ( * input_buffer ) ;
       ++  input_buffer  ;
       ++  reads ;
     } // flag digit
@@ -585,9 +589,8 @@ shifr_size_io shifr_decrypt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
   size_t  reads = 0 ;
   size_t  writes  = 0 ;
   uint8_t secretdata [ 1 ] ;
-  while ( ( reads < input . s or
-      ( ns_shifrp -> filebuffrom . bufbitsize ) ==  6 ) and
-    writes  < output  . s ) {
+  while ( ( ( reads < input . s ) or  ( ns_shifrp -> filebuffrom . bufbitsize ) ==  6 ) and
+    ( writes  < output  . s ) ) {
     if ( isEOBstreambuf_read6bits ( ns_shifrp ,
       & ( secretdata [ 0 ] ) , & reads , & input_buffer , input . s ) )
       break ;
