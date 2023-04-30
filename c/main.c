@@ -25,11 +25,12 @@ int main  ( int argc , char * argv [ ] ) {
   t_ns_shifr  main_shifr  ;
   shifr_init  ( & main_shifr ) ;
   char const * const locale = setlocale ( LC_ALL  , ""  ) ;
-  main_shifr . localerus = ( strcmp  ( locale  , "ru_RU.UTF-8" ) ==  0 ) ;
-  int exc = setjmp  ( main_shifr  . jump  ) ;
-  if ( exc ) {
-    fprintf ( stderr  , ( main_shifr . localerus ? "Исключение : %s\n" :
-      "Exception : %s\n" ) ,
+  main_shifr  . localerus = ( strcmp  ( locale  , "ru_RU.UTF-8" ) ==  0 ) ;
+  int volatile  const exc = setjmp  ( main_shifr  . jump  ) ;
+  if  ( exc ) {
+    fprintf ( stderr  , ( main_shifr . localerus ?
+        "Исключение : %s\n" :
+        "Exception : %s\n" ) ,
       & ( ( *  main_shifr  . string_exception ) [ 0 ] ) ) ;
     shifr_destr ( & main_shifr ) ;
     return  exc ;
