@@ -211,71 +211,74 @@ void shifr_datasalt ( v3 ) ( t_ns_shifr * const ns_shifrp
 // secretdatasaltsize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
 
-// ! to do : arguments as struct
-
-void  shifr_streambuf_write3 ( t_ns_shifr * const ns_shifrp ,
-  shifr_t_streambuf * const me  , uint8_t const (  * const encrypteddata ) [ 3 ] ,
-  uint8_t const secretdatasaltsize , bool const  flagtext ,
-  uint8_t * restrict * const output_bufferp , size_t * const writesp , size_t  const outputs ) {
-  if  ( flagtext  ) {
-    uint8_t i = 0 ;
+void  shifr_streambuf_write3 ( t_shifr_streambuf_write3 const arg ) {
+  if  ( arg . ns_shifrp  -> flagtext  )
+    goto  FlagText  ;
+  else
+    goto  NotFlagText ;
+FlagText  :
+  { uint8_t i = 0 ;
     do {
       char  const buf2  = shifr_bits6_to_letter (
 # ifdef SHIFR_DEBUG
-        ns_shifrp ,
+        arg . ns_shifrp ,
 # endif
-        ( * encrypteddata ) [ i ] ) ;
-      if ( ( * writesp ) >= outputs ) {
-        ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
+        ( * arg . encrypteddata ) [ i ] ) ;
+      if ( ( * arg . writesp ) >= arg . outputs ) {
+        arg . ns_shifrp  -> string_exception  = ( arg . ns_shifrp  -> localerus ?
           ( shifr_strcp ) & "streambuf_write3: переполнение буфера (flagtext)"  :
           ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagtext)" ) ;
-        longjmp ( ns_shifrp  -> jump  , 1 ) ;
+        longjmp ( arg . ns_shifrp  -> jump  , 1 ) ;
       }
-      ( * * output_bufferp ) = char_cast_uint8 ( buf2 ) ;
-      ++  ( * output_bufferp )  ;
-      ++  ( * writesp ) ;
-      ++  ( ns_shifrp ->  bytecountw  ) ;
-      if  ( ( ns_shifrp ->  bytecountw  ) >=  60  ) {
-        if ( ( * writesp ) >= outputs ) {
-          ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
+      ( * * arg . output_bufferp ) = char_cast_uint8 ( buf2 ) ;
+      ++  ( * arg . output_bufferp )  ;
+      ++  ( * arg . writesp ) ;
+      ++  ( arg . ns_shifrp ->  bytecountw  ) ;
+      if  ( ( arg . ns_shifrp ->  bytecountw  ) >=  60  ) {
+        if ( ( * arg . writesp ) >= arg . outputs ) {
+          arg . ns_shifrp  -> string_exception  = ( arg . ns_shifrp  -> localerus ?
             ( shifr_strcp ) & "streambuf_write3: переполнение буфера для '\\n'"  :
             ( shifr_strcp ) & "streambuf_write3: buffer overflow for '\\n'" ) ;
-          longjmp ( ns_shifrp  -> jump  , 1 ) ;
+          longjmp ( arg . ns_shifrp  -> jump  , 1 ) ;
         }
-        ( * * output_bufferp ) = '\n' ;
-        ++  ( * output_bufferp )  ;
-        ++  ( * writesp ) ;
-        ns_shifrp ->  bytecountw  = 0 ;
+        ( * * arg . output_bufferp ) = '\n' ;
+        ++  ( * arg . output_bufferp )  ;
+        ++  ( * arg . writesp ) ;
+        arg . ns_shifrp ->  bytecountw  = 0 ;
       }
       ++  i ;
-    } while ( i < secretdatasaltsize ) ;
-  } else  { // not flagtext
-    uint8_t i = 0 ;
+    } while ( i < arg . secretdatasaltsize ) ;
+  }
+  return  ;
+NotFlagText :
+  { uint8_t i = 0 ;
+    shifr_t_streambuf * const me = & arg . ns_shifrp -> filebufto ;
     do {
       if  ( ( me -> bufbitsize ) < 2 ) {
         me -> buf = ( me -> buf ) bitor
-          int_cast_uint8 ( ( ( * encrypteddata ) [ i ] ) << ( me -> bufbitsize ) ) ;
+          int_cast_uint8 ( ( ( * arg . encrypteddata ) [ i ] ) << ( me -> bufbitsize ) ) ;
         me -> bufbitsize = int_cast_uint8 ( ( me -> bufbitsize ) + 6 ) ;
       } else  {
-        uint8_t const to_write  = int_cast_uint8 ( ( ( ( * encrypteddata ) [ i ]
+        uint8_t const to_write  = int_cast_uint8 ( ( ( ( * arg . encrypteddata ) [ i ]
           ) << ( me -> bufbitsize  ) ) bitor ( me -> buf ) ) ;
-        if ( ( * writesp ) >= outputs ) {
-          ns_shifrp  -> string_exception  = ( ns_shifrp  -> localerus ? 
+        if ( ( * arg . writesp ) >= arg . outputs ) {
+          arg . ns_shifrp  -> string_exception  = ( arg . ns_shifrp  -> localerus ?
             ( shifr_strcp ) & "streambuf_write3: переполнение буфера (flagdigit)"  :
             ( shifr_strcp ) & "streambuf_write3: buffer overflow (flagdigit)" ) ;
-          longjmp ( ns_shifrp  -> jump  , 1 ) ;
+          longjmp ( arg . ns_shifrp  -> jump  , 1 ) ;
         }
-        ( * * output_bufferp ) = to_write ;
-        ++  ( * output_bufferp )  ;
-        ++  ( * writesp ) ;
+        ( * * arg . output_bufferp ) = to_write ;
+        ++  ( * arg . output_bufferp )  ;
+        ++  ( * arg . writesp ) ;
         // + 6 - 8
         me -> bufbitsize = uint_cast_uint8 ( ( me -> bufbitsize ) - 2U ) ;
-        me -> buf = int_cast_uint8 ( ( ( * encrypteddata ) [ i ] ) >>
+        me -> buf = int_cast_uint8 ( ( ( * arg . encrypteddata ) [ i ] ) >>
           ( 6 - ( me -> bufbitsize ) ) ) ;
       }
       ++  i ;
-    } while ( i < secretdatasaltsize ) ;
+    } while ( i < arg . secretdatasaltsize ) ;
   }
+  return  ;
 }
 
 // версия 3 пишу три бита для расшифровки

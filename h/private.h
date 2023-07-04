@@ -31,12 +31,18 @@ shifr_datasalt_dec ( v3 )
 // secretdatasaltsize - the number of six-bit divisions (2 or 3)
 // encrypteddata - array of six-bit numbers
 
-// ! to do : arguments as struct
+typedef struct  s_shifr_streambuf_write3  t_shifr_streambuf_write3  ;
 
-void  shifr_streambuf_write3 ( t_ns_shifr * ns_shifrp ,
-  shifr_t_streambuf * me  , uint8_t const (  * encrypteddata ) [ 3 ] ,
-  uint8_t secretdatasaltsize , bool flagtext ,
-  uint8_t * restrict * output_bufferp , size_t * writesp , size_t  outputs ) ;
+struct  s_shifr_streambuf_write3  {
+  uint8_t const (  * const encrypteddata ) [ 3 ] ;
+  t_ns_shifr * const ns_shifrp ;
+  uint8_t * restrict * const output_bufferp ;
+  size_t * const writesp ;
+  size_t  const outputs ;
+  uint8_t const secretdatasaltsize ;
+} ;
+
+void  shifr_streambuf_write3 ( t_shifr_streambuf_write3 ) ;
 
 // версия 3 пишу три бита для расшифровки
 // version 3 write three bits to decode

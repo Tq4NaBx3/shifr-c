@@ -353,9 +353,10 @@ uint8_t shifr_streambuf_writeflushzero3 ( t_ns_shifr * const ns_shifrp ,
     & encrypteddata , secretdatasaltsize ) ;
   
   size_t  writes  = 0 ;
-  shifr_streambuf_write3 ( ns_shifrp , & ns_shifrp -> filebufto ,
-    ( uint8_t const ( * ) [ 3 ] ) & encrypteddata , secretdatasaltsize ,
-    ns_shifrp  -> flagtext , & output_buffer , & writes , arrpsp . s ) ;
+
+  shifr_streambuf_write3 ( ( t_shifr_streambuf_write3 ) { . ns_shifrp = ns_shifrp ,
+    . encrypteddata = ( uint8_t const ( * ) [ 3 ] ) & encrypteddata , . secretdatasaltsize = secretdatasaltsize ,
+    . output_bufferp = & output_buffer , . writesp = & writes , . outputs = arrpsp . s } ) ;
   ++  result  ;
 
 lbreak  : ;
@@ -510,12 +511,11 @@ shifr_size_io shifr_encrypt ( v3 ) ( t_ns_shifr * const ns_shifrp ,
     shifr_data_xor3 ( & ns_shifrp -> old_last_data , & ns_shifrp -> old_last_salt ,
       & ns_shifrp -> secretdatasalt , secretdatasaltsize ) ;
     shifr_crypt_decrypt ( & ns_shifrp -> secretdatasalt ,
-      ( shifr_arrvcp  ) & ns_shifrp  -> shifrv3 , & encrypteddata ,
-      secretdatasaltsize ) ;
-    shifr_streambuf_write3 ( ns_shifrp , & ns_shifrp -> filebufto ,
-      ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
-      secretdatasaltsize , ns_shifrp  -> flagtext , & output_buffer ,
-      & writes , output . s ) ;
+      ( shifr_arrvcp  ) & ns_shifrp  -> shifrv3 , & encrypteddata , secretdatasaltsize ) ;
+    shifr_streambuf_write3 ( ( t_shifr_streambuf_write3 ) { . ns_shifrp = ns_shifrp ,
+      . encrypteddata = ( uint8_t const ( * ) [ 3 ] ) & encrypteddata ,
+      . secretdatasaltsize = secretdatasaltsize ,
+      . output_bufferp = & output_buffer , . writesp = & writes , . outputs = output . s } ) ;
   } // while
   return ( shifr_size_io ) { .i  = reads , .o  = writes  }  ;
 }
